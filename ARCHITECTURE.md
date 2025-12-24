@@ -1045,14 +1045,50 @@ npm run build:react
 
 **Output:** Static site in `build/` directory
 
-### GitHub Actions
+#### Current Build Status (Dec 2024)
 
-**On push to main:**
-1. Run tests (`npm test`)
-2. Build (`npm run build`)
-3. Deploy to GitHub Pages
+**Bundle Sizes (after gzip):**
+- JavaScript: 143.89 kB (`main.c90bce35.js`)
+- CSS: 23.8 kB (`main.ca4a1b42.css`)
+- **Total:** ~168 kB (excellent for web app)
 
-**Hosting:** `jmegner.github.io/KT21Calculator/`
+**Build Configuration:**
+- Hosted at: `/` (root deployment, configured in `package.json` homepage field)
+- Target: Netlify deployment
+- Build tool: Create React App (react-scripts)
+
+**Known Warnings (Non-Breaking):**
+
+1. **Outdated browserslist database**
+   - Warning: `caniuse-lite is outdated`
+   - Fix: Run `npx update-browserslist-db@latest`
+   - Impact: None on functionality, just ensures browser compatibility data is current
+   - Recommendation: Update periodically (quarterly)
+
+2. **Babel plugin dependency issue**
+   - Warning: `babel-preset-react-app` not declaring `@babel/plugin-proposal-private-property-in-object`
+   - Root cause: Create React App is no longer maintained
+   - Current status: Works because dependency exists in node_modules from other packages
+   - Workaround: Add `@babel/plugin-proposal-private-property-in-object` to devDependencies if build breaks
+   - Long-term: Consider migrating to Vite or Next.js (see Future Work)
+
+**Build Success Criteria:**
+- Exit code: 0
+- No compilation errors
+- Bundle size < 200 kB gzipped (✓ currently 168 kB)
+- All React components compile
+- TypeScript type checking passes
+
+### Deployment
+
+**Platform:** Netlify (automatic deployment from Git)
+
+**Build settings:**
+- Build command: `npm run build`
+- Publish directory: `build/`
+- Node version: Specified in Netlify configuration
+
+**Previous deployment:** GitHub Pages at `jmegner.github.io/KT21Calculator/` (deprecated)
 
 ### Development Workflow
 
