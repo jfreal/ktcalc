@@ -83,7 +83,6 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.FailsToNorms, atk.failsToNorms,      xspan(1, 9),      numHandler('failsToNorms')),
     new IncProps(N.NormsToCrits, atk.normsToCrits,      xspan(1, 9),      numHandler('normsToCrits')),
     new IncProps(N.FailToNormIfCrit, toYN(Ability.FailToNormIfCrit), xAndCheck, singleHandler(Ability.FailToNormIfCrit)),
-    new IncProps(N.PuritySeal, toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal)),
     new IncProps('ElitePoints2021*', eliteAbility,      eliteAbilities,   subsetHandler(eliteAbilities)),
     new IncProps(N.CloseAssault2021, toYN(Ability.FailToNormIfAtLeastTwoSuccesses), xAndCheck, singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)),
     //new IncProps(N.NoCover,      atk.noCover,            noCoverChoices,        textHandler('noCover')),
@@ -120,6 +119,16 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     />
   );
 
+  const puritySealCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={N.PuritySeal.name}
+      title={N.PuritySeal.description}
+      checked={atk.has(Ability.PuritySeal)}
+      onChange={() => singleHandler(Ability.PuritySeal)(atk.has(Ability.PuritySeal) ? 'X' : '✔')}
+    />
+  );
+
   return (
     <Container style={{width: '310px'}}>
       <Row>
@@ -141,6 +150,9 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
       <Row>
         <Col>{rendingCheckbox}</Col>
         <Col>{severeCheckbox}</Col>
+      </Row>
+      <Row>
+        <Col>{puritySealCheckbox}</Col>
       </Row>
     </Container>
   );

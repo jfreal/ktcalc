@@ -89,7 +89,6 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.NormsToCrits,     atk.normsToCrits,           xspan(1, 9),    numHandler('normsToCrits')),
     new IncProps(N.FailsToNorms,     atk.failsToNorms,           xspan(1, 9),    numHandler('failsToNorms')),
     new IncProps(N.FailToNormIfCrit, toYN(Ability.FailToNormIfCrit), xAndCheck,  singleHandler(Ability.FailToNormIfCrit)),
-    new IncProps(N.PuritySeal,       toYN(Ability.PuritySeal),   xAndCheck,      singleHandler(Ability.PuritySeal)),
     new IncProps('ElitePoints2021*', eliteAbility,               eliteAbilities, subsetHandler(eliteAbilities)),
     new IncProps(N.Duelist,          toYN(Ability.Duelist),      xAndCheck,      singleHandler(Ability.Duelist)),
     new IncProps(N.JustAScratch2021, toYN(Ability.JustAScratch), xAndCheck,      singleHandler(Ability.JustAScratch)),
@@ -126,6 +125,16 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     />
   );
 
+  const puritySealCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={N.PuritySeal.name}
+      title={N.PuritySeal.description}
+      checked={atk.has(Ability.PuritySeal)}
+      onChange={() => singleHandler(Ability.PuritySeal)(atk.has(Ability.PuritySeal) ? 'X' : '✔')}
+    />
+  );
+
   return (
     <Container style={{width: '310px'}}>
       <Row>
@@ -147,6 +156,9 @@ const FighterControls: React.FC<Props> = (props: Props) => {
       <Row>
         <Col>{rendingCheckbox}</Col>
         <Col>{severeCheckbox}</Col>
+      </Row>
+      <Row>
+        <Col>{puritySealCheckbox}</Col>
       </Row>
     </Container>
   );

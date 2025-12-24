@@ -146,7 +146,7 @@ export function calcFinalDiceProb(
     }
   }
 
-  if (abilities.has(Ability.PuritySeal)) {
+  if (abilities.has(Ability.PuritySeal) || abilities.has(Ability.Indomitus)) {
     if (fails >= 2) {
       norms++;
       fails -= 2;

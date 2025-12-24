@@ -2,6 +2,7 @@ import React from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
 
 import {Props as IncProps, propsToRows} from 'src/components/IncDecSelect';
 import Model from 'src/Model';
@@ -71,6 +72,16 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
   const advancedParamsToShow = wantShowAdvanced ? advancedParams : usedAdvancedParams;
   const paramsToShow = basicParams.concat(advancedParamsToShow);
   const elemsCol0 = propsToRows(paramsToShow);
+
+  const indomitusCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={N.Indomitus.name}
+      title={N.Indomitus.description}
+      checked={def.has(Ability.Indomitus)}
+      onChange={() => singleHandler(Ability.Indomitus)(def.has(Ability.Indomitus) ? 'X' : '✔')}
+    />
+  );
   return (
     // it would be nice to make this something other than a fixed width
     <Container style={{width: '130px'}}>
@@ -84,6 +95,9 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
             {elemsCol0}
           </Container>
         </Col>
+      </Row>
+      <Row>
+        <Col>{indomitusCheckbox}</Col>
       </Row>
     </Container>
   );

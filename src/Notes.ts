@@ -84,7 +84,11 @@ export const JustAScratch2021 = new Note(
 );
 export const PuritySeal = new Note(
   `PuritySeal`,
-  `If roll 2 fails, can discard one fail to change other fail to normal success; shooting and fighting only.`,
+  `If roll 2 fails, can discard one fail to change other fail to normal success; attack only.`,
+);
+export const Indomitus = new Note(
+  `Indomitus`,
+  `If roll 2 fails, can discard one fail to change other fail to normal success; defense only.Angels of Death Firefight ploy.`,
 );
 export const HardyX = new Note(
   `HardyX`,
