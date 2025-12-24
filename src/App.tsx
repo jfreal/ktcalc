@@ -6,18 +6,14 @@ import { useSearchParams } from 'react-router-dom';
 import { CalculatorViewChoice } from 'src/CalculatorViewChoice';
 import { centerHoriz, } from 'src/Util';
 import AppHeader from "src/components/AppHeader";
-import { DeadzoneSection } from 'src/components/Deadzone/DeadzoneSection';
 import FightSection from 'src/components/FightSection';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
 import ShootSection from 'src/components/ShootSection';
-import WorldOfTanksSection from 'src/components/WorldOfTanks/WorldOfTanksSection';
 
 const _viewToAdditionalTexts: Map<CalculatorViewChoice, string[]> = new Map([
   [CalculatorViewChoice.KtShoot, ['shoot']],
   [CalculatorViewChoice.KtFight, ['fight']],
   [CalculatorViewChoice.KtShootMassAnalysis, ['mass']],
-  [CalculatorViewChoice.WorldOfTanks, ['wot']],
-  [CalculatorViewChoice.Deadzone, ['dz']],
 ]);
 
 const _textToView = new Map<string,CalculatorViewChoice>();
@@ -81,8 +77,6 @@ const App = () => {
               {sectionDiv(CalculatorViewChoice.KtShoot, <ShootSection/>)}
               {sectionDiv(CalculatorViewChoice.KtFight, <FightSection/>)}
               {sectionDiv(CalculatorViewChoice.KtShootMassAnalysis, <ShootMassAnalysisSection/>)}
-              {sectionDiv(CalculatorViewChoice.WorldOfTanks, <WorldOfTanksSection/>)}
-              {sectionDiv(CalculatorViewChoice.Deadzone, <DeadzoneSection/>)}
             </Col>
           </Row>
         </Container>

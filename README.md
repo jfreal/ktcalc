@@ -31,10 +31,6 @@ List of notable technologies/libs/whatever used...
 - [Testing Library](https://testing-library.com/docs/react-testing-library/intro) for react-oriented testing.
 - [GitHub Actions](https://docs.github.com/en/actions) for CI/CD.
 - [Visual Studio Code](https://code.visualstudio.com/) (vscode) for the IDE.
-- For the Deadzone calculator, which is Monte Carlo, I got 10x speed from using wasm.
-  - [Rust](https://www.rust-lang.org/tools/install).
-  - [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/) to build Rust into wasm.
-  - [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen)
 
 Dev setup...
 - You'll need to install [NodeJS+npm](https://nodejs.org/en/) for building and running.

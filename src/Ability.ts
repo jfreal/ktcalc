@@ -10,7 +10,7 @@ export enum Ability {
     Relentless = "Relentless", // reroll any of your choosing; we choose to reroll all fails; we never fish for crits
     CritFishRelentless = "CritFishRelentless", // reroll all non-crits, aka crit fishing
     RerollOnesPlusBalanced = "BothOnesAndBalanced", // ex: in 2021, Auto Bolt Rifle and Devastator Doctrine
-    RerollMostCommonFail = "MostCommonFail", // "can re-roll any or all of your attack dice results of one result (e.g. results of 2)"
+    RerollMostCommonFail = "Ceaseless", // "can re-roll any or all of your attack dice results of one result (e.g. results of 2)"
 
     // fail/norm/crit manipulation
     Severe = "Severe", // if no crits, promote one normal hit to crit

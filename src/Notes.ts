@@ -11,7 +11,7 @@ export default class Note {
 export const Reroll = new Note(
   `Reroll`,
   `Balanced rerolls 1 die.  Relentless rerolls fails.`
-    + `  MostCommonFail rerolls most common fail result (ex: reroll 2s); it's called "ceaseless" in KT2024.`
+    + `  Ceasless rerolls most common fail result (ex: reroll 2s); it's called "ceaseless" in KT2024.`
     + `  CritFishRelentless rerolls non-crits.`
     + `  DoubleBalanced rerolls 2 dice.`
     + `  Ones rerolls 1s ("ceaseless" in KT2021).`
