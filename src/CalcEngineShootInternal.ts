@@ -29,7 +29,7 @@ export function calcDefenderFinalDiceStuff(
 {
   const defenderSingleDieProbs = defender.toDefenderDieProbs();
 
-  const numDefDiceWithoutPx = Math.max(0, defender.usesInvulnSave() ? defender.numDice : defender.numDice - attacker.apx);
+  const numDefDiceWithoutPx = Math.max(0, defender.numDice - attacker.apx);
 
   const defenderFinalDiceProbs = Common.calcFinalDiceProbs(
     defenderSingleDieProbs,
@@ -46,7 +46,7 @@ export function calcDefenderFinalDiceStuff(
 
   // if APx > Px, then ignore Px
   const effectivePx = attacker.apx >= attacker.px ? 0 : attacker.px;
-  const pxIsRelevant = effectivePx > 0 && !defender.usesInvulnSave();
+  const pxIsRelevant = effectivePx > 0;
 
   // for Px triggered and relevant
   if (pxIsRelevant) {

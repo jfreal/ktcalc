@@ -23,7 +23,6 @@ export default class Model {
   public failsToNorms: number; // all
   public normsToCrits: number; // all
   public noCover: NoCoverType; // NOT IMPLEMENTED, for shoot-attack only
-  public invulnSave: number; // shoot-def only
   public abilities: Set<Ability>; // all, for basically all bool abilities
 
   public constructor(
@@ -51,18 +50,16 @@ export default class Model {
     this.failsToNorms = 0;
     this.normsToCrits = 0;
     this.noCover = NoCoverType.No;
-    this.invulnSave = 0;
     this.abilities = abilities;
   }
 
   public static basicDefender(
-    defense: number = 3,
     save: number = 3,
     wounds: number = 12,
   ) : Model
   {
     const def = new Model();
-    def.numDice = defense;
+    def.numDice = 3; // Always 3 defense dice in KT2024
     def.diceStat = save;
     def.wounds = wounds;
     return def;
@@ -139,12 +136,8 @@ export default class Model {
     return Die.Valid(this.fnp);
   }
 
-  public usesInvulnSave(): boolean {
-    return Die.Valid(this.invulnSave);
-  }
-
   public relevantSave(): number {
-    return this.usesInvulnSave() ? this.invulnSave : this.diceStat;
+    return this.diceStat;
   }
 
 }

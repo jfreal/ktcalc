@@ -86,10 +86,6 @@ export const PuritySeal = new Note(
   `PuritySeal`,
   `If roll 2 fails, can discard one fail to change other fail to normal success; shooting and fighting only.`,
 );
-export const InvulnSave = new Note(
-  `InvulnSave`,
-  `Save value that ignores APx/Px.  If you choose a valid value, InvulnSave will be used even if using Save would be better.`,
-);
 export const HardyX = new Note(
   `HardyX`,
   `HardyX is like Lethal (changes what values give you a critical success), but for defense. Name comes from Intercession Squad chapter tactic Hardy.`,

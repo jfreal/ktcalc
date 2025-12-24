@@ -300,14 +300,14 @@ describe(calcDmgProbs.name + ', few dice, no abilities', () => {
   });
 });
 
-describe(calcDmgProbs.name + ', mwx', () => {
+describe(calcDmgProbs.name + ', MWx', () => {
   // we tested mwx for calcDamage; quick test to make sure calcDamageProbabilities respects mwx too
   it('basic', () => {
     const dmw = 1000; // mw damage
     const pc = 1 / 6;
     const pn = 5 / 6;
     const atk = newTestAttacker(1, 1).setProp('mwx', dmw);
-    const def = new Model(1, 1).withProp('invulnSave', 1);
+    const def = new Model(3, 1); // 3 defense dice, always saves on 1+
 
     const dmgs = calcDmgProbs(atk, def);
     expect(dmgs.get(0)).toBeCloseTo(pn, requiredPrecision); // norm hit, any save
@@ -317,7 +317,7 @@ describe(calcDmgProbs.name + ', mwx', () => {
   });
 });
 
-describe(calcDmgProbs.name + ', APx & invuln', () => {
+describe(calcDmgProbs.name + ', APx', () => {
   it('APx vs fewer defense dice', () => {
     const atkApx0 = new Model().setProp('apx', 0);
     const atkApx1 = new Model().setProp('apx', 1);
@@ -352,31 +352,6 @@ describe(calcDmgProbs.name + ', APx & invuln', () => {
     // apx > def should give same results as apx = def
     const dmgs1Minus2DefDice = calcDmgProbs(atkApx2, def1);
     expect(dmgs1Minus1DefDice).toStrictEqual(dmgs1Minus2DefDice);
-  });
-  it('invuln used when valid', () => {
-    const atk = newTestAttacker(1).withAlwaysNorm();
-    const def = new Model(1, 1); // never rolls fails
-    const defInvuln = def.withProp('invulnSave', 4); // fails half the time
-
-    const dmg = avgDmg(atk, def);
-    expect(dmg).toStrictEqual(0); // normHit always cancelled
-
-    const dmgInvuln = avgDmg(atk, defInvuln);
-    expect(dmgInvuln).toStrictEqual(atk.normDmg / 2); // normHit cancelled half the time
-  });
-  it('APx has no effect against invuln', () => {
-    const atkApx0 = newTestAttacker(3).setProp('apx', 0);
-    const atkApx1 = newTestAttacker(3).setProp('apx', 1);
-    const def = new Model(3, 3);
-    const defInvuln = new Model().setProp('invulnSave', 6);
-
-    const dmgsApx0Invuln = calcDmgProbs(atkApx0, defInvuln);
-    const dmgsApx1Invuln = calcDmgProbs(atkApx1, defInvuln);
-    expect(dmgsApx0Invuln).toStrictEqual(dmgsApx1Invuln);
-
-    const dmgsApx0 = calcDmgProbs(atkApx0, def);
-    expect(Util.weightedAverage(dmgsApx0))
-      .toBeLessThan(Util.weightedAverage(dmgsApx0Invuln));
   });
 });
 

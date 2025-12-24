@@ -2,13 +2,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgb(37, 43, 50);
+  background-color: black;
   padding: 4px 0 0 0;
 }
 
 .AppHeader button {
   border: none;
-  background-color: rgb(37, 43, 50);
+  background-color: black;
   padding: 8px 12px;
 }
 /* turns the white SVG orange */
