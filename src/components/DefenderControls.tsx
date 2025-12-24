@@ -19,7 +19,6 @@ import {
   span,
   withPlus,
   xAndCheck,
-  xrollSpan,
   xspan,
 } from 'src/Util';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
