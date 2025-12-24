@@ -1,10 +1,10 @@
-
 import React from 'react';
 import {
   Col,
   Container,
   Row,
 } from 'react-bootstrap';
+import Form from 'react-bootstrap/Form';
 
 import Ability, {
   eliteAbilities,
@@ -79,8 +79,6 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     new IncProps('Critical Dmg',     atk.critDmg,           span(1, 9),       numHandler('critDmg')),
     new IncProps(N.Reroll,           atk.reroll,            preX(rerolls),    textHandler('reroll')),
     new IncProps('Lethal',           atk.lethal + '+',      xspan(5, 2, '+'), numHandler('lethal')),
-    new IncProps(N.Rending,          toYN(Ability.Rending), xAndCheck,        singleHandler(Ability.Rending)),
-    new IncProps(N.Severe,           toYN(Ability.Severe),  xAndCheck,        singleHandler(Ability.Severe)),
     new IncProps(N.Brutal,           toYN(Ability.Brutal),  xAndCheck,        singleHandler(Ability.Brutal)),
   ];
   const advancedParams: IncProps[] = [
@@ -108,6 +106,26 @@ const FighterControls: React.FC<Props> = (props: Props) => {
   const elemsCol0 = propsToRows(paramsCol0);
   const elemsCol1 = propsToRows(paramsCol1);
 
+  const rendingCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={N.Rending.name}
+      title={N.Rending.description}
+      checked={atk.has(Ability.Rending)}
+      onChange={() => singleHandler(Ability.Rending)(atk.has(Ability.Rending) ? 'X' : '✔')}
+    />
+  );
+
+  const severeCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={N.Severe.name}
+      title={N.Severe.description}
+      checked={atk.has(Ability.Severe)}
+      onChange={() => singleHandler(Ability.Severe)(atk.has(Ability.Severe) ? 'X' : '✔')}
+    />
+  );
+
   return (
     <Container style={{width: '310px'}}>
       <Row>
@@ -125,6 +143,10 @@ const FighterControls: React.FC<Props> = (props: Props) => {
             {elemsCol1}
           </Container>
         </Col>
+      </Row>
+      <Row>
+        <Col>{rendingCheckbox}</Col>
+        <Col>{severeCheckbox}</Col>
       </Row>
     </Container>
   );

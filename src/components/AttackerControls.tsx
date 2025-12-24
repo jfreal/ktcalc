@@ -2,6 +2,7 @@ import React from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
 
 import {Props as IncProps, propsToRows} from 'src/components/IncDecSelect';
 import {
@@ -27,7 +28,6 @@ import Ability, {
 } from 'src/Ability';
 import * as N from 'src/Notes';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
-
 
 export interface Props {
   attacker: Model;
@@ -75,8 +75,6 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps('PiercingCrits', atk.px,            xspan(1, 4),      numHandler('px')),
     new IncProps(N.Reroll,       atk.reroll,            preX(rerolls),    textHandler('reroll')),
     new IncProps('Lethal',       atk.lethal + '+',      xspan(5, 2, '+'), numHandler('lethal')),
-    new IncProps(N.Rending,      toYN(Ability.Rending), xAndCheck,        singleHandler(Ability.Rending)),
-    new IncProps(N.Severe,        toYN(Ability.Severe), xAndCheck,        singleHandler(Ability.Severe)),
     new IncProps(N.AutoNorms,    atk.autoNorms,         xspan(1, 9),      numHandler('autoNorms')),
   ];
   const advancedParams: IncProps[] = [
@@ -102,6 +100,26 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   const elemsCol0 = propsToRows(paramsCol0);
   const elemsCol1 = propsToRows(paramsCol1);
 
+  const rendingCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={N.Rending.name}
+      title={N.Rending.description}
+      checked={atk.has(Ability.Rending)}
+      onChange={() => singleHandler(Ability.Rending)(atk.has(Ability.Rending) ? 'X' : '✔')}
+    />
+  );
+
+  const severeCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={N.Severe.name}
+      title={N.Severe.description}
+      checked={atk.has(Ability.Severe)}
+      onChange={() => singleHandler(Ability.Severe)(atk.has(Ability.Severe) ? 'X' : '✔')}
+    />
+  );
+
   return (
     <Container style={{width: '310px'}}>
       <Row>
@@ -119,6 +137,10 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
             {elemsCol1}
           </Container>
         </Col>
+      </Row>
+      <Row>
+        <Col>{rendingCheckbox}</Col>
+        <Col>{severeCheckbox}</Col>
       </Row>
     </Container>
   );
