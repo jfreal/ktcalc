@@ -11,6 +11,7 @@ export enum Ability {
     CritFishRelentless = "CritFishRelentless", // reroll all non-crits, aka crit fishing
     RerollOnesPlusBalanced = "BothOnesAndBalanced", // ex: in 2021, Auto Bolt Rifle and Devastator Doctrine
     RerollMostCommonFail = "Ceaseless", // "can re-roll any or all of your attack dice results of one result (e.g. results of 2)"
+    RerollMostCommonFailPlusBalanced = "CeaselessPlusBalanced", // reroll most common fail, then reroll 1 additional die that wasn't rerolled
 
     // fail/norm/crit manipulation
     Severe = "Severe", // if no crits, promote one normal hit to crit
@@ -48,6 +49,7 @@ export const rerollAbilities = [
   Ability.CritFishRelentless,
   Ability.RerollOnes,
   Ability.RerollOnesPlusBalanced,
+  Ability.RerollMostCommonFailPlusBalanced,
 ];
 
 export const mutuallyExclusiveFightAbilities = [

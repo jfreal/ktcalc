@@ -91,6 +91,9 @@ export function calcFinalDiceProb(
   else if (reroll === Ability.RerollMostCommonFail) {
     prob = calcFinalDiceProbRerollMostCommonFail(dieProbs, crits, norms, fails);
   }
+  else if (reroll === Ability.RerollMostCommonFailPlusBalanced) {
+    prob = calcFinalDiceProbRerollMostCommonFailPlusBalanced(dieProbs, crits, norms, fails);
+  }
   else {
     prob = calcMultiRollProb(dieProbs, crits, norms, fails);
   }
@@ -339,6 +342,100 @@ export function calcFinalDiceProbRerollMostCommonFail(
     }
   }
   return prob;
+}
+
+// CeaselessPlusBalanced: Apply Ceaseless first, then Balanced on one unrerolled die
+// Key constraint: Balanced can only target dice that Ceaseless didn't reroll (no double reroll)
+// Balanced uses OPTIMAL targeting: prefer fails, then norms, never crits
+export function calcFinalDiceProbRerollMostCommonFailPlusBalanced(
+  dieProbs: DieProbs,
+  finalCrits: number,
+  finalNorms: number,
+  finalFails: number,
+): number {
+  let totalProb = 0;
+  const numFailFaces = Math.round(dieProbs.fail * 6);
+  const numDice = finalCrits + finalNorms + finalFails;
+
+  // Enumerate all possible "beforeBalanced" states (differ from final by at most 1 Balanced reroll)
+  // beforeBalanced is the state after Ceaseless, before Balanced
+  for(let bCrits = Math.max(0, finalCrits - 1); bCrits <= Math.min(numDice, finalCrits + 1); bCrits++) {
+    for(let bNorms = Math.max(0, finalNorms - 1); bNorms <= Math.min(numDice - bCrits, finalNorms + 1); bNorms++) {
+      const bFails = numDice - bCrits - bNorms;
+      if(bFails < 0) continue;
+
+      // Determine what Balanced did to get from beforeBalanced to final
+      const critDiff = finalCrits - bCrits;
+      const normDiff = finalNorms - bNorms;
+      const failDiff = finalFails - bFails;
+
+      // Balanced rerolls exactly 1 die, changing at most 1 result
+      // Valid transitions: no change (0,0,0), or one type goes down by 1 and another goes up by 1
+      if(Math.abs(critDiff) + Math.abs(normDiff) + Math.abs(failDiff) > 2) continue;
+
+      // Determine which die type Balanced targeted and what it became
+      // Balanced ONLY targets fails (never norms or crits)
+      let targetType: 'fail' | 'none';
+      let balancedOutcomeProb: number;
+
+      if(critDiff === 0 && normDiff === 0 && failDiff === 0) {
+        targetType = 'none'; // No change (either no fails to reroll, or fail stayed fail)
+        balancedOutcomeProb = 1;
+      } else if(critDiff === 1 && normDiff === 0 && failDiff === -1) {
+        targetType = 'fail'; balancedOutcomeProb = dieProbs.crit; // fail→crit
+      } else if(critDiff === 0 && normDiff === 1 && failDiff === -1) {
+        targetType = 'fail'; balancedOutcomeProb = dieProbs.norm; // fail→norm
+      } else {
+        continue; // Invalid - Balanced only targets fails
+      }
+
+      // Enumerate Ceaseless reroll scenarios that produce the beforeBalanced state
+      const minRerolls = Math.ceil(bFails / Math.max(1, numFailFaces));
+      const maxRerolls = numDice;
+
+      for(const rerolls of upTo(minRerolls, maxRerolls)) {
+        for(const rerolledCrits of upTo(Math.min(bCrits, rerolls))) {
+          const minRerolledNorms = Math.max(0, rerolls - rerolledCrits - bFails);
+          const maxRerolledNorms = Math.min(bNorms, rerolls - rerolledCrits);
+
+          for(const rerolledNorms of upTo(minRerolledNorms, maxRerolledNorms)) {
+            const rerolledFails = rerolls - rerolledCrits - rerolledNorms;
+            const origCrits = bCrits - rerolledCrits;
+            const origNorms = bNorms - rerolledNorms;
+            const origFails = bFails + rerolledCrits + rerolledNorms;
+
+            // Dice available for Balanced: original dice not rerolled by Ceaseless
+            const availCrits = origCrits;
+            const availNorms = origNorms;
+            const availFails = origFails - rerolls;
+            if(availFails < 0) continue;
+
+            const probOfNumRerolls = getProbOfNumTediousRerolls(numFailFaces, origFails, rerolls);
+            const preRerollProb = calcMultiRollProb(dieProbs, origCrits, origNorms, origFails);
+            const rerollProb = calcMultiRollProb(dieProbs, rerolledCrits, rerolledNorms, rerolledFails);
+            const ceaselessProb = probOfNumRerolls * preRerollProb * rerollProb;
+
+            if(targetType === 'none') {
+              // No change case: either no fails to reroll, or rerolled fail stayed fail
+              if(availFails > 0) {
+                // Had fails to reroll, but rolled fail again
+                totalProb += ceaselessProb * dieProbs.fail;
+              } else {
+                // No fails available - Balanced can't reroll anything useful
+                totalProb += ceaselessProb;
+              }
+            } else if(targetType === 'fail') {
+              // Balanced targeted a fail and improved it
+              if(availFails <= 0) continue; // No fails available to target
+              totalProb += ceaselessProb * balancedOutcomeProb;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return totalProb;
 }
 
 // indices in order: number of fail types (from BS), number of original fails, number of rerolls

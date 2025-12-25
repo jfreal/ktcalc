@@ -115,4 +115,40 @@ The first time you strike with a critical success in each sequence, also **disca
 
 ---
 
+## Calculator Implementation Notes
+
+### Reroll Targeting Strategy
+All reroll abilities in this calculator **only target fails**, never norms or crits. This is optimal play because:
+- Rerolling a fail can only improve (to norm/crit) or stay the same
+- Rerolling a norm could get worse (to fail)
+- Rerolling a crit could only get worse (to norm/fail)
+
+### Combined Reroll Abilities
+The calculator supports combined reroll abilities where multiple effects apply in sequence:
+
+**RerollOnesPlusBalanced (BothOnesAndBalanced):**
+- First reroll all 1s
+- Then reroll one additional fail that wasn't a 1 (no double reroll)
+
+**RerollMostCommonFailPlusBalanced (CeaselessPlusBalanced):**
+- First reroll all dice showing the most common fail result (Ceaseless)
+- Then reroll one additional fail that wasn't rerolled by Ceaseless (no double reroll)
+- If Ceaseless rerolled all fails, Balanced has nothing to target
+
+### No Double Reroll Rule
+A die cannot be rerolled twice in the same action. When combining reroll abilities:
+- Track which dice were rerolled by the first ability
+- The second ability can only target dice that weren't already rerolled
+- `availFails = originalFails - firstRerollCount`
+
+### Expected Ability Ordering (by effectiveness)
+For a given scenario, reroll abilities should generally produce results in this order:
+- CeaselessPlusBalanced ≥ Ceaseless
+- CeaselessPlusBalanced ≥ OnesPlusBalanced
+- CeaselessPlusBalanced ≥ Balanced
+- Ceaseless ≥ RerollOnes (Ceaseless can reroll more dice)
+- Relentless ≥ all other rerolls (rerolls ALL fails)
+
+---
+
 *Last updated: December 2024*
