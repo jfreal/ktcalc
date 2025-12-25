@@ -174,18 +174,14 @@ export function calcFinalDiceProb(
   norms += actualFailToNormPromotions;
   fails -= actualFailToNormPromotions;
 
+  // Track if Severe triggered - Punishing and Rending don't work with Severe
+  let severeTriggered = false;
   if (abilities.has(Ability.Severe)) {
     if (norms > 0 && crits === 0) {
       crits++;
       norms--;
-
-      // creation of first crit means another opportunity for FailToNormIfCrit
-      if (abilities.has(Ability.FailToNormIfCrit) && !abilities.has(Ability.ObscuredTarget)) {
-        if (fails > 0) {
-          norms++;
-          fails--;
-        }
-      }
+      severeTriggered = true;
+      // Note: Devastating and Piercing Crits still work, but Punishing and Rending don't
     }
   }
 
@@ -193,7 +189,8 @@ export function calcFinalDiceProb(
   crits += actualNormToCritPromotions;
   norms -= actualNormToCritPromotions;
 
-  if (abilities.has(Ability.Rending)) {
+  // Rending doesn't work if Severe triggered (per KT2024 rules)
+  if (abilities.has(Ability.Rending) && !severeTriggered) {
     if (crits > 0 && norms > 0) {
       crits++;
       norms--;

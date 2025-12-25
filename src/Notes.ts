@@ -64,7 +64,7 @@ export const Rending = new Note(
 );
 export const Severe = new Note(
   `Severe`,
-  `If you have no crits, you can modify a norm to a crit.`,
+  `If you have no crits, you can modify a norm to a crit. Devastating and Piercing Crits still work, but Punishing and Rending don't.`,
 );
 export const FailToNormIfCrit = new Note(
   `Punishing/FailToNormIfCrit`,

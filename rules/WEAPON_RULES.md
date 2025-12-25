@@ -85,7 +85,9 @@ The defender **cannot retain cover saves**.
 ### Severe
 If you **don't retain any critical successes**, you can change **one of your normal successes to a critical success**.
 
-**Important:** The Devastating and Piercing Crits weapon rules still take effect, but Punishing and Rending don't.
+**Important:** The Devastating and Piercing Crits weapon rules still take effect, but **Punishing and Rending don't**.
+
+**Calculator implementation:** Severe is evaluated after Punishing, so Punishing only triggers from natural crits. Rending is explicitly blocked when Severe triggers.
 
 ---
 
@@ -148,6 +150,33 @@ For a given scenario, reroll abilities should generally produce results in this 
 - CeaselessPlusBalanced ≥ Balanced
 - Ceaseless ≥ RerollOnes (Ceaseless can reroll more dice)
 - Relentless ≥ all other rerolls (rerolls ALL fails)
+
+---
+
+## Recent Improvements (December 2024)
+
+### CeaselessPlusBalanced Implementation
+- **Added** new combined reroll ability: `RerollMostCommonFailPlusBalanced`
+- **Fixed** dice eligibility tracking: Balanced can only target fails that weren't rerolled by Ceaseless
+- **Fixed** optimal targeting: all rerolls only target fails (never norms or crits)
+- **File:** `CalcEngineCommon.ts` - `calcFinalDiceProbRerollMostCommonFailPlusBalanced()`
+
+### Severe Rule Fix
+- **Fixed** Punishing (FailToNormIfCrit) no longer triggers from Severe-created crits
+- **Fixed** Rending no longer triggers from Severe-created crits
+- **Added** `severeTriggered` flag to track when Severe creates a crit
+- **Preserved** Devastating X and Piercing Crits X still work with Severe
+- **File:** `CalcEngineCommon.ts` lines 177-198
+
+### Reroll Targeting Strategy
+- **Clarified** all reroll abilities only target fails (optimal play)
+- **Rationale:** Rerolling fails can only improve; rerolling norms/crits can get worse
+- **Applied to:** Balanced, Ceaseless, Relentless, CeaselessPlusBalanced, OnesPlusBalanced
+
+### No Double Reroll Rule
+- **Documented** dice cannot be rerolled twice in same action
+- **Implementation:** Track `availFails = originalFails - firstRerollCount`
+- **Affects:** CeaselessPlusBalanced, OnesPlusBalanced
 
 ---
 

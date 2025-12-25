@@ -5,6 +5,7 @@ import {
   Row,
 } from 'react-bootstrap';
 
+import Changelog from 'src/components/Changelog';
 import Credits from 'src/components/Credits';
 
 import * as Util from "src/Util";
@@ -112,6 +113,11 @@ const ShootSection: React.FC = () => {
           <ul>
             {noteListItems}
           </ul>
+        </Col>
+      </Row>
+      <Row style={{width: '800px'}}>
+        <Col className='p-0'>
+          <Changelog />
         </Col>
       </Row>
     </Container>

@@ -5,6 +5,7 @@ import {
   Row,
 } from 'react-bootstrap';
 
+import Changelog from 'src/components/Changelog';
 import Credits from 'src/components/Credits';
 import * as Util from "src/Util";
 import FighterControls from 'src/components/FighterControls';
@@ -104,6 +105,11 @@ const FightSection: React.FC = () => {
               {noteListItems}
             </ul>
           </div>
+        </Col>
+      </Row>
+      <Row style={{width: '700px'}}>
+        <Col className='p-0'>
+          <Changelog />
         </Col>
       </Row>
     </Container>
