@@ -3,15 +3,11 @@ import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 
-import * as N from 'src/Notes';
 import ShootOptions from 'src/ShootOptions';
 import {
   Accepter,
-  makeBoolChangeHandler,
   makeNumChangeHandler,
   span,
-  boolToCheckX as toCheckX,
-  xAndCheck,
 } from 'src/Util';
 import IncDecSelect, { Props as IncProps } from 'src/components/IncDecSelect';
 
@@ -23,7 +19,6 @@ export interface Props {
 const ShootOptionControls: React.FC<Props> = (props: Props) => {
   const opts = props.shootOptions;
   const numHandler = makeNumChangeHandler(opts, props.changeHandler);
-  const boolHandler = makeBoolChangeHandler(opts, props.changeHandler);
 
   const params: IncProps[] = [
     //           id,              selectedValue,                  values,     valueChangeHandler
