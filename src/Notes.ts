@@ -27,7 +27,7 @@ export const ObscuredTarget = new Note(
   `Attacker crits are retained as norms.  No crit-triggered abilities can trigger.  Discard an attacker success.`,
 );
 export const AutoNorms = new Note(
-  `AutoNorms/Accurate`,
+  `Accurate`,
   `How many attack dice can be automatically retained as a normal success. Much like cover saves but for attack dice.`,
 );
 export const AutoCrits = new Note(
