@@ -401,9 +401,7 @@ export function calcFinalDiceProbRerollMostCommonFailPlusBalanced(
             const origNorms = bNorms - rerolledNorms;
             const origFails = bFails + rerolledCrits + rerolledNorms;
 
-            // Dice available for Balanced: original dice not rerolled by Ceaseless
-            const availCrits = origCrits;
-            const availNorms = origNorms;
+            // Fails available for Balanced: original fails not rerolled by Ceaseless
             const availFails = origFails - rerolls;
             if(availFails < 0) continue;
 
