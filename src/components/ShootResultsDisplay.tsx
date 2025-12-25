@@ -12,6 +12,7 @@ import {
   toAscendingMap,
   weightedAverage,
   killProb,
+  injuryProb,
   standardDeviation,
 } from 'src/Util';
 import { range } from 'lodash';
@@ -98,6 +99,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
 
   const chosenSaveDmgToProb = props.saveToDmgToProb.get(props.defender.diceStat)!;
   const killChance = killProb(chosenSaveDmgToProb, props.defender.wounds);
+  const injuryChance = injuryProb(chosenSaveDmgToProb, props.defender.wounds);
   let ascendingDmgToProb = toAscendingMap(chosenSaveDmgToProb);
   let probCumulative = 0;
 
@@ -152,6 +154,16 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
         <Col className='p-0'>
           <Accordion flush>
             <Accordion.Item eventKey='1'>
+              <Accordion.Header as="p">Injury Chance: {toPercentString(injuryChance)}%</Accordion.Header>
+              <Accordion.Body>Probability of doing damage &lt; {(props.defender.wounds / 2).toFixed(1)} wounds (less than half)</Accordion.Body>
+            </Accordion.Item>
+          </Accordion>
+        </Col>
+      </Row>
+      <Row>
+        <Col className='p-0'>
+          <Accordion flush>
+            <Accordion.Item eventKey='2'>
               <Accordion.Header as="p">Kill Chance: {toPercentString(killChance)}%</Accordion.Header>
               <Accordion.Body>{killChanceTable}</Accordion.Body>
             </Accordion.Item>
@@ -161,7 +173,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
       <Row>
         <Col className='p-0'>
           <Accordion flush>
-            <Accordion.Item eventKey='2'>
+            <Accordion.Item eventKey='3'>
               <Accordion.Header as="p">Dmg probs for exact scenario</Accordion.Header>
               <Accordion.Body>{dmgProbTable}</Accordion.Body>
             </Accordion.Item>

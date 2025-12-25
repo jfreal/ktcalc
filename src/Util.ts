@@ -263,6 +263,17 @@ export function killProb(dmgToProb: Map<number,number>, wounds: number): number 
   return probSum;
 }
 
+export function injuryProb(dmgToProb: Map<number,number>, wounds: number): number {
+  let probSum = 0;
+  const injuryThreshold = wounds / 2;
+  for(const [dmg, prob] of dmgToProb) {
+    if(dmg > 0 && dmg < injuryThreshold) {
+      probSum += prob;
+    }
+  }
+  return probSum;
+}
+
 export function binomialPmf(
   numTrials: number,
   numSuccesses: number,

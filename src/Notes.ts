@@ -71,8 +71,8 @@ export const FailToNormIfCrit = new Note(
   `Modify a failed hit into a normal hit if you had at least one critical hit; Necron equipment Starfire Core, Kommando strategic ploy "Dakka! Dakka! Dakka!", Hive Fleet equipment Toxin Sacs, Corsair Voidscarred strategic ploy Outcasts.`,
 );
 export const CoverNormSaves = new Note(
-  `CoverNormSaves`,
-  `How many saves can be automatically retained as a normal success. High enough APx/Px can limit these auto-saves.`,
+  `Cover Saves`,
+  `How many saves can be automatically retained as a normal success.`,
 );
 export const CoverCritSaves = new Note(
   `CoverCritSaves`,
@@ -105,13 +105,6 @@ export const FeelNoPain = new Note(
 export const AvgDamageUnbounded = new Note(
   `AvgDamageUnbounded`,
   `The average of damage without regard to defender's wounds.`,
-);
-export const FireTeamRules = new Note(
-  `FireTeamRules`,
-  `FireTeamRules refers to whether to use the hit-cancellation rules from Warhammer 40,000 Fire Team`
-    + ` (very similar to Kill Team, but simpler) where any successful save can cancel any successful hit,`
-    + ` but all normal hits must be cancelled before cancelling any critical hit. You can download the rules`
-    + ` and look at p8-9 for how attack actions work, specifically step4 on p9.`,
 );
 export const Brutal = new Note(
   `Brutal`,

@@ -28,7 +28,6 @@ const ShootOptionControls: React.FC<Props> = (props: Props) => {
   const params: IncProps[] = [
     //           id,              selectedValue,                  values,     valueChangeHandler
     new IncProps('Rounds',        opts.numRounds,                 span(1, 9), numHandler('numRounds')),
-    new IncProps(N.FireTeamRules, toCheckX(opts.isFireTeamRules), xAndCheck,  boolHandler('isFireTeamRules')),
   ];
 
   const paramElems = params.map(p =>

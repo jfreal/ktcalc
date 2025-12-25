@@ -96,7 +96,6 @@ export function calcDamage(
   normHits: number,
   critSaves: number,
   normSaves: number,
-  isFireTeamRules: boolean = false,
 ): number {
   let damage = critHits * attacker.mwx;
   const numNormalSavesToCancelCritHit = 2; // for Kill Team rules, not Fire Team rules
@@ -130,41 +129,32 @@ export function calcDamage(
     }
   }
 
-  if(isFireTeamRules) {
-    // simplest way to implement "saves of any type 1-to-1-cancel normHits then critHits"
-    critSaves += normSaves;
-    critSavesCancelNormHits();
+  if (attacker.critDmg >= attacker.normDmg) {
     critSavesCancelCritHits();
-  }
-  // else Kill Team rules
-  else {
-    if (attacker.critDmg >= attacker.normDmg) {
-      critSavesCancelCritHits();
-      critSavesCancelNormHits();
+    critSavesCancelNormHits();
 
-      if (attacker.critDmg > 2 * attacker.normDmg) {
-        normSavesCancelCritHits();
-        normSavesCancelNormHits();
-      }
-      else {
-        // with norm saves, you prefer to cancel norm hits, but you want to avoid
-        // cancelling all norm hits and being left over with >=1 crit hit and 1 normal save;
-        // in that case, you should have cancelled 1 crit hit before cancelling norm hits;
-        if (normSaves > normHits && normSaves >= numNormalSavesToCancelCritHit && critHits > 0) {
-          normSaves -= numNormalSavesToCancelCritHit;
-          critHits--;
-        }
-
-        normSavesCancelNormHits();
-        normSavesCancelCritHits();
-      }
+    if (attacker.critDmg > 2 * attacker.normDmg) {
+      normSavesCancelCritHits();
+      normSavesCancelNormHits();
     }
     else {
+      // with norm saves, you prefer to cancel norm hits, but you want to avoid
+      // cancelling all norm hits and being left over with >=1 crit hit and 1 normal save;
+      // in that case, you should have cancelled 1 crit hit before cancelling norm hits;
+      if (normSaves > normHits && normSaves >= numNormalSavesToCancelCritHit && critHits > 0) {
+        normSaves -= numNormalSavesToCancelCritHit;
+        critHits--;
+      }
+
       normSavesCancelNormHits();
-      critSavesCancelNormHits();
-      critSavesCancelCritHits();
       normSavesCancelCritHits();
     }
+  }
+  else {
+    normSavesCancelNormHits();
+    critSavesCancelNormHits();
+    critSavesCancelCritHits();
+    normSavesCancelCritHits();
   }
 
   damage += critHits * attacker.critDmg + normHits * attacker.normDmg;

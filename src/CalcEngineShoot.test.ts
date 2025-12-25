@@ -14,8 +14,8 @@ function newTestAttacker(attacks: number = 1, bs: number = 4) : Model {
   return new Model(attacks, bs, 11, 13);
 }
 
-function avgDmg(attacker: Model, defender: Model, numRounds: number = 1, isFireTeamRules: boolean = false): number {
-  return Util.weightedAverage(calcDmgProbs(attacker, defender, new ShootOptions(numRounds, isFireTeamRules)));
+function avgDmg(attacker: Model, defender: Model, numRounds: number = 1): number {
+  return Util.weightedAverage(calcDmgProbs(attacker, defender, new ShootOptions(numRounds)));
 }
 
 describe(calcDamage.name + ', typical dmgs (norm < crit < 2 * norm)', () => {
@@ -138,31 +138,6 @@ describe(calcDmgProbs.name + ', Durable', () => {
     const lowDc = 3;
     const lowAtker = new Model(0, 0, dn, lowDc);
     expect(calcDamage(lowAtker, def, 2, 2, 0, 0)).toBe(2 * lowDc + 2 * dn);
-  });
-});
-
-describe(calcDamage.name + ', Fire Team rules', () => {
-  // test typical situation of normDmg < critDmg < 2*normDmg
-  const dn = 5; // normal damage
-  const dc = 7; // critical damage
-  const dmw = 100; // mortal wound damage
-  const atker = new Model(0, 0, dn, dc, dmw);
-  const def = new Model();
-
-  it('0ch 0nh vs 0cs 0ns => 0', () => {
-    expect(calcDamage(atker, def, 0, 0, 0, 0, true)).toBe(0);
-  });
-  it('0ch 2nh vs 0cs 0ns => 2dn', () => {
-    expect(calcDamage(atker, def, 0, 2, 0, 0, true)).toBe(2 * dn);
-  });
-  it('0ch 2nh vs 0cs 1ns  => 1dn', () => {
-    expect(calcDamage(atker, def, 0, 2, 0, 1, true)).toBe(dn);
-  });
-  it('2ch 2nh vs 3cs 0ns => 1dc', () => {
-    expect(calcDamage(atker, def, 2, 2, 3, 0, true)).toBe(dc + 2 * dmw);
-  });
-  it('2ch 2nh vs 0cs 3ns => 1dc', () => {
-    expect(calcDamage(atker, def, 2, 2, 3, 0, true)).toBe(dc + 2 * dmw);
   });
 });
 

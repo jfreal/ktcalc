@@ -33,8 +33,7 @@ export function calcDmgProbs(
       atk.crits,
       atk.norms,
       def.crits,
-      def.norms,
-      shootOptions.isFireTeamRules);
+      def.norms);
 
     if (damage > 0) {
       Util.addToMapValue(damageToProb, damage, currProb);
