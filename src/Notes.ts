@@ -66,8 +66,8 @@ export const Severe = new Note(
   `Severe`,
   `If you have no crits, you can modify a norm to a crit. Devastating and Piercing Crits still work, but Punishing and Rending don't.`,
 );
-export const FailToNormIfCrit = new Note(
-  `Punishing/FailToNormIfCrit`,
+export const Punishing = new Note(
+  `Punishing`,
   `Modify a failed hit into a normal hit if you had at least one critical hit; Necron equipment Starfire Core, Kommando strategic ploy "Dakka! Dakka! Dakka!", Hive Fleet equipment Toxin Sacs, Corsair Voidscarred strategic ploy Outcasts.`,
 );
 export const CoverNormSaves = new Note(

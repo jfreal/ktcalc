@@ -142,7 +142,7 @@ export function calcFinalDiceProb(
   crits += additionalCrits;
   norms += additionalNorms;
 
-  if (abilities.has(Ability.FailToNormIfCrit) && !abilities.has(Ability.ObscuredTarget)) {
+  if (abilities.has(Ability.Punishing) && !abilities.has(Ability.ObscuredTarget)) {
     if (crits > 0 && fails > 0) {
       norms++;
       fails--;

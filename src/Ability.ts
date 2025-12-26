@@ -16,7 +16,7 @@ export enum Ability {
     // fail/norm/crit manipulation
     Severe = "Severe", // if no crits, promote one normal hit to crit
     Rending = "Rending", // if have crit, promote one normal hit to crit
-    FailToNormIfCrit = "Punishing/FailToNormIfCrit", // crit triggers promotion of fail to norm; 2024 Punishing; 2021: Starfire, DakkaDakkaDakka, Toxin Sacs
+    Punishing = "Punishing", // crit triggers promotion of fail to norm; 2024 Punishing; 2021: Starfire, DakkaDakkaDakka, Toxin Sacs
     FailToNormIfAtLeastTwoSuccesses = "CloseAssault", // if at least two successes, promote fail to norm; from Imperial Navy Breachers Close Assault
     EliteModerate = "EliteModerate", // promote miss to norm or norm to crit
     EliteExtreme = "EliteExtreme", // promote miss to crit

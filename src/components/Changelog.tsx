@@ -16,7 +16,7 @@ const changelogEntries: ChangelogEntry[] = [
       'Fixed: Balanced can only target fails that weren\'t rerolled by Ceaseless (no double reroll rule)',
       'Fixed: All rerolls only target fails (optimal play - rerolling norms/crits can make results worse)',
       'Fixed: Severe rule now correctly blocks Punishing and Rending (Devastating and Piercing Crits still work)',
-      'Added severeTriggered flag to properly track when Severe creates a crit',
+      'Moved Punishing from Advanced controls to main checkbox for easier access',
     ],
   },
   {

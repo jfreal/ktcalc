@@ -114,7 +114,7 @@ describe(Common.calcFinalDiceProb.name, () => {
   const p2 = pf - 1 / 6; // fail that can not be rerolled by Ones
 
   const justRending = new Set<Ability>([Ability.Rending]);
-  const justFailToNormIfCrit = new Set<Ability>([Ability.FailToNormIfCrit]);
+  const justPunishing = new Set<Ability>([Ability.Punishing]);
 
   it('basic', () => {
     const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 0, Ability.None);
@@ -198,19 +198,19 @@ describe(Common.calcFinalDiceProb.name, () => {
     expect(actual.norms).toBe(2);
   });
   it('starfire {0c,1n,1f} => {0c,1n,1f}', () => {
-    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 1, Ability.None, 0, 0, 0, 0, justFailToNormIfCrit);
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 1, Ability.None, 0, 0, 0, 0, justPunishing);
     expect(actual).toStrictEqual(new FinalDiceProb(pn * pf * 2, 0, 1));
   });
   it('starfire {1c,0n,1f} => {1c,1n,0f}', () => {
-    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, justFailToNormIfCrit);
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, justPunishing);
     expectClose(actual, pc * pf * 2, 1, 1);
   });
   it('starfire {1c,1n,0f} => {1c,1n,0f}', () => {
-    const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 0, Ability.None, 0, 0, 0, 0, justFailToNormIfCrit);
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 0, Ability.None, 0, 0, 0, 0, justPunishing);
     expectClose(actual, pc * pn * 2, 1, 1);
   });
   it('starfire {3c,3n,3f} => {3c,4n,2f}', () => {
-    const actual = Common.calcFinalDiceProb(dieProbs, 3, 3, 3, Ability.None, 0, 0, 0, 0, justFailToNormIfCrit);
+    const actual = Common.calcFinalDiceProb(dieProbs, 3, 3, 3, Ability.None, 0, 0, 0, 0, justPunishing);
     expect(actual.crits).toBe(3);
     expect(actual.norms).toBe(4);
   });

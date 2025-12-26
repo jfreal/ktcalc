@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   background-color: black;
-  padding: 4px 0 0 0;
+  padding: 0px 0 0 0;
   gap: 16px;
 }
 
@@ -12,11 +12,11 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  padding: 4px 8px;
+  padding: 0px 8px;
 }
 
 .AppHeader-brand img {
-  height: 32px;
+  height: 45px;
 }
 
 .AppHeader-title {

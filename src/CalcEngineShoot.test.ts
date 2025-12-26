@@ -428,7 +428,7 @@ describe(calcDmgProbs.name + ', rending & starfire', () => {
     expect(dmgs.get(2 * atk.critDmg)).toBeCloseTo(pc * pc + 2 * pc * pn, requiredPrecision);
   });
   it('starfire, 2 atk dice, probability 1 crit + 1 norm', () => {
-    const atk = newTestAttacker(2).setAbility(Ability.FailToNormIfCrit, true);
+    const atk = newTestAttacker(2).setAbility(Ability.Punishing, true);
     const [pc, pn, pf] = atk.toAttackerDieProbs().toCritNormFail();
     const def = new Model(0);
 

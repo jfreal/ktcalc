@@ -33,7 +33,7 @@ const AppHeader = (props: AppHeaderProps) => {
 
   return <nav className='AppHeader'>
     <a href="/" className='AppHeader-brand'>
-      <img src={logoSmall} alt='KT Calc logo' height='32' />
+      <img src={logoSmall} alt='KT Calc logo' height='45' />
       <span className='AppHeader-title'>KT Calc</span>
     </a>
     <div className='AppHeader-nav'>

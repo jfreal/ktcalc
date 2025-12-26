@@ -82,7 +82,6 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.AutoCrits,    atk.autoCrits,         xspan(1, 9),      numHandler('autoCrits')),
     new IncProps(N.FailsToNorms, atk.failsToNorms,      xspan(1, 9),      numHandler('failsToNorms')),
     new IncProps(N.NormsToCrits, atk.normsToCrits,      xspan(1, 9),      numHandler('normsToCrits')),
-    new IncProps(N.FailToNormIfCrit, toYN(Ability.FailToNormIfCrit), xAndCheck, singleHandler(Ability.FailToNormIfCrit)),
     new IncProps(N.PuritySeal, toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal)),
     new IncProps('ElitePoints2021*', eliteAbility,      eliteAbilities,   subsetHandler(eliteAbilities)),
     new IncProps(N.CloseAssault2021, toYN(Ability.FailToNormIfAtLeastTwoSuccesses), xAndCheck, singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)),
@@ -120,6 +119,16 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     />
   );
 
+  const punishingCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label="Punishing"
+      title={N.Punishing.description}
+      checked={atk.has(Ability.Punishing)}
+      onChange={() => singleHandler(Ability.Punishing)(atk.has(Ability.Punishing) ? 'X' : '✔')}
+    />
+  );
+
   return (
     <Container style={{width: '310px'}}>
       <Row>
@@ -141,6 +150,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
       <Row>
         <Col>{rendingCheckbox}</Col>
         <Col>{severeCheckbox}</Col>
+        <Col>{punishingCheckbox}</Col>
       </Row>
     </Container>
   );
