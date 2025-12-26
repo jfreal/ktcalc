@@ -10,7 +10,6 @@ import {
   boolToCheckX,
   incDecPropsHasNondefaultSelectedValue,
   makeNumChangeHandler,
-  makeSetChangeHandler,
   makeSetChangeHandlerForSingle,
   makeTextChangeHandler,
   preX,
@@ -39,14 +38,6 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced');
   //const noCoverChoices = Object.values(NoCoverType);
 
-  function subsetHandler(subset: Iterable<Ability>) {
-    return makeSetChangeHandler<Model,Ability>(
-      atk,
-      props.changeHandler,
-      'abilities',
-      subset,
-    );
-  }
   function singleHandler(ability: Ability) {
     return makeSetChangeHandlerForSingle<Model,Ability>(
       atk,
