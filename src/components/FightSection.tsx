@@ -45,8 +45,6 @@ const FightSection: React.FC = () => {
     N.PuritySeal,
     N.CloseAssault2021,
     N.Waaagh2021,
-    N.EliteModerate2021,
-    N.EliteExtreme2021,
   ].map(note => <li key={note.name}><b>{note.name}</b>: {note.description}</li>);
 
   return (

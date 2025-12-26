@@ -7,7 +7,6 @@ import {
 import Form from 'react-bootstrap/Form';
 
 import Ability, {
-  eliteAbilities,
   mutuallyExclusiveFightAbilities as nicheAbilities,
   rerollAbilities as rerolls,
 } from 'src/Ability';
@@ -68,7 +67,6 @@ const FighterControls: React.FC<Props> = (props: Props) => {
   }
 
   const nicheAbility = extractFromSet(nicheAbilities, Ability.None, atk.abilities)!;
-  const eliteAbility = extractFromSet(eliteAbilities, Ability.None, atk.abilities)!;
 
   const basicParams: IncProps[] = [
     //           id/label,           selectedValue,         values,           valueChangeHandler
@@ -90,7 +88,6 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.FailsToNorms,     atk.failsToNorms,           xspan(1, 9),    numHandler('failsToNorms')),
     new IncProps(N.Punishing, toYN(Ability.Punishing), xAndCheck,  singleHandler(Ability.Punishing)),
     new IncProps(N.PuritySeal,       toYN(Ability.PuritySeal),   xAndCheck,      singleHandler(Ability.PuritySeal)),
-    new IncProps('ElitePoints2021*', eliteAbility,               eliteAbilities, subsetHandler(eliteAbilities)),
     new IncProps(N.Duelist,          toYN(Ability.Duelist),      xAndCheck,      singleHandler(Ability.Duelist)),
     new IncProps(N.JustAScratch2021, toYN(Ability.JustAScratch), xAndCheck,      singleHandler(Ability.JustAScratch)),
     new IncProps(N.Durable2021,      toYN(Ability.Durable),      xAndCheck,      singleHandler(Ability.Durable)),

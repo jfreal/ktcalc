@@ -50,14 +50,6 @@ export const Waaagh2021 = new Note(
   `Waaagh2021`,
   `If you have two or more normal sucesses, promote a norm to a crit.  Kommandos strategic ploy.`,
 );
-export const EliteModerate2021 = new Note(
-  `EliteModerate2021`,
-  `In spending of Kasrkin Elite points, upgrade a fail to a norm or a norm to a crit.`,
-);
-export const EliteExtreme2021 = new Note(
-  `EliteExtreme2021`,
-  `In spending of Kasrkin Elite points, upgrade a fail to a crit.`,
-);
 export const Rending = new Note(
   `Rending`,
   `If you have >=1 crit, you can modify a norm to a crit.`,

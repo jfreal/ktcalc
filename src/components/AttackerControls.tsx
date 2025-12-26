@@ -8,7 +8,6 @@ import {Props as IncProps, propsToRows} from 'src/components/IncDecSelect';
 import {
   Accepter,
   boolToCheckX,
-  extractFromSet,
   incDecPropsHasNondefaultSelectedValue,
   makeNumChangeHandler,
   makeSetChangeHandler,
@@ -23,7 +22,6 @@ import {
 } from 'src/Util';
 import Model from 'src/Model';
 import Ability, {
-  eliteAbilities,
   rerollAbilities as rerolls,
 } from 'src/Ability';
 import * as N from 'src/Notes';
@@ -62,8 +60,6 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     return boolToCheckX(atk.has(ability));
   }
 
-  const eliteAbility = extractFromSet(eliteAbilities, Ability.None, atk.abilities)!;
-
   const basicParams: IncProps[] = [
     //           id/label,       selectedValue,         values,                valueChangeHandler
     new IncProps('Attacks',      atk.numDice,           span(1, 9),       numHandler('numDice')),
@@ -83,7 +79,6 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.FailsToNorms, atk.failsToNorms,      xspan(1, 9),      numHandler('failsToNorms')),
     new IncProps(N.NormsToCrits, atk.normsToCrits,      xspan(1, 9),      numHandler('normsToCrits')),
     new IncProps(N.PuritySeal, toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal)),
-    new IncProps('ElitePoints2021*', eliteAbility,      eliteAbilities,   subsetHandler(eliteAbilities)),
     new IncProps(N.CloseAssault2021, toYN(Ability.FailToNormIfAtLeastTwoSuccesses), xAndCheck, singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)),
     //new IncProps(N.NoCover,      atk.noCover,            noCoverChoices,        textHandler('noCover')),
   ];

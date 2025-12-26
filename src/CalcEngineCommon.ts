@@ -197,27 +197,6 @@ export function calcFinalDiceProb(
     }
   }
 
-  if(abilities.has(Ability.EliteModerate)) {
-    if(fails > 0) {
-      fails--;
-      norms++;
-    }
-    else if(norms > 0) {
-      norms--;
-      crits++;
-    }
-  }
-  else if(abilities.has(Ability.EliteExtreme)) {
-    if(fails > 0) {
-      fails--;
-      crits++;
-    }
-    else if(norms > 0) {
-      norms--;
-      crits++;
-    }
-  }
-
   if(abilities.has(Ability.ObscuredTarget)) {
     // technically, the crits were always norms; also need to discard a success
     norms = Math.max(0, norms + crits - 1);

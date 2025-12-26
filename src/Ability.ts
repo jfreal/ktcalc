@@ -18,8 +18,6 @@ export enum Ability {
     Rending = "Rending", // if have crit, promote one normal hit to crit
     Punishing = "Punishing", // crit triggers promotion of fail to norm; 2024 Punishing; 2021: Starfire, DakkaDakkaDakka, Toxin Sacs
     FailToNormIfAtLeastTwoSuccesses = "CloseAssault", // if at least two successes, promote fail to norm; from Imperial Navy Breachers Close Assault
-    EliteModerate = "EliteModerate", // promote miss to norm or norm to crit
-    EliteExtreme = "EliteExtreme", // promote miss to crit
     JustAScratch = "JustAScratch", // cancel one attack die just before damage; both shoot and fight
     Durable = "Durable2021", // one crit hit does 1 less damage, to minimun of 3
     ObscuredTarget = "ObscuredTarget", // all crits become norms; can't do crit-triggered abilities; discard a success at the end
@@ -60,12 +58,6 @@ export const mutuallyExclusiveFightAbilities = [
   Ability.StormShield2021,
   Ability.NormToCritIfAtLeastTwoNorms,
   Ability.MurderousEntrance2021,
-];
-
-export const eliteAbilities = [
-  Ability.None,
-  Ability.EliteModerate,
-  Ability.EliteExtreme,
 ];
 
 export const rendingAndSevereAbilities = [

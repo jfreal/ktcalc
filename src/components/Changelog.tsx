@@ -17,6 +17,7 @@ const changelogEntries: ChangelogEntry[] = [
       'Fixed: All rerolls only target fails (optimal play - rerolling norms/crits can make results worse)',
       'Fixed: Severe rule now correctly blocks Punishing and Rending (Devastating and Piercing Crits still work)',
       'Moved Punishing from Advanced controls to main checkbox for easier access',
+      'Removed EliteModerate2021 and EliteExtreme2021 (Kasrkin Elite points no longer relevant)',
     ],
   },
   {
