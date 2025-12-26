@@ -153,7 +153,7 @@ For a given scenario, reroll abilities should generally produce results in this 
 
 ---
 
-## Recent Improvements (December 2024)
+## Recent Improvements (December 2025)
 
 ### CeaselessPlusBalanced Implementation
 - **Added** new combined reroll ability: `RerollMostCommonFailPlusBalanced`
@@ -180,4 +180,4 @@ For a given scenario, reroll abilities should generally produce results in this 
 
 ---
 
-*Last updated: December 2024*
+*Last updated: December 2025*

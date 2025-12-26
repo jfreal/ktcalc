@@ -9,7 +9,7 @@ interface ChangelogEntry {
 
 const changelogEntries: ChangelogEntry[] = [
   {
-    date: 'December 2024',
+    date: 'December 2025',
     title: 'CeaselessPlusBalanced & Severe Rule Fixes',
     changes: [
       'Added CeaselessPlusBalanced: combined reroll that applies Ceaseless first, then Balanced on an unrerolled fail',
@@ -20,7 +20,7 @@ const changelogEntries: ChangelogEntry[] = [
     ],
   },
   {
-    date: 'December 2024',
+    date: 'December 2025',
     title: 'Kill Team 2024 Edition Updates',
     changes: [
       'Defense dice fixed at 3 for all operatives',
@@ -30,7 +30,7 @@ const changelogEntries: ChangelogEntry[] = [
     ],
   },
   {
-    date: 'November 2024',
+    date: 'November 2025',
     title: 'Initial KT2024 Support',
     changes: [
       'Updated calculator for Kill Team 2024 rules',
