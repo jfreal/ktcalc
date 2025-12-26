@@ -30,15 +30,15 @@ export const ShootSituation: React.FC<Props> = (props: Props) => {
       <Row>
         <Col className={Util.centerHoriz + ' p-0'} xs='auto'>
           <Container>
-            <Row className='border'>
+            <Row className='border-right'>
               <AttackerControls attacker={props.attacker} changeHandler={props.setAttacker} />
             </Row>
-            <Row className='border'>
+            <Row>
               <ShootOptionControls shootOptions={props.shootOptions} changeHandler={props.setShootOptions} />
             </Row>
           </Container>
         </Col>
-        <Col className={Util.centerHoriz + ' border' } xs='auto'>
+        <Col className={Util.centerHoriz + ' ' } xs='auto'>
           <DefenderControls defender={props.defender} changeHandler={props.setDefender} />
         </Col>
       </Row>

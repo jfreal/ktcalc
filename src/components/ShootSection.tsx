@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Button,
   Col,
   Container,
   Row,
@@ -8,6 +9,7 @@ import {
 import Changelog from 'src/components/Changelog';
 import Credits from 'src/components/Credits';
 
+import { clone } from 'lodash';
 import * as Util from "src/Util";
 import * as N from 'src/Notes';
 import { ShootSituation } from './ShootSituation';
@@ -41,6 +43,12 @@ const ShootSection: React.FC = () => {
   const saveToDmgToProbCombined = new Map<number,Map<number,number>>(SaveRange.map(save =>
     [save, combineDmgProbs(saveToDmgToProb1.get(save)!, saveToDmgToProb2.get(save)!)]));
 
+  const copyS1toS2 = () => {
+    setAttacker2(clone(attacker1));
+    setDefender2(clone(defender1));
+    setShootOptions2(clone(shootOptions1));
+  };
+
   const noteListItems: JSX.Element[] = [
     N.AvgDamageUnbounded,
     N.Reroll,
@@ -67,8 +75,8 @@ const ShootSection: React.FC = () => {
         <a href='https://assets.warhammer-community.com/killteam_keydownloads_literules_eng-jfhe9v0j7c-n0x6ozmgo9.pdf'>[Lite Rules]</a>
       </Row>
       <Row>
-        <Col className='border p-0'>
-          Situation1
+        <Col className='border rounded p-1'>
+          Situation 1
           <ShootSituation
             attacker={attacker1}
             setAttacker={setAttacker1}
@@ -79,8 +87,11 @@ const ShootSection: React.FC = () => {
             saveToDmgToProb={saveToDmgToProb1}
             />
         </Col>
-        <Col className='border p-0'>
-          Situation2
+        <Col className='border rounded p-1'>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Situation 2</span>
+            <Button variant="outline-secondary" size="sm" onClick={copyS1toS2}>Copy From Situation 1</Button>
+          </div>
           <ShootSituation
             attacker={attacker2}
             setAttacker={setAttacker2}
@@ -93,14 +104,14 @@ const ShootSection: React.FC = () => {
         </Col>
       </Row>
       <Row>
-        <Col className='border p-0'>
+        <Col className='border rounded p-0'>
           <ScenarioComparisonMatrix
             saveToDmgToProb1={saveToDmgToProb1}
             saveToDmgToProb2={saveToDmgToProb2}
           />
         </Col>
       </Row>
-      <div className='border p-0'>
+      <div className='border rounded p-0'>
         <Row className={Util.centerHoriz}>
           Situation 1&2 Combo using W={defender1.wounds} from Situation1
         </Row>

@@ -30,13 +30,8 @@ const ShootOptionControls: React.FC<Props> = (props: Props) => {
 
   return (
     <Container style={{width: '310px'}}>
-      <Row>General</Row>
       <Row>
-        <Col>
-          <Container className='p-0'>
-            {paramElems.slice(0, paramElems.length / 2)}
-          </Container>
-        </Col>
+       
         <Col>
           <Container className='p-0'>
             {paramElems.slice(paramElems.length / 2)}

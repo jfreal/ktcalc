@@ -12,6 +12,7 @@ export interface Props {
 const betterStyle: React.CSSProperties = { backgroundColor: '#e8f5e9' }; // very light green
 const worseStyle: React.CSSProperties = { backgroundColor: '#ffebee' };  // very light red
 const equalStyle: React.CSSProperties = { backgroundColor: '#f5f5f5' };  // very light gray
+const cellStyle: React.CSSProperties = { width: '50px', maxWidth: '50px' };
 
 function getComparisonStyles(diff: number): [React.CSSProperties, React.CSSProperties] {
   if (Math.abs(diff) < 0.001) {
@@ -39,23 +40,23 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
 
     return (
       <tr key={`avgdmg_${save}`}>
-        <td>{save}+</td>
-        <td style={s1Style}>{avgDmg1.toFixed(2)}</td>
-        <td style={s2Style}>{avgDmg2.toFixed(2)}</td>
-        <td>{diff > 0 ? '+' : ''}{diff.toFixed(2)}</td>
+        <td style={cellStyle}>{save}+</td>
+        <td style={{ ...cellStyle, ...s1Style }}>{avgDmg1.toFixed(2)}</td>
+        <td style={{ ...cellStyle, ...s2Style }}>{avgDmg2.toFixed(2)}</td>
+        <td style={cellStyle}>{diff > 0 ? '+' : ''}{diff.toFixed(2)}</td>
       </tr>
     );
   });
 
   const avgDmgTable = (
     <div style={{ display: 'inline-block', verticalAlign: 'top', margin: '4px' }}>
-      <Table bordered style={{ fontSize: '11px', marginTop: '2px' }}>
+      <Table bordered style={{ fontSize: '11px', marginTop: '2px', tableLayout: 'fixed', width: 'auto' }}>
         <thead>
           <tr>
-            <th>Sv</th>
-            <th>S1 Avg</th>
-            <th>S2 Avg</th>
-            <th>Δ</th>
+            <th style={cellStyle}>Sv</th>
+            <th style={cellStyle}>S1 Avg</th>
+            <th style={cellStyle}>S2 Avg</th>
+            <th style={cellStyle}>Δ</th>
           </tr>
         </thead>
         <tbody>
@@ -78,10 +79,10 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
 
       return (
         <tr key={`compare_${save}_${wounds}`}>
-          <td>{wounds}</td>
-          <td style={s1Style}>{toPercentString(killChance1)}%</td>
-          <td style={s2Style}>{toPercentString(killChance2)}%</td>
-          <td>{diff > 0 ? '+' : ''}{toPercentString(diff)}%</td>
+          <td style={cellStyle}>{wounds}</td>
+          <td style={{ ...cellStyle, ...s1Style }}>{toPercentString(killChance1)}%</td>
+          <td style={{ ...cellStyle, ...s2Style }}>{toPercentString(killChance2)}%</td>
+          <td style={cellStyle}>{diff > 0 ? '+' : ''}{toPercentString(diff)}%</td>
         </tr>
       );
     });
@@ -89,13 +90,13 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
     return (
       <div key={`table_${save}`} style={{ display: 'inline-block', verticalAlign: 'top', margin: '4px' }}>
         <span style={{ fontSize: '13px', fontWeight: 'bold' }}>Sv {save}+</span>
-        <Table bordered style={{ fontSize: '11px', marginTop: '2px' }}>
+        <Table bordered style={{ fontSize: '11px', marginTop: '2px', tableLayout: 'fixed', width: 'auto' }}>
           <thead>
             <tr>
-              <th>W</th>
-              <th>S1</th>
-              <th>S2</th>
-              <th>Δ</th>
+              <th style={cellStyle}>W</th>
+              <th style={cellStyle}>S1</th>
+              <th style={cellStyle}>S2</th>
+              <th style={cellStyle}>Δ</th>
             </tr>
           </thead>
           <tbody>
@@ -107,7 +108,7 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
   });
 
   return (
-    <div style={{ padding: '8px' }}>
+    <div style={{ padding: '8px', maxWidth: '100%', overflow: 'hidden' }}>
       <div style={{ fontSize: '11px', marginBottom: '8px', color: '#666' }}>
         <span style={{ backgroundColor: '#e8f5e9', padding: '2px 4px' }}>Green = Better</span>
         {' | '}
@@ -119,14 +120,14 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
       <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
         Average Damage Comparison
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px', overflowX: 'auto' }}>
         {avgDmgTable}
       </div>
 
       <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
         Kill Chance Comparison (W: 1-20)
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', overflowX: 'auto' }}>
         {killChanceTables}
       </div>
     </div>
