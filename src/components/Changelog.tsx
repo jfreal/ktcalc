@@ -18,6 +18,7 @@ const changelogEntries: ChangelogEntry[] = [
       'Fixed: Severe rule now correctly blocks Punishing and Rending (Devastating and Piercing Crits still work)',
       'Moved Punishing from Advanced controls to main checkbox for easier access',
       'Removed EliteModerate2021 and EliteExtreme2021 (Kasrkin Elite points no longer relevant)',
+      'Added Scenario Comparison Matrix: compare S1 vs S2 average damage and kill chances across all saves and wounds (1-20)',
     ],
   },
   {

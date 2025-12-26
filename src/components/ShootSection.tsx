@@ -16,6 +16,7 @@ import ShootOptions from 'src/ShootOptions';
 import { calcDmgProbs } from 'src/CalcEngineShoot';
 import { SaveRange } from 'src/KtMisc';
 import ShootResultsDisplay from './ShootResultsDisplay';
+import ScenarioComparisonMatrix from './ScenarioComparisonMatrix';
 import { combineDmgProbs } from 'src/CalcEngineCommon';
 
 const ShootSection: React.FC = () => {
@@ -89,6 +90,14 @@ const ShootSection: React.FC = () => {
             setShootOptions={setShootOptions2}
             saveToDmgToProb={saveToDmgToProb2}
             />
+        </Col>
+      </Row>
+      <Row>
+        <Col className='border p-0'>
+          <ScenarioComparisonMatrix
+            saveToDmgToProb1={saveToDmgToProb1}
+            saveToDmgToProb2={saveToDmgToProb2}
+          />
         </Col>
       </Row>
       <div className='border p-0'>
