@@ -4,6 +4,7 @@ import "src/components/AppHeader.css"
 import { CalculatorViewChoice } from 'src/CalculatorViewChoice';
 import ktFightIcon from 'src/images/KtFightIcon.svg';
 import ktShootIcon from 'src/images/KtShootIcon.svg';
+import logoSmall from 'src/images/logo-small.png';
 //import ktShootMassAnalysisIcon from 'src/images/ShootMultipleTargetsIcon.svg';
 
 type AppHeaderProps = {
@@ -31,7 +32,11 @@ const AppHeader = (props: AppHeaderProps) => {
   }
 
   return <nav className='AppHeader'>
-    <a href="/KT21Calculator/">Home</a>&nbsp;&nbsp;
+    <a href="/" className='AppHeader-brand'>
+      <img src={logoSmall} alt='KT Calc logo' height='32' />
+      <span className='AppHeader-title'>KT Calc</span>
+    </a>
+    <div className='AppHeader-nav'>
     {makeButton(
       CalculatorViewChoice.KtShoot,
       'Kill Team Shoot Calculator',
@@ -50,6 +55,7 @@ const AppHeader = (props: AppHeaderProps) => {
       ktShootMassAnalysisIcon,
       'Multiple people targeted.',
     )*/}
+    </div>
   </nav>
 };
 

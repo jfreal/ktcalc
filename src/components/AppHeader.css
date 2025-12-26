@@ -4,6 +4,30 @@
   align-items: center;
   background-color: black;
   padding: 4px 0 0 0;
+  gap: 16px;
+}
+
+.AppHeader-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  padding: 4px 8px;
+}
+
+.AppHeader-brand img {
+  height: 32px;
+}
+
+.AppHeader-title {
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.AppHeader-nav {
+  display: flex;
+  align-items: center;
 }
 
 .AppHeader button {
