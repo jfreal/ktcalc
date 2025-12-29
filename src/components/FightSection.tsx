@@ -80,13 +80,12 @@ const FightSection: React.FC = () => {
         </Col>
       </Row>
       <Row>
-        <Col className={Util.centerHoriz + ' border'} style={{fontSize: '11px'}}>
+        <Col style={{fontSize: '11px'}}>
           <Credits/>
         </Col>
       </Row>
-      <Row style={{width: '700px'}}>
-        <Col className={Util.centerHoriz + ' border'}>
-          <div>
+      <Row>
+        <Col>
             Notes:
             <ul>
               <li>
@@ -102,11 +101,10 @@ const FightSection: React.FC = () => {
               </li>
               {noteListItems}
             </ul>
-          </div>
         </Col>
       </Row>
-      <Row style={{width: '700px'}}>
-        <Col className='p-0'>
+      <Row>
+        <Col>
           <Changelog />
         </Col>
       </Row>

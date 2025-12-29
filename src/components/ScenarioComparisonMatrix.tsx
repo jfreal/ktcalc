@@ -6,6 +6,8 @@ import { range } from 'lodash';
 export interface Props {
   saveToDmgToProb1: Map<number, Map<number, number>>;
   saveToDmgToProb2: Map<number, Map<number, number>>;
+  saveToDmgToProbCombined: Map<number, Map<number, number>>;
+  comboWounds: number;
 }
 
 // Style constants
@@ -26,8 +28,9 @@ function getComparisonStyles(diff: number): [React.CSSProperties, React.CSSPrope
 
 const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
   const saves = [...props.saveToDmgToProb1.keys()].sort();
-  const woundRange = range(1, 21); // 1 to 20 wounds
+  const woundRange = range(1, 26); // 1 to 25 wounds
   const toPercentString = (val: number) => (val * 100).toFixed(0);
+  const { comboWounds, saveToDmgToProbCombined } = props;
 
   // Generate average damage comparison table
   const avgDmgRows: JSX.Element[] = saves.map(save => {
@@ -117,15 +120,47 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
         <span style={{ backgroundColor: '#f5f5f5', padding: '2px 4px' }}>Gray = Equal</span>
       </div>
       
-      <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
-        Average Damage Comparison
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px', overflowX: 'auto' }}>
-        {avgDmgTable}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '16px', overflowX: 'auto', alignItems: 'flex-start' }}>
+        <div>
+          <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px', height: '20px' }}>
+            Average Damage Comparison
+          </div>
+          {avgDmgTable}
+        </div>
+        <div>
+          <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px', height: '20px' }}>
+            S1&S2 Combo (W={comboWounds})
+          </div>
+          <div style={{ display: 'inline-block', verticalAlign: 'top', margin: '4px' }}>
+            <Table bordered style={{ fontSize: '11px', marginTop: '2px', tableLayout: 'fixed', width: 'auto' }}>
+              <thead>
+                <tr>
+                  <th style={cellStyle}>Sv</th>
+                  <th style={cellStyle}>Avg</th>
+                  <th style={cellStyle}>Kill%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {saves.map(save => {
+                  const dmgToProb = saveToDmgToProbCombined.get(save)!;
+                  const avgDmg = weightedAverage(dmgToProb);
+                  const kill = killProb(dmgToProb, comboWounds);
+                  return (
+                    <tr key={`combo_${save}`}>
+                      <td style={cellStyle}>{save}+</td>
+                      <td style={cellStyle}>{avgDmg.toFixed(2)}</td>
+                      <td style={cellStyle}>{toPercentString(kill)}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          </div>
+        </div>
       </div>
 
       <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
-        Kill Chance Comparison (W: 1-20)
+        Kill Chance Comparison (W: 1-25)
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', overflowX: 'auto' }}>
         {killChanceTables}

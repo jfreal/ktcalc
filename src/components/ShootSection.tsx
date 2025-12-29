@@ -10,14 +10,12 @@ import Changelog from 'src/components/Changelog';
 import Credits from 'src/components/Credits';
 
 import { clone } from 'lodash';
-import * as Util from "src/Util";
 import * as N from 'src/Notes';
 import { ShootSituation } from './ShootSituation';
 import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
 import { calcDmgProbs } from 'src/CalcEngineShoot';
 import { SaveRange } from 'src/KtMisc';
-import ShootResultsDisplay from './ShootResultsDisplay';
 import ScenarioComparisonMatrix from './ScenarioComparisonMatrix';
 import { combineDmgProbs } from 'src/CalcEngineCommon';
 import { useUrlState, getStateFromUrl } from 'src/hooks/useUrlState';
@@ -122,32 +120,27 @@ const ShootSection: React.FC = () => {
           <ScenarioComparisonMatrix
             saveToDmgToProb1={saveToDmgToProb1}
             saveToDmgToProb2={saveToDmgToProb2}
+            saveToDmgToProbCombined={saveToDmgToProbCombined}
+            comboWounds={defender1.wounds}
           />
         </Col>
       </Row>
-      <div className='border rounded p-0'>
-        <Row className={Util.centerHoriz}>
-          Situation 1&2 Combo using W={defender1.wounds} from Situation1
-        </Row>
-        <Row>
-          <ShootResultsDisplay saveToDmgToProb={saveToDmgToProbCombined} defender={defender1} />
-        </Row>
-      </div>
       <Row>
-        <Col className={Util.centerHoriz + ' border'} style={{fontSize: '11px'}}>
+        <Col>
           <Credits/>
         </Col>
       </Row>
-      <Row style={{width: '800px'}}>
-        <Col className='border' style={{fontSize: '11px'}}>
+      <Row>
+        <Col>
           Notes:
           <ul>
             {noteListItems}
           </ul>
         </Col>
       </Row>
-      <Row style={{width: '800px'}}>
-        <Col className='p-0'>
+      <hr />
+      <Row>
+        <Col>
           <Changelog />
         </Col>
       </Row>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Accordion } from 'react-bootstrap';
 
 interface ChangelogEntry {
   date: string;
@@ -44,27 +43,23 @@ const changelogEntries: ChangelogEntry[] = [
 
 const Changelog: React.FC = () => {
   return (
-    <Accordion>
-      <Accordion.Item eventKey="0">
-        <Accordion.Header>
-          <span style={{ fontWeight: 'bold' }}>Recent Improvements</span>
-        </Accordion.Header>
-        <Accordion.Body style={{ fontSize: '11px' }}>
-          {changelogEntries.map((entry, index) => (
-            <div key={index} style={{ marginBottom: '12px' }}>
-              <div style={{ fontWeight: 'bold', color: '#0d6efd' }}>
-                {entry.date} - {entry.title}
-              </div>
-              <ul style={{ marginBottom: '4px', paddingLeft: '20px' }}>
-                {entry.changes.map((change, changeIndex) => (
-                  <li key={changeIndex}>{change}</li>
-                ))}
-              </ul>
+    <div>
+      <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Recent Improvements</div>
+      <div>
+        {changelogEntries.map((entry, index) => (
+          <div key={index} style={{ marginBottom: '12px' }}>
+            <div style={{ fontWeight: 'bold', color: '#0d6efd' }}>
+              {entry.date} - {entry.title}
             </div>
-          ))}
-        </Accordion.Body>
-      </Accordion.Item>
-    </Accordion>
+            <ul style={{ marginBottom: '4px', paddingLeft: '20px' }}>
+              {entry.changes.map((change, changeIndex) => (
+                <li key={changeIndex}>{change}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 
