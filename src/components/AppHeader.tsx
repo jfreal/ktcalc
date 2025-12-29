@@ -1,4 +1,5 @@
 import React from "react";
+import { Container } from 'react-bootstrap';
 
 import "src/components/AppHeader.css"
 import { CalculatorViewChoice } from 'src/CalculatorViewChoice';
@@ -10,6 +11,7 @@ import logoSmall from 'src/images/logo-small.png';
 type AppHeaderProps = {
   currentView: CalculatorViewChoice;
   navCallback: (navType: CalculatorViewChoice) => void;
+  rightContent?: React.ReactNode;
 }
 
 // NOTE: the 'type' and 'name' on the buttons are for ac11y reasons
@@ -32,31 +34,36 @@ const AppHeader = (props: AppHeaderProps) => {
   }
 
   return <nav className='AppHeader'>
-    <a href="/" className='AppHeader-brand'>
-      <img src={logoSmall} alt='KT Calc logo' height='45' />
-      <span className='AppHeader-title'>KT Calc</span>
-    </a>
-    <div className='AppHeader-nav'>
-    {makeButton(
-      CalculatorViewChoice.KtShoot,
-      'Kill Team Shoot Calculator',
-      ktShootIcon,
-      'Kill Team ranged weapon icon',
-    )}
-    {makeButton(
-      CalculatorViewChoice.KtFight,
-      'Kill Team Fight Calculator',
-      ktFightIcon,
-      'Kill Team melee weapon icon',
-    )}
-    {/*makeButton(
-      CalculatorViewChoice.KtShootMassAnalysis,
-      'Kill Team Shooting Mass Analysis',
-      ktShootMassAnalysisIcon,
-      'Multiple people targeted.',
-    )*/}
-    </div>
-  </nav>
+    <Container className='AppHeader-container'>
+      <div className='AppHeader-left'>
+        <a href="/" className='AppHeader-brand'>
+          <img src={logoSmall} alt='KT Calc logo' height='45' />
+          <span className='AppHeader-title'>KT Calc</span>
+        </a>
+        <div className='AppHeader-nav'>
+        {makeButton(
+          CalculatorViewChoice.KtShoot,
+          'Kill Team Shoot Calculator',
+          ktShootIcon,
+          'Kill Team ranged weapon icon',
+        )}
+        {makeButton(
+          CalculatorViewChoice.KtFight,
+          'Kill Team Fight Calculator',
+          ktFightIcon,
+          'Kill Team melee weapon icon',
+        )}
+        {/*makeButton(
+          CalculatorViewChoice.KtShootMassAnalysis,
+          'Kill Team Shooting Mass Analysis',
+          ktShootMassAnalysisIcon,
+          'Multiple people targeted.',
+        )*/}
+        </div>
+      </div>
+      {props.rightContent && <div className='AppHeader-right'>{props.rightContent}</div>}
+    </Container>
+  </nav>;
 };
 
 

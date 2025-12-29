@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Col, Container, Row } from 'react-bootstrap';
+import { Button, Col, Container, Row } from 'react-bootstrap';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useSearchParams } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ import AppHeader from "src/components/AppHeader";
 import FightSection from 'src/components/FightSection';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
 import ShootSection from 'src/components/ShootSection';
+import { ShareProvider, useShareContext } from 'src/context/ShareContext';
 
 const _viewToAdditionalTexts: Map<CalculatorViewChoice, string[]> = new Map([
   [CalculatorViewChoice.KtShoot, ['shoot']],
@@ -35,7 +36,22 @@ function fallbackRender({ error, resetErrorBoundary }: { error: Error, resetErro
   );
 }
 
-const App = () => {
+const ShareButtons: React.FC = () => {
+  const { getShareUrl, addParamsToUrl } = useShareContext();
+  
+  const copyShareUrl = () => {
+    navigator.clipboard.writeText(getShareUrl());
+  };
+  
+  return (
+    <>
+      <Button variant="outline-light" size="sm" onClick={addParamsToUrl}>Add Share Params</Button>
+      <Button variant="outline-light" size="sm" onClick={copyShareUrl}>📋 Copy Share Link</Button>
+    </>
+  );
+};
+
+const AppContent = () => {
   const [currentView, setCurrentView] = useState<CalculatorViewChoice>(CalculatorViewChoice.KtShoot);
   const [urlParams, /*setUrlParams*/] = useSearchParams();
 
@@ -65,7 +81,7 @@ const App = () => {
 
   return (
     <>
-      <AppHeader navCallback={setCurrentView} currentView={currentView} />
+      <AppHeader navCallback={setCurrentView} currentView={currentView} rightContent={<ShareButtons />} />
         <Container>
           <Row>
             <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px'}}>
@@ -83,5 +99,11 @@ const App = () => {
     </>
   );
 };
+
+const App = () => (
+  <ShareProvider>
+    <AppContent />
+  </ShareProvider>
+);
 
 export default App;

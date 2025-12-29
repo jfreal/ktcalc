@@ -20,10 +20,15 @@ import { SaveRange } from 'src/KtMisc';
 import ShootResultsDisplay from './ShootResultsDisplay';
 import ScenarioComparisonMatrix from './ScenarioComparisonMatrix';
 import { combineDmgProbs } from 'src/CalcEngineCommon';
+import { useUrlState, getStateFromUrl } from 'src/hooks/useUrlState';
+import { useShareContext } from 'src/context/ShareContext';
 
 const ShootSection: React.FC = () => {
-  const [attacker1, setAttacker1] = React.useState(new Model());
-  const [defender1, setDefender1] = React.useState(Model.basicDefender());
+  // Load initial state from URL if present
+  const initialState = React.useMemo(() => getStateFromUrl(), []);
+  
+  const [attacker1, setAttacker1] = React.useState(() => initialState.s1?.attacker ?? new Model());
+  const [defender1, setDefender1] = React.useState(() => initialState.s1?.defender ?? Model.basicDefender());
   const [shootOptions1, setShootOptions1] = React.useState(new ShootOptions());
 
   const saveToDmgToProb1 = React.useMemo(
@@ -31,9 +36,18 @@ const ShootSection: React.FC = () => {
       [save, calcDmgProbs(attacker1, defender1.withProp('diceStat', save), shootOptions1)])),
     [attacker1, defender1, shootOptions1]);
 
-  const [attacker2, setAttacker2] = React.useState(new Model());
-  const [defender2, setDefender2] = React.useState(Model.basicDefender());
+  const [attacker2, setAttacker2] = React.useState(() => initialState.s2?.attacker ?? new Model());
+  const [defender2, setDefender2] = React.useState(() => initialState.s2?.defender ?? Model.basicDefender());
   const [shootOptions2, setShootOptions2] = React.useState(new ShootOptions());
+
+  // URL sharing functions
+  const { getShareUrl, addParamsToUrl } = useUrlState(attacker1, defender1, attacker2, defender2);
+  const { setShareFunctions } = useShareContext();
+
+  // Register share functions with context
+  React.useEffect(() => {
+    setShareFunctions({ getShareUrl, addParamsToUrl });
+  }, [getShareUrl, addParamsToUrl, setShareFunctions]);
 
   const saveToDmgToProb2 = React.useMemo(
     () => new Map<number,Map<number,number>>(SaveRange.map(save =>
