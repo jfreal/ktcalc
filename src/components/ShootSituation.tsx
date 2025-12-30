@@ -26,7 +26,7 @@ export interface Props {
 
 export const ShootSituation: React.FC<Props> = (props: Props) => {
   return (
-    <Container style={{width: 'fit-content'}}>
+    <Container>
       <Row>
         <Col className={Util.centerHoriz + ' p-0'} xs='auto'>
           <Container>
@@ -38,7 +38,7 @@ export const ShootSituation: React.FC<Props> = (props: Props) => {
             </Row>
           </Container>
         </Col>
-        <Col className={Util.centerHoriz + ' ' } xs='auto'>
+        <Col className={Util.centerHoriz + ' p-0 ' } xs='auto'>
           <DefenderControls defender={props.defender} changeHandler={props.setDefender} />
         </Col>
       </Row>
