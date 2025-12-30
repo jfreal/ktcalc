@@ -6,7 +6,7 @@ import {
   Row,
 } from 'react-bootstrap';
 
-import Credits from 'src/components/Credits';
+import Footer from 'src/components/Footer';
 
 import { clone } from 'lodash';
 import * as N from 'src/Notes';
@@ -126,17 +126,13 @@ const ShootSection: React.FC = () => {
       </Row>
       <Row>
         <Col>
-          <Credits/>
-        </Col>
-      </Row>
-      <Row>
-        <Col>
           Notes:
           <ul>
             {noteListItems}
           </ul>
         </Col>
       </Row>
+      <Footer />
     </Container>
   );
 };

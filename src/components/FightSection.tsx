@@ -5,7 +5,7 @@ import {
   Row,
 } from 'react-bootstrap';
 
-import Credits from 'src/components/Credits';
+import Footer from 'src/components/Footer';
 import * as Util from "src/Util";
 import FighterControls from 'src/components/FighterControls';
 import Model from 'src/Model';
@@ -79,11 +79,6 @@ const FightSection: React.FC = () => {
         </Col>
       </Row>
       <Row>
-        <Col style={{fontSize: '11px'}}>
-          <Credits/>
-        </Col>
-      </Row>
-      <Row>
         <Col>
             Notes:
             <ul>
@@ -102,6 +97,7 @@ const FightSection: React.FC = () => {
             </ul>
         </Col>
       </Row>
+      <Footer />
     </Container>
   );
 };
