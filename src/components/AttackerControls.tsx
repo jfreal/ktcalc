@@ -59,10 +59,10 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps('Crit Dmg',     atk.critDmg,           span(0, 10),      numHandler('critDmg')),
     new IncProps('Devastating',  atk.mwx,           xspan(1, 9),      numHandler('mwx')),
     new IncProps('Piercing',     atk.apx,           xspan(1, 4),      numHandler('apx')),
-    new IncProps('PiercingCrits', atk.px,            xspan(1, 4),      numHandler('px')),
+    new IncProps('Piercing Crits', atk.px,            xspan(1, 4),      numHandler('px')),
     new IncProps(N.Reroll,       atk.reroll,            preX(rerolls),    textHandler('reroll')),
     new IncProps('Lethal',       atk.lethal + '+',      xspan(5, 2, '+'), numHandler('lethal')),
-    new IncProps(N.AutoNorms,    atk.autoNorms,         xspan(1, 9),      numHandler('autoNorms')),
+    new IncProps(N.AutoNorms,    atk.autoNorms,         xspan(1, 3),      numHandler('autoNorms')),
   ];
   const advancedParams: IncProps[] = [
     new IncProps(N.ObscuredTarget, toYN(Ability.ObscuredTarget),          xAndCheck, singleHandler(Ability.ObscuredTarget)),

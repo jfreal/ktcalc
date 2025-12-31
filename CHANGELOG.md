@@ -1,5 +1,12 @@
 # Changelog
 
+## December 2025 - UI Improvements
+
+- Limited Accurate to max of 3 (matching game rules)
+- Limited Cover Saves (normal and crit) to max of 3 (matching defense dice count)
+- Kill chance tables now truncate when all scenarios reach 0%, showing summary row for remaining wounds
+- Added GitHub link footer with open source contribution message
+
 ## December 2025 - CeaselessPlusBalanced & Severe Rule Fixes
 
 - Added CeaselessPlusBalanced: combined reroll that applies Ceaseless first, then Balanced on an unrerolled fail

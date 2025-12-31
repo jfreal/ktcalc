@@ -53,10 +53,10 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
     //           id,               selectedValue,            values,           valueChangeHandler
     new IncProps('Save',           def.diceStat + '+',       withPlus(SaveRange), numHandler('diceStat')),
     new IncProps('Wounds',         def.wounds,               span(1, MaxWounds),      numHandler('wounds')),
-    new IncProps(N.CoverNormSaves, def.autoNorms,            xspan(1, 9),      numHandler('autoNorms')),
+    new IncProps(N.CoverNormSaves, def.autoNorms,            xspan(1, 3),      numHandler('autoNorms')),
   ];
   const advancedParams: IncProps[] = [
-    new IncProps(N.CoverCritSaves, def.autoCrits,            xspan(1, 9),      numHandler('autoCrits')),
+    new IncProps(N.CoverCritSaves, def.autoCrits,            xspan(1, 3),      numHandler('autoCrits')),
     new IncProps(N.NormsToCrits,   def.normsToCrits,         xspan(1, 9),      numHandler('normsToCrits')),
     new IncProps(N.FailsToNorms,   def.failsToNorms,         xspan(1, 9),      numHandler('failsToNorms')),
     new IncProps(N.Punishing, toYN(Ability.Punishing), xAndCheck, singleHandler(Ability.Punishing)),

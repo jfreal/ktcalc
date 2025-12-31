@@ -74,7 +74,20 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
     const dmgToProb1 = props.saveToDmgToProb1.get(save)!;
     const dmgToProb2 = props.saveToDmgToProb2.get(save)!;
 
-    const tableRows: JSX.Element[] = woundRange.map(wounds => {
+    // Find the last wound value where at least one scenario has non-zero kill chance
+    let lastNonZeroWound = 0;
+    for (const wounds of woundRange) {
+      const killChance1 = killProb(dmgToProb1, wounds);
+      const killChance2 = killProb(dmgToProb2, wounds);
+      if (killChance1 > 0 || killChance2 > 0) {
+        lastNonZeroWound = wounds;
+      }
+    }
+
+    // Only show rows up to the last non-zero wound value
+    const truncatedRange = woundRange.filter(w => w <= lastNonZeroWound);
+    
+    const tableRows: JSX.Element[] = truncatedRange.map(wounds => {
       const killChance1 = killProb(dmgToProb1, wounds);
       const killChance2 = killProb(dmgToProb2, wounds);
       const diff = killChance1 - killChance2;
@@ -89,6 +102,16 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
         </tr>
       );
     });
+
+    // Add a row indicating 0% for remaining wounds if we truncated
+    if (lastNonZeroWound < woundRange[woundRange.length - 1]) {
+      tableRows.push(
+        <tr key={`compare_${save}_zero`}>
+          <td style={cellStyle}>{lastNonZeroWound + 1}+</td>
+          <td style={cellStyle} colSpan={3}>0%</td>
+        </tr>
+      );
+    }
 
     return (
       <div key={`table_${save}`} style={{ display: 'inline-block', verticalAlign: 'top', margin: '4px' }}>
