@@ -6,6 +6,10 @@ const Footer: React.FC = () => {
       <a href="https://github.com/jfreal/ktcalc" target="_blank" rel="noopener noreferrer">
         Open source on GitHub
       </a> — Pull requests welcome!
+      <br />
+      Forked from <a href="https://jmegner.github.io/KT21Calculator/" target="_blank" rel="noopener noreferrer">
+        https://jmegner.github.io/KT21Calculator/
+      </a>
     </div>
   );
 };
