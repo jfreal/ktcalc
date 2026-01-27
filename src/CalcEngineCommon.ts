@@ -140,6 +140,7 @@ export function calcFinalDiceProb(
   }
 
   crits += additionalCrits;
+  const accurateNorms = additionalNorms;
   norms += additionalNorms;
 
   if (abilities.has(Ability.Punishing) && !abilities.has(Ability.ObscuredTarget)) {
@@ -190,8 +191,10 @@ export function calcFinalDiceProb(
   norms -= actualNormToCritPromotions;
 
   // Rending doesn't work if Severe triggered (per KT2024 rules)
+  // Rending also cannot upgrade normals retained from Accurate (only rolled normals)
   if (abilities.has(Ability.Rending) && !severeTriggered) {
-    if (crits > 0 && norms > 0) {
+    const rollableNorms = norms - accurateNorms;
+    if (crits > 0 && rollableNorms > 0) {
       crits++;
       norms--;
     }

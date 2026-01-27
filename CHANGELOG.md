@@ -1,5 +1,9 @@
 # Changelog
 
+## January 2026 - Rending + Accurate Fix
+
+- Fixed: Rending cannot upgrade normals retained from Accurate (only rolled normals can be upgraded)
+
 ## December 2025 - UI Improvements
 
 - Limited Accurate to max of 3 (matching game rules)

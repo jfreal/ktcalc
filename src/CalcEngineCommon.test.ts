@@ -218,6 +218,16 @@ describe(Common.calcFinalDiceProb.name, () => {
     const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 1,);
     expectClose(actual, pn, 0, 2);
   });
+  it('rending with accurate: {1c,0n rolled,1n accurate} => {1c,1n} (accurate norm cannot be upgraded)', () => {
+    // 1 crit rolled, 0 norms rolled, 1 norm from Accurate - Rending should NOT upgrade the accurate norm
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 0, Ability.None, 0, 1, 0, 0, justRending);
+    expectClose(actual, pc, 1, 1);
+  });
+  it('rending with accurate: {1c,1n rolled,1n accurate} => {2c,1n} (only rolled norm upgraded)', () => {
+    // 1 crit rolled, 1 norm rolled, 1 norm from Accurate - Rending upgrades the rolled norm only
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 0, Ability.None, 0, 1, 0, 0, justRending);
+    expectClose(actual, pc * pn * 2, 2, 1);
+  });
 });
 
 /*
