@@ -9,8 +9,16 @@ import { addToMapValue, upTo } from 'src/Util';
 
 export function calcFinalDiceProbsForAttacker(
   attacker: Model,
+  defender?: Model,
 ): FinalDiceProb[]
 {
+  // Merge defender's ObscuredTarget into abilities if present
+  let abilities = attacker.abilities;
+  if (defender?.has(Ability.ObscuredTarget)) {
+    abilities = new Set(abilities);
+    abilities.add(Ability.ObscuredTarget);
+  }
+
   return calcFinalDiceProbs(
     attacker.toAttackerDieProbs(),
     attacker.numDice,
@@ -19,7 +27,7 @@ export function calcFinalDiceProbsForAttacker(
     attacker.autoNorms,
     attacker.failsToNorms,
     attacker.normsToCrits,
-    attacker.abilities,
+    abilities,
   );
 }
 

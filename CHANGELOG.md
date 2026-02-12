@@ -1,5 +1,12 @@
 # Changelog
 
+## February 2026 - Defender Abilities Update
+
+- Moved Obscured checkbox to Defender section (was in Attacker advanced params)
+- Moved Just a Scratch (Crits) checkbox to Defender section (was in advanced params)
+- Added Just a Scratch (Normals): cancels one normal hit instead of preferring crits
+- Obscured now correctly reads from defender model in calculations
+
 ## January 2026 - Rending + Accurate Fix
 
 - Fixed: Rending cannot upgrade normals retained from Accurate (only rolled normals can be upgraded)

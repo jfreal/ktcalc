@@ -63,7 +63,6 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.HardyX,         def.hardyx + '+',         xspan(5, 2, '+'), numHandler('hardyx')),
     new IncProps(N.FeelNoPain,     def.fnp + '+',            xspan(6, 2, '+'), numHandler('fnp')),
     new IncProps(N.Reroll,         def.reroll,               preX(rerolls),    textHandler('reroll')),
-    new IncProps(N.JustAScratch2021,   toYN(Ability.JustAScratch), xAndCheck,      singleHandler(Ability.JustAScratch)),
     new IncProps(N.Durable2021,        toYN(Ability.Durable),    xAndCheck,        singleHandler(Ability.Durable)),
   ];
 
@@ -82,9 +81,38 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
       onChange={() => singleHandler(Ability.Indomitus)(def.has(Ability.Indomitus) ? 'X' : '✔')}
     />
   );
+
+  const obscuredCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label="Obscured"
+      title={N.ObscuredTarget.description}
+      checked={def.has(Ability.ObscuredTarget)}
+      onChange={() => singleHandler(Ability.ObscuredTarget)(def.has(Ability.ObscuredTarget) ? 'X' : '✔')}
+    />
+  );
+
+  const justAScratchCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label="JaS (Crits)"
+      title="Just a Scratch (JaS): Ignore damage from an attack die, preferring crits."
+      checked={def.has(Ability.JustAScratch)}
+      onChange={() => singleHandler(Ability.JustAScratch)(def.has(Ability.JustAScratch) ? 'X' : '✔')}
+    />
+  );
+
+  const justAScratchNormsCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label="JaS (Normals)"
+      title="Just a Scratch (JaS): Ignore damage from a normal hit only (cannot ignore crits)."
+      checked={def.has(Ability.JustAScratchNorms)}
+      onChange={() => singleHandler(Ability.JustAScratchNorms)(def.has(Ability.JustAScratchNorms) ? 'X' : '✔')}
+    />
+  );
   return (
-    // it would be nice to make this something other than a fixed width
-    <Container style={{width: '130px'}}>
+    <Container fluid className="p-0">
       <Row>
         <Col>Defender</Col>
         <Col>{advancedCheckbox}</Col>
@@ -98,6 +126,9 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
       </Row>
       <Row>
         <Col>{indomitusCheckbox}</Col>
+        <Col>{obscuredCheckbox}</Col>
+        <Col>{justAScratchCheckbox}</Col>
+        <Col>{justAScratchNormsCheckbox}</Col>
       </Row>
     </Container>
   );

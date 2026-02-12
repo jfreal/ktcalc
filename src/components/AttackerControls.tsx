@@ -65,7 +65,6 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.AutoNorms,    atk.autoNorms,         xspan(1, 3),      numHandler('autoNorms')),
   ];
   const advancedParams: IncProps[] = [
-    new IncProps(N.ObscuredTarget, toYN(Ability.ObscuredTarget),          xAndCheck, singleHandler(Ability.ObscuredTarget)),
     new IncProps(N.AutoCrits,    atk.autoCrits,         xspan(1, 9),      numHandler('autoCrits')),
     new IncProps(N.FailsToNorms, atk.failsToNorms,      xspan(1, 9),      numHandler('failsToNorms')),
     new IncProps(N.NormsToCrits, atk.normsToCrits,      xspan(1, 9),      numHandler('normsToCrits')),

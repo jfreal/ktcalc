@@ -64,6 +64,26 @@ Operatives in cover can retain **automatic saves** without rolling:
 
 ---
 
+## Defender Abilities
+
+### Obscured
+When the defender is obscured from the attacker:
+- All attacker crits are retained as normal successes instead
+- Crit-triggered abilities cannot trigger (Rending, Punishing blocked)
+- One attacker success is discarded at the end
+
+### Just a Scratch (Crits)
+Cancel one attack die just before damage is resolved:
+- **Prefers crits**: Cancels a critical hit if available
+- Falls back to canceling a normal hit if no crits
+
+### Just a Scratch (Normals)
+Cancel one normal hit just before damage is resolved:
+- **Only targets normals**: Will not cancel critical hits
+- Useful when you want to preserve the option to cancel crits with saves
+
+---
+
 ## Key Principles
 
 1. **Defense dice are always 3** (unless reduced by Piercing)
@@ -73,4 +93,4 @@ Operatives in cover can retain **automatic saves** without rolling:
 
 ---
 
-*Last updated: December 2024*
+*Last updated: February 2026*

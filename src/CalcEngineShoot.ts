@@ -15,7 +15,7 @@ export function calcDmgProbs(
   shootOptions: ShootOptions = new ShootOptions(),
 ): Map<number, number> // damage to prob
 {
-  const attackerFinalDiceProbs = Common.calcFinalDiceProbsForAttacker(attacker);
+  const attackerFinalDiceProbs = Common.calcFinalDiceProbsForAttacker(attacker, defender);
   const defenderStuff = calcDefenderFinalDiceStuff(defender, attacker);
 
   // don't add damage=0 stuff until just before multi-round handling

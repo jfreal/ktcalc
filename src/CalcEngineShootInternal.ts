@@ -129,6 +129,12 @@ export function calcDamage(
     }
   }
 
+  if (defender.has(Ability.JustAScratchNorms)) {
+    if (normHits > 0) {
+      normHits--;
+    }
+  }
+
   if (attacker.critDmg >= attacker.normDmg) {
     critSavesCancelCritHits();
     critSavesCancelNormHits();
