@@ -3,9 +3,12 @@
 ## February 2026 - Defender Abilities Update
 
 - Moved Obscured checkbox to Defender section (was in Attacker advanced params)
-- Moved Just a Scratch (Crits) checkbox to Defender section (was in advanced params)
-- Added Just a Scratch (Normals): cancels one normal hit instead of preferring crits
+- Moved Just a Scratch (JaS) checkboxes to Defender section (was in advanced params)
+- Added JaS (Normals): cancels one normal hit only (cannot ignore crits)
+- Renamed to JaS (Crits) and JaS (Normals) with updated tooltips
 - Obscured now correctly reads from defender model in calculations
+- Removed Durable2021 from defender advanced params
+- Adjusted Defender panel width to 150px
 
 ## January 2026 - Rending + Accurate Fix
 
