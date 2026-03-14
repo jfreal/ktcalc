@@ -28,7 +28,7 @@ export function calcRemainingWoundPairProbs(
   guy1Strategy: FightStrategy = FightStrategy.MaxDmgToEnemy,
   guy2Strategy: FightStrategy = FightStrategy.MaxDmgToEnemy,
   numRounds: number = 1,
-  numSimulations: number = 50_000,
+  numSimulations: number = 15_000,
   rng: RngFunction = Math.random,
 ): Map<string, number> // remaining wound-pairs (as stringified array) to probs
 {
