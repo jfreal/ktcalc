@@ -15,19 +15,9 @@ export function mulberry32(seed: number): RngFunction {
   };
 }
 
-function rollD6(rng: RngFunction): number {
-  return Math.floor(rng() * 6) + 1;
-}
-
 const DIE_CRIT = 2;
 const DIE_NORM = 1;
 const DIE_FAIL = 0;
-
-function classifyDie(value: number, critThreshold: number, normThreshold: number): number {
-  if (value >= critThreshold) return DIE_CRIT;
-  if (value >= normThreshold) return DIE_NORM;
-  return DIE_FAIL;
-}
 
 export function simulateFighterDice(
   model: Model,

@@ -21,8 +21,6 @@ export const fromWoundPairKey = (woundsPairText: string): number[] => {
 // Internal numeric key helpers (avoid string conversion in hot loop)
 const toNumericKey = (guy1Wounds: number, guy2Wounds: number): number =>
   guy1Wounds * WOUND_KEY_MULTIPLIER + guy2Wounds;
-const fromNumericKey = (key: number): [number, number] =>
-  [(key / WOUND_KEY_MULTIPLIER) | 0, key % WOUND_KEY_MULTIPLIER];
 
 export function consolidateWoundPairProbs(woundPairProbs: Map<string,number>): [Map<number,number>, Map<number,number>] {
   const guy1WoundProbs = new Map<number,number>();
