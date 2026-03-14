@@ -4,7 +4,9 @@ import FightStrategy from 'src/FightStrategy';
 import FighterState from "src/FighterState";
 import FightChoice from "src/FightChoice";
 import Ability from "src/Ability";
-import { simulateFighterDice, RngFunction } from "src/MonteCarloFightDice";
+import { simulateFighterDice, RngFunction, mulberry32 } from "src/MonteCarloFightDice";
+
+const DEFAULT_SEED = 0x4B54_4341; // "KTCA" - deterministic default for stable results
 
 // Numeric composite key: wounds values are small (typically < 100),
 // so packing into a single number avoids string allocation/parsing.
@@ -44,7 +46,7 @@ export function calcRemainingWoundPairProbs(
   guy2Strategy: FightStrategy = FightStrategy.MaxDmgToEnemy,
   numRounds: number = 1,
   numSimulations: number = 15_000,
-  rng: RngFunction = Math.random,
+  rng: RngFunction = mulberry32(DEFAULT_SEED),
 ): Map<string, number> // remaining wound-pairs (as stringified array) to probs
 {
   // Use numeric keys internally to avoid string allocation in hot loop
