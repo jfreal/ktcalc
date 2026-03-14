@@ -26,7 +26,7 @@ export default class FighterState {
     this.crits = crits;
     this.norms = norms;
     this.strategy = strategy;
-    this.currentWounds = currentWounds > 0 ? currentWounds : this.profile.wounds;
+    this.currentWounds = currentWounds === -1 ? this.profile.wounds : currentWounds;
     this.hasStruck = hasStruck;
     this.hasCritStruck = hasCritStruck;
   }
