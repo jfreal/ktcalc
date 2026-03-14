@@ -1,12 +1,20 @@
 import { useCallback } from 'react';
 import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
-import Ability from 'src/Ability';
+import FightOptions from 'src/FightOptions';
+import FightStrategy from 'src/FightStrategy';
+import Ability, { mutuallyExclusiveFightAbilities } from 'src/Ability';
 
 interface SituationState {
   attacker: Model;
   defender: Model;
   shootOptions: ShootOptions;
+}
+
+interface FightState {
+  fighterA: Model;
+  fighterB: Model;
+  fightOptions: FightOptions;
 }
 
 // Encode attacker to URL param string
@@ -85,6 +93,119 @@ function decodeDefender(param: string): Model {
   return def;
 }
 
+// Encode fighter to URL param string (fight page)
+function encodeFighter(f: Model): string {
+  const abilities: string[] = [];
+  if (f.has(Ability.Rending)) abilities.push('rend');
+  if (f.has(Ability.Severe)) abilities.push('sev');
+  if (f.has(Ability.Brutal)) abilities.push('bru');
+  if (f.has(Ability.Punishing)) abilities.push('pun');
+  if (f.has(Ability.Stun2021)) abilities.push('stun');
+  if (f.has(Ability.PuritySeal)) abilities.push('purity');
+  if (f.has(Ability.Duelist)) abilities.push('duelist');
+  if (f.has(Ability.JustAScratch)) abilities.push('jas');
+  if (f.has(Ability.Durable)) abilities.push('dur');
+
+  // Niche ability (mutually exclusive fight abilities)
+  const nicheAbility = mutuallyExclusiveFightAbilities.find(a => a !== Ability.None && f.abilities.has(a));
+
+  return [
+    f.wounds,
+    f.numDice,
+    f.diceStat,
+    f.normDmg,
+    f.critDmg,
+    f.reroll,
+    f.lethal,
+    f.autoNorms,
+    f.autoCrits,
+    f.normsToCrits,
+    f.failsToNorms,
+    nicheAbility || '',
+    abilities.join('')
+  ].join(':');
+}
+
+// Decode fighter from URL param string (fight page)
+function decodeFighter(param: string): Model {
+  const parts = param.split(':');
+  if (parts.length < 12) return new Model();
+
+  const f = new Model();
+  f.wounds = parseInt(parts[0]) || 12;
+  f.numDice = parseInt(parts[1]) || 4;
+  f.diceStat = parseInt(parts[2]) || 3;
+  f.normDmg = parseInt(parts[3]) || 3;
+  f.critDmg = parseInt(parts[4]) || 4;
+  f.reroll = (parts[5] as Ability) || Ability.None;
+  f.lethal = parseInt(parts[6]) || 0;
+  f.autoNorms = parseInt(parts[7]) || 0;
+  f.autoCrits = parseInt(parts[8]) || 0;
+  f.normsToCrits = parseInt(parts[9]) || 0;
+  f.failsToNorms = parseInt(parts[10]) || 0;
+
+  // Niche ability
+  const nicheStr = parts[11] || '';
+  if (nicheStr) {
+    const nicheAbility = mutuallyExclusiveFightAbilities.find(a => a === nicheStr);
+    if (nicheAbility) f.abilities.add(nicheAbility);
+  }
+
+  // Boolean abilities
+  const abilities = parts[12] || '';
+  if (abilities.includes('rend')) f.abilities.add(Ability.Rending);
+  if (abilities.includes('sev')) f.abilities.add(Ability.Severe);
+  if (abilities.includes('bru')) f.abilities.add(Ability.Brutal);
+  if (abilities.includes('pun')) f.abilities.add(Ability.Punishing);
+  if (abilities.includes('stun')) f.abilities.add(Ability.Stun2021);
+  if (abilities.includes('purity')) f.abilities.add(Ability.PuritySeal);
+  if (abilities.includes('duelist')) f.abilities.add(Ability.Duelist);
+  if (abilities.includes('jas')) f.abilities.add(Ability.JustAScratch);
+  if (abilities.includes('dur')) f.abilities.add(Ability.Durable);
+
+  return f;
+}
+
+// Encode fight options to URL param string
+function encodeFightOptions(opts: FightOptions): string {
+  return [
+    opts.strategyFighterA,
+    opts.strategyFighterB,
+    opts.firstFighter,
+    opts.numRounds,
+  ].join(':');
+}
+
+// Decode fight options from URL param string
+function decodeFightOptions(param: string): FightOptions {
+  const parts = param.split(':');
+  const opts = new FightOptions();
+  if (parts.length < 4) return opts;
+
+  const stratA = parts[0] as FightStrategy;
+  if (Object.values(FightStrategy).includes(stratA)) opts.strategyFighterA = stratA;
+  const stratB = parts[1] as FightStrategy;
+  if (Object.values(FightStrategy).includes(stratB)) opts.strategyFighterB = stratB;
+  if (parts[2] === 'A' || parts[2] === 'B') opts.firstFighter = parts[2];
+  opts.numRounds = parseInt(parts[3]) || 1;
+
+  return opts;
+}
+
+export function getFightStateFromUrl(): FightState | null {
+  const params = new URLSearchParams(window.location.search);
+  const fa = params.get('fa');
+  const fb = params.get('fb');
+  if (!fa && !fb) return null;
+
+  const fo = params.get('fo');
+  return {
+    fighterA: fa ? decodeFighter(fa) : new Model(),
+    fighterB: fb ? decodeFighter(fb) : new Model(),
+    fightOptions: fo ? decodeFightOptions(fo) : new FightOptions(),
+  };
+}
+
 export function getStateFromUrl(): { s1?: SituationState; s2?: SituationState } {
   const params = new URLSearchParams(window.location.search);
   const result: { s1?: SituationState; s2?: SituationState } = {};
@@ -134,6 +255,29 @@ export function useUrlState(
     const newUrl = `${window.location.pathname}?a1=${a1}&d1=${d1}&a2=${a2}&d2=${d2}`;
     window.history.replaceState({}, '', newUrl);
   }, [attacker1, defender1, attacker2, defender2]);
+
+  return { getShareUrl, addParamsToUrl };
+}
+
+export function useFightUrlState(
+  fighterA: Model,
+  fighterB: Model,
+  fightOptions: FightOptions,
+) {
+  const getShareUrl = useCallback(() => {
+    const fa = encodeFighter(fighterA);
+    const fb = encodeFighter(fighterB);
+    const fo = encodeFightOptions(fightOptions);
+    return `${window.location.origin}${window.location.pathname}?view=fight&fa=${fa}&fb=${fb}&fo=${fo}`;
+  }, [fighterA, fighterB, fightOptions]);
+
+  const addParamsToUrl = useCallback(() => {
+    const fa = encodeFighter(fighterA);
+    const fb = encodeFighter(fighterB);
+    const fo = encodeFightOptions(fightOptions);
+    const newUrl = `${window.location.pathname}?view=fight&fa=${fa}&fb=${fb}&fo=${fo}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [fighterA, fighterB, fightOptions]);
 
   return { getShareUrl, addParamsToUrl };
 }

@@ -90,8 +90,8 @@ const AppContent = () => {
           </Row>
           <Row>
             <Col>
-              {sectionDiv(CalculatorViewChoice.KtShoot, <ShootSection/>)}
-              {sectionDiv(CalculatorViewChoice.KtFight, <FightSection/>)}
+              {sectionDiv(CalculatorViewChoice.KtShoot, <ShootSection isActive={currentView === CalculatorViewChoice.KtShoot} />)}
+              {sectionDiv(CalculatorViewChoice.KtFight, <FightSection isActive={currentView === CalculatorViewChoice.KtFight} />)}
               {sectionDiv(CalculatorViewChoice.KtShootMassAnalysis, <ShootMassAnalysisSection/>)}
             </Col>
           </Row>

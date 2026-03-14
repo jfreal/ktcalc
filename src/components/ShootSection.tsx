@@ -20,7 +20,11 @@ import { combineDmgProbs } from 'src/CalcEngineCommon';
 import { useUrlState, getStateFromUrl } from 'src/hooks/useUrlState';
 import { useShareContext } from 'src/context/ShareContext';
 
-const ShootSection: React.FC = () => {
+interface ShootSectionProps {
+  isActive: boolean;
+}
+
+const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
   // Load initial state from URL if present
   const initialState = React.useMemo(() => getStateFromUrl(), []);
   
@@ -41,10 +45,12 @@ const ShootSection: React.FC = () => {
   const { getShareUrl, addParamsToUrl } = useUrlState(attacker1, defender1, attacker2, defender2);
   const { setShareFunctions } = useShareContext();
 
-  // Register share functions with context
+  // Register share functions with context when this view is active
   React.useEffect(() => {
-    setShareFunctions({ getShareUrl, addParamsToUrl });
-  }, [getShareUrl, addParamsToUrl, setShareFunctions]);
+    if (isActive) {
+      setShareFunctions({ getShareUrl, addParamsToUrl });
+    }
+  }, [getShareUrl, addParamsToUrl, setShareFunctions, isActive]);
 
   const saveToDmgToProb2 = React.useMemo(
     () => new Map<number,Map<number,number>>(SaveRange.map(save =>
