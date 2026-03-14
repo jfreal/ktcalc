@@ -6,15 +6,30 @@ import FightChoice from "src/FightChoice";
 import Ability from "src/Ability";
 import { simulateFighterDice, RngFunction } from "src/MonteCarloFightDice";
 
-export const toWoundPairKey = (guy1Wounds: number, guy2Wounds: number): string => [guy1Wounds, guy2Wounds].toString();
-export const fromWoundPairKey = (woundsPairText: string): number[] => woundsPairText.split(',').map(x => parseInt(x));
+// Numeric composite key: wounds values are small (typically < 100),
+// so packing into a single number avoids string allocation/parsing.
+const WOUND_KEY_MULTIPLIER = 1000;
+export const toWoundPairKey = (guy1Wounds: number, guy2Wounds: number): string =>
+  String(guy1Wounds * WOUND_KEY_MULTIPLIER + guy2Wounds);
+export const fromWoundPairKey = (woundsPairText: string): number[] => {
+  const n = Number(woundsPairText);
+  return [(n / WOUND_KEY_MULTIPLIER) | 0, n % WOUND_KEY_MULTIPLIER];
+};
+
+// Internal numeric key helpers (avoid string conversion in hot loop)
+const toNumericKey = (guy1Wounds: number, guy2Wounds: number): number =>
+  guy1Wounds * WOUND_KEY_MULTIPLIER + guy2Wounds;
+const fromNumericKey = (key: number): [number, number] =>
+  [(key / WOUND_KEY_MULTIPLIER) | 0, key % WOUND_KEY_MULTIPLIER];
 
 export function consolidateWoundPairProbs(woundPairProbs: Map<string,number>): [Map<number,number>, Map<number,number>] {
   const guy1WoundProbs = new Map<number,number>();
   const guy2WoundProbs = new Map<number,number>();
 
   for(let [woundPairText, prob] of woundPairProbs) {
-    const [guy1Wounds, guy2Wounds] = fromWoundPairKey(woundPairText);
+    const n = Number(woundPairText);
+    const guy1Wounds = (n / WOUND_KEY_MULTIPLIER) | 0;
+    const guy2Wounds = n % WOUND_KEY_MULTIPLIER;
     Util.addToMapValue(guy1WoundProbs, guy1Wounds, prob);
     Util.addToMapValue(guy2WoundProbs, guy2Wounds, prob);
   }
@@ -32,55 +47,53 @@ export function calcRemainingWoundPairProbs(
   rng: RngFunction = Math.random,
 ): Map<string, number> // remaining wound-pairs (as stringified array) to probs
 {
-  const woundPairCounts = new Map<string, number>();
+  // Use numeric keys internally to avoid string allocation in hot loop
+  const woundPairCounts = new Map<number, number>();
+
+  // Pre-allocate FighterState objects and reuse across simulations
+  const guy1State = new FighterState(guy1, 0, 0, guy1Strategy);
+  const guy2State = new FighterState(guy2, 0, 0, guy2Strategy);
+
+  const guy1OrigWounds = guy1.wounds;
+  const guy2OrigWounds = guy2.wounds;
 
   for (let sim = 0; sim < numSimulations; sim++) {
-    let guy1Wounds = guy1.wounds;
-    let guy2Wounds = guy2.wounds;
+    let guy1Wounds = guy1OrigWounds;
+    let guy2Wounds = guy2OrigWounds;
 
     for (let round = 0; round < numRounds; round++) {
       if (guy1Wounds <= 0 || guy2Wounds <= 0) break;
 
       // Temporarily set wounds to avoid cloning Model objects
-      const guy1OrigWounds = guy1.wounds;
-      const guy2OrigWounds = guy2.wounds;
       guy1.wounds = guy1Wounds;
       guy2.wounds = guy2Wounds;
 
       const guy1Dice = simulateFighterDice(guy1, undefined, rng);
       const guy2Dice = simulateFighterDice(guy2, undefined, rng);
 
-      const guy1State = new FighterState(
-        guy1,
-        guy1Dice.crits,
-        guy1Dice.norms,
-        guy1Strategy,
-      );
-      const guy2State = new FighterState(
-        guy2,
-        guy2Dice.crits,
-        guy2Dice.norms,
-        guy2Strategy,
-      );
+      // Reset pre-allocated state objects instead of creating new ones
+      guy1State.reset(guy1Dice.crits, guy1Dice.norms, guy1Wounds);
+      guy2State.reset(guy2Dice.crits, guy2Dice.norms, guy2Wounds);
 
       resolveFight(guy1State, guy2State);
 
       guy1Wounds = guy1State.currentWounds;
       guy2Wounds = guy2State.currentWounds;
-
-      // Restore original wounds
-      guy1.wounds = guy1OrigWounds;
-      guy2.wounds = guy2OrigWounds;
     }
 
-    const key = toWoundPairKey(guy1Wounds, guy2Wounds);
-    Util.addToMapValue(woundPairCounts, key, 1);
+    const key = toNumericKey(guy1Wounds, guy2Wounds);
+    const prev = woundPairCounts.get(key);
+    woundPairCounts.set(key, prev !== undefined ? prev + 1 : 1);
   }
 
-  // Convert counts to probabilities
+  // Restore original wounds
+  guy1.wounds = guy1OrigWounds;
+  guy2.wounds = guy2OrigWounds;
+
+  // Convert numeric counts to string-keyed probabilities
   const woundPairProbs = new Map<string, number>();
-  for (const [key, count] of woundPairCounts) {
-    woundPairProbs.set(key, count / numSimulations);
+  for (const [numKey, count] of woundPairCounts) {
+    woundPairProbs.set(String(numKey), count / numSimulations);
   }
 
   return woundPairProbs;
@@ -108,7 +121,9 @@ export function resolveFight(
       resolveDieChoice(choice, currentGuy, nextGuy);
     }
 
-    [currentGuy, nextGuy] = [nextGuy, currentGuy];
+    const tmp = currentGuy;
+    currentGuy = nextGuy;
+    nextGuy = tmp;
   }
 
   if(guy1State.crits < 0 || guy1State.norms < 0

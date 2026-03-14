@@ -104,6 +104,14 @@ export default class FighterState {
     return this.crits > 0 ? FightChoice.CritStrike : FightChoice.NormStrike;
   }
 
+  public reset(crits: number, norms: number, currentWounds: number): void {
+    this.crits = crits;
+    this.norms = norms;
+    this.currentWounds = currentWounds;
+    this.hasStruck = false;
+    this.hasCritStruck = false;
+  }
+
   public clone(): FighterState {
     return new FighterState(
       this.profile,

@@ -51,23 +51,23 @@ export function simulateFighterDice(
   const autoNorms = Math.min(model.autoNorms, numDice);
   numDice -= autoNorms;
 
-  // Roll raw d6 values
+  // Roll raw d6 values (inlined rollD6 to avoid function call overhead)
   const dice = new Array<number>(numDice);
   for (let i = 0; i < numDice; i++) {
-    dice[i] = rollD6(rng);
+    dice[i] = (rng() * 6 | 0) + 1;
   }
 
   // Apply rerolls
   applyRerolls(dice, model.reroll, critThreshold, normThreshold, rng);
 
-  // Classify final dice
+  // Classify final dice (inlined to avoid function call overhead)
   let crits = 0;
   let norms = 0;
   let fails = 0;
-  for (const die of dice) {
-    const result = classifyDie(die, critThreshold, normThreshold);
-    if (result === DIE_CRIT) crits++;
-    else if (result === DIE_NORM) norms++;
+  for (let i = 0; i < dice.length; i++) {
+    const die = dice[i];
+    if (die >= critThreshold) crits++;
+    else if (die >= normThreshold) norms++;
     else fails++;
   }
 
@@ -89,30 +89,28 @@ function applyRerolls(
 ): void {
   if (reroll === Ability.None) return;
 
-  const isFail = (v: number) => v < normThreshold;
-  const isCrit = (v: number) => v >= critThreshold;
-
+  // Inline comparisons instead of closure allocations
   if (reroll === Ability.RerollOnes) {
     for (let i = 0; i < dice.length; i++) {
-      if (dice[i] === 1) dice[i] = rollD6(rng);
+      if (dice[i] === 1) dice[i] = (rng() * 6 | 0) + 1;
     }
   }
   else if (reroll === Ability.Relentless) {
     for (let i = 0; i < dice.length; i++) {
-      if (isFail(dice[i])) dice[i] = rollD6(rng);
+      if (dice[i] < normThreshold) dice[i] = (rng() * 6 | 0) + 1;
     }
   }
   else if (reroll === Ability.CritFishRelentless) {
     for (let i = 0; i < dice.length; i++) {
-      if (!isCrit(dice[i])) dice[i] = rollD6(rng);
+      if (dice[i] < critThreshold) dice[i] = (rng() * 6 | 0) + 1;
     }
   }
   else if (reroll === Ability.Balanced || reroll === Ability.DoubleBalanced) {
     const maxRerolls = reroll === Ability.DoubleBalanced ? 2 : 1;
     let rerolled = 0;
     for (let i = 0; i < dice.length && rerolled < maxRerolls; i++) {
-      if (isFail(dice[i])) {
-        dice[i] = rollD6(rng);
+      if (dice[i] < normThreshold) {
+        dice[i] = (rng() * 6 | 0) + 1;
         rerolled++;
       }
     }
@@ -125,14 +123,14 @@ function applyRerolls(
     let rerolledMask = 0;
     for (let i = 0; i < dice.length; i++) {
       if (dice[i] === 1) {
-        dice[i] = rollD6(rng);
+        dice[i] = (rng() * 6 | 0) + 1;
         rerolledMask |= (1 << i);
       }
     }
     // Step 2: Balanced rerolls one fail that was NOT already rerolled by RerollOnes
     for (let i = 0; i < dice.length; i++) {
-      if (!(rerolledMask & (1 << i)) && isFail(dice[i])) {
-        dice[i] = rollD6(rng);
+      if (!(rerolledMask & (1 << i)) && dice[i] < normThreshold) {
+        dice[i] = (rng() * 6 | 0) + 1;
         break;
       }
     }
@@ -142,8 +140,8 @@ function applyRerolls(
     const rerolledMask = rerollMostCommonFail(dice, critThreshold, normThreshold, rng);
     // Step 2: Balanced rerolls one fail that was NOT already rerolled
     for (let i = 0; i < dice.length; i++) {
-      if (!(rerolledMask & (1 << i)) && isFail(dice[i])) {
-        dice[i] = rollD6(rng);
+      if (!(rerolledMask & (1 << i)) && dice[i] < normThreshold) {
+        dice[i] = (rng() * 6 | 0) + 1;
         break;
       }
     }
@@ -199,8 +197,8 @@ function rerollMostCommonFail(
   let remaining = rerolledMask;
   while (remaining) {
     const bit = remaining & (-remaining); // lowest set bit
-    const idx = Math.log2(bit) | 0;
-    dice[idx] = rollD6(rng);
+    const idx = 31 - Math.clz32(bit);
+    dice[idx] = (rng() * 6 | 0) + 1;
     remaining ^= bit;
   }
 
