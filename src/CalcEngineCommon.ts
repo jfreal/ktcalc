@@ -147,74 +147,14 @@ export function calcFinalDiceProb(
     }
   }
 
-  crits += additionalCrits;
-  const accurateNorms = additionalNorms;
-  norms += additionalNorms;
+  const modified = applyPostRollModifications(
+    crits, norms, fails,
+    additionalCrits, additionalNorms,
+    failsToNorms, normsToCrits,
+    abilities,
+  );
 
-  if (abilities.has(Ability.Punishing) && !abilities.has(Ability.ObscuredTarget)) {
-    if (crits > 0 && fails > 0) {
-      norms++;
-      fails--;
-    }
-  }
-
-  if (abilities.has(Ability.PuritySeal) || abilities.has(Ability.Indomitus)) {
-    if (fails >= 2) {
-      norms++;
-      fails -= 2;
-    }
-  }
-
-  if (abilities.has(Ability.FailToNormIfAtLeastTwoSuccesses)) {
-    if (crits + norms >= 2 && fails > 0) {
-      norms++;
-      fails--;
-    }
-  }
-
-  if (abilities.has(Ability.NormToCritIfAtLeastTwoNorms)) {
-    if (norms >= 2) {
-      crits++;
-      norms--;
-    }
-  }
-
-  const actualFailToNormPromotions = Math.min(failsToNorms, fails);
-  norms += actualFailToNormPromotions;
-  fails -= actualFailToNormPromotions;
-
-  // Track if Severe triggered - Punishing and Rending don't work with Severe
-  let severeTriggered = false;
-  if (abilities.has(Ability.Severe)) {
-    if (norms > 0 && crits === 0) {
-      crits++;
-      norms--;
-      severeTriggered = true;
-      // Note: Devastating and Piercing Crits still work, but Punishing and Rending don't
-    }
-  }
-
-  const actualNormToCritPromotions = Math.min(normsToCrits, norms);
-  crits += actualNormToCritPromotions;
-  norms -= actualNormToCritPromotions;
-
-  // Rending doesn't work if Severe triggered (per KT2024 rules)
-  // Rending also cannot upgrade normals retained from Accurate (only rolled normals)
-  if (abilities.has(Ability.Rending) && !severeTriggered) {
-    const rollableNorms = norms - accurateNorms;
-    if (crits > 0 && rollableNorms > 0) {
-      crits++;
-      norms--;
-    }
-  }
-
-  if(abilities.has(Ability.ObscuredTarget)) {
-    // technically, the crits were always norms; also need to discard a success
-    norms = Math.max(0, norms + crits - 1);
-    crits = 0;
-  }
-
-  return new FinalDiceProb(prob, crits, norms);
+  return new FinalDiceProb(prob, modified.crits, modified.norms);
 }
 
 export function calcMultiRollProb(
@@ -553,4 +493,82 @@ export function combineDmgProbs(
   }
 
   return dmgToProbCombined;
+}
+
+export function applyPostRollModifications(
+  crits: number,
+  norms: number,
+  fails: number,
+  additionalCrits: number,
+  additionalNorms: number,
+  failsToNorms: number,
+  normsToCrits: number,
+  abilities: Set<Ability>,
+): { crits: number; norms: number } {
+  crits += additionalCrits;
+  const accurateNorms = additionalNorms;
+  norms += additionalNorms;
+
+  if (abilities.has(Ability.Punishing) && !abilities.has(Ability.ObscuredTarget)) {
+    if (crits > 0 && fails > 0) {
+      norms++;
+      fails--;
+    }
+  }
+
+  if (abilities.has(Ability.PuritySeal) || abilities.has(Ability.Indomitus)) {
+    if (fails >= 2) {
+      norms++;
+      fails -= 2;
+    }
+  }
+
+  if (abilities.has(Ability.FailToNormIfAtLeastTwoSuccesses)) {
+    if (crits + norms >= 2 && fails > 0) {
+      norms++;
+      fails--;
+    }
+  }
+
+  if (abilities.has(Ability.NormToCritIfAtLeastTwoNorms)) {
+    if (norms >= 2) {
+      crits++;
+      norms--;
+    }
+  }
+
+  const actualFailToNormPromotions = Math.min(failsToNorms, fails);
+  norms += actualFailToNormPromotions;
+  fails -= actualFailToNormPromotions;
+
+  // Track if Severe triggered - Punishing and Rending don't work with Severe
+  let severeTriggered = false;
+  if (abilities.has(Ability.Severe)) {
+    if (norms > 0 && crits === 0) {
+      crits++;
+      norms--;
+      severeTriggered = true;
+    }
+  }
+
+  const actualNormToCritPromotions = Math.min(normsToCrits, norms);
+  crits += actualNormToCritPromotions;
+  norms -= actualNormToCritPromotions;
+
+  // Rending doesn't work if Severe triggered (per KT2024 rules)
+  // Rending also cannot upgrade normals retained from Accurate (only rolled normals)
+  if (abilities.has(Ability.Rending) && !severeTriggered) {
+    const rollableNorms = Math.max(0, norms - accurateNorms);
+    if (crits > 0 && rollableNorms > 0) {
+      crits++;
+      norms--;
+    }
+  }
+
+  if (abilities.has(Ability.ObscuredTarget)) {
+    norms = Math.max(0, norms + crits - 1);
+    crits = 0;
+  }
+
+  return { crits, norms };
 }

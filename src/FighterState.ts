@@ -1,4 +1,3 @@
-import { clone } from "lodash";
 import Model from "src/Model";
 import FightStrategy from 'src/FightStrategy';
 import FightChoice from "src/FightChoice";
@@ -27,7 +26,7 @@ export default class FighterState {
     this.crits = crits;
     this.norms = norms;
     this.strategy = strategy;
-    this.currentWounds = currentWounds > 0 ? currentWounds : this.profile.wounds;
+    this.currentWounds = currentWounds === -1 ? this.profile.wounds : currentWounds;
     this.hasStruck = hasStruck;
     this.hasCritStruck = hasCritStruck;
   }
@@ -105,9 +104,29 @@ export default class FighterState {
     return this.crits > 0 ? FightChoice.CritStrike : FightChoice.NormStrike;
   }
 
+  public reset(crits: number, norms: number, currentWounds: number): void {
+    this.crits = crits;
+    this.norms = norms;
+    this.currentWounds = currentWounds;
+    this.hasStruck = false;
+    this.hasCritStruck = false;
+  }
+
+  public clone(): FighterState {
+    return new FighterState(
+      this.profile,
+      this.crits,
+      this.norms,
+      this.strategy,
+      this.currentWounds,
+      this.hasStruck,
+      this.hasCritStruck,
+    );
+  }
+
   public withStrategy(strategy: FightStrategy): FighterState {
-    const newFighterState = clone(this);
-    newFighterState.strategy = strategy;
-    return newFighterState;
+    const copy = this.clone();
+    copy.strategy = strategy;
+    return copy;
   }
 }
