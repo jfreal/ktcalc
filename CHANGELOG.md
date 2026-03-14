@@ -1,5 +1,12 @@
 # Changelog
 
+## March 2026 - KT2024 Fight UI Cleanup
+
+- Renamed Stun2021 to Shock (same effect: first crit strike discards 1 opponent norm; APL decrement removed)
+- Removed AutoCrits from fight UI (no longer in KT2024 fight rules; replaced by Severe)
+- Converted all boolean ability dropdowns (X/✔) to checkboxes for cleaner UI
+- Fixed unused variable lint errors (fromNumericKey, rollD6, classifyDie)
+
 ## February 2026 - Defender Abilities Update
 
 - Moved Obscured checkbox to Defender section (was in Attacker advanced params)

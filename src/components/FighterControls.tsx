@@ -12,10 +12,9 @@ import Ability, {
 } from 'src/Ability';
 import { MaxWounds } from 'src/KtMisc';
 import Model from 'src/Model';
-import * as N from 'src/Notes';
+import Note, * as N from 'src/Notes';
 import {
   Accepter,
-  boolToCheckX,
   extractFromSet,
   incDecPropsHasNondefaultSelectedValue,
   makeNumChangeHandler,
@@ -26,7 +25,6 @@ import {
   requiredAndOptionalItemsToTwoCols,
   rollSpan,
   span,
-  xAndCheck,
   xspan,
 } from 'src/Util';
 import { Props as IncProps, propsToRows } from 'src/components/IncDecSelect';
@@ -62,11 +60,20 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     );
   }
 
-  function toYN(ability: Ability) {
-    return boolToCheckX(atk.has(ability));
-  }
-
   const nicheAbility = extractFromSet(nicheAbilities, Ability.None, atk.abilities)!;
+
+  function abilityCheckbox(note: Note, ability: Ability) {
+    return (
+      <Form.Check
+        key={note.name}
+        type="checkbox"
+        label={note.name}
+        title={note.description}
+        checked={atk.has(ability)}
+        onChange={() => singleHandler(ability)(atk.has(ability) ? 'X' : '✔')}
+      />
+    );
+  }
 
   const basicParams: IncProps[] = [
     //           id/label,           selectedValue,         values,           valueChangeHandler
@@ -77,20 +84,28 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     new IncProps('Critical Dmg',     atk.critDmg,           span(1, 9),       numHandler('critDmg')),
     new IncProps(N.Reroll,           atk.reroll,            preX(rerolls),    textHandler('reroll')),
     new IncProps('Lethal',           atk.lethal + '+',      xspan(5, 2, '+'), numHandler('lethal')),
-    new IncProps(N.Brutal,           toYN(Ability.Brutal),  xAndCheck,        singleHandler(Ability.Brutal)),
   ];
+
+  const basicCheckboxes: { note: Note, ability: Ability }[] = [
+    { note: N.Rending, ability: Ability.Rending },
+    { note: N.Severe, ability: Ability.Severe },
+    { note: N.Brutal, ability: Ability.Brutal },
+  ];
+
   const advancedParams: IncProps[] = [
     new IncProps(N.NicheAbility,     nicheAbility,               nicheAbilities, subsetHandler(nicheAbilities)),
-    new IncProps(N.StunMelee2021,    toYN(Ability.Stun2021),     xAndCheck,      singleHandler(Ability.Stun2021)),
     new IncProps(N.AutoNorms,        atk.autoNorms,              xspan(1, 9),    numHandler('autoNorms')),
-    new IncProps(N.AutoCrits,        atk.autoCrits,              xspan(1, 9),    numHandler('autoCrits')),
     new IncProps(N.NormsToCrits,     atk.normsToCrits,           xspan(1, 9),    numHandler('normsToCrits')),
     new IncProps(N.FailsToNorms,     atk.failsToNorms,           xspan(1, 9),    numHandler('failsToNorms')),
-    new IncProps(N.Punishing, toYN(Ability.Punishing), xAndCheck,  singleHandler(Ability.Punishing)),
-    new IncProps(N.PuritySeal,       toYN(Ability.PuritySeal),   xAndCheck,      singleHandler(Ability.PuritySeal)),
-    new IncProps(N.Duelist,          toYN(Ability.Duelist),      xAndCheck,      singleHandler(Ability.Duelist)),
-    new IncProps(N.JustAScratch2021, toYN(Ability.JustAScratch), xAndCheck,      singleHandler(Ability.JustAScratch)),
-    new IncProps(N.Durable2021,      toYN(Ability.Durable),      xAndCheck,      singleHandler(Ability.Durable)),
+  ];
+
+  const advancedCheckboxes: { note: Note, ability: Ability }[] = [
+    { note: N.Shock, ability: Ability.Shock },
+    { note: N.Punishing, ability: Ability.Punishing },
+    { note: N.PuritySeal, ability: Ability.PuritySeal },
+    { note: N.Duelist, ability: Ability.Duelist },
+    { note: N.JustAScratch2021, ability: Ability.JustAScratch },
+    { note: N.Durable2021, ability: Ability.Durable },
   ];
 
   const advancedParamsToShow
@@ -98,30 +113,17 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     ? advancedParams
     : advancedParams.filter(p => incDecPropsHasNondefaultSelectedValue(p));
 
+  const advancedCheckboxesToShow
+    = wantShowAdvanced
+    ? advancedCheckboxes
+    : advancedCheckboxes.filter(c => atk.has(c.ability));
+
   const [paramsCol0, paramsCol1] = requiredAndOptionalItemsToTwoCols(
     basicParams, advancedParamsToShow);
   const elemsCol0 = propsToRows(paramsCol0);
   const elemsCol1 = propsToRows(paramsCol1);
 
-  const rendingCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label={N.Rending.name}
-      title={N.Rending.description}
-      checked={atk.has(Ability.Rending)}
-      onChange={() => singleHandler(Ability.Rending)(atk.has(Ability.Rending) ? 'X' : '✔')}
-    />
-  );
-
-  const severeCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label={N.Severe.name}
-      title={N.Severe.description}
-      checked={atk.has(Ability.Severe)}
-      onChange={() => singleHandler(Ability.Severe)(atk.has(Ability.Severe) ? 'X' : '✔')}
-    />
-  );
+  const allCheckboxes = [...basicCheckboxes, ...advancedCheckboxesToShow];
 
   return (
     <Container style={{width: '310px'}}>
@@ -142,8 +144,12 @@ const FighterControls: React.FC<Props> = (props: Props) => {
         </Col>
       </Row>
       <Row>
-        <Col>{rendingCheckbox}</Col>
-        <Col>{severeCheckbox}</Col>
+        <Col>
+          {allCheckboxes.filter((_, i) => i % 2 === 0).map(c => abilityCheckbox(c.note, c.ability))}
+        </Col>
+        <Col>
+          {allCheckboxes.filter((_, i) => i % 2 === 1).map(c => abilityCheckbox(c.note, c.ability))}
+        </Col>
       </Row>
     </Container>
   );

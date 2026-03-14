@@ -106,10 +106,6 @@ export const Shock = new Note(
   `Shock`,
   `First crit strike also cancels enemy unresolved norm (or crit if no norms).`,
 );
-export const StunMelee2021 = new Note(
-  `Stun2021`,
-  `In KT2021, in melee, first crit strike additionally discards 1 norm success of opponent. Second crit strike decrements opponent APL.`,
-);
 export const NicheAbility = new Note(
   `NicheAbility`,
   `Dueller2021 is Intercession Squad chapter tactic; each crit parry discards additional 1 norm success of opponent.`

@@ -149,19 +149,19 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
     const enemy = newFighterState(9, 9, chooser.profile.critDmg + 1);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
   });
-  it('#2a: crit strike if you have stun, enemy is not already stunned, and enemy has no crit successes', () => {
-    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Stun2021]));
+  it('#2a: crit strike if you have shock, enemy is not already shocked, and enemy has no crit successes', () => {
+    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
     const enemy = newFighterState(0, 99, 20);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
   });
-  it('#2b: if enemy already stunned, then cannot stun again', () => {
-    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Stun2021]));
+  it('#2b: if enemy already shocked, then cannot shock again', () => {
+    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
     chooser.hasCritStruck = true;
     const enemy = newFighterState(0, 99, 20);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormParry);
   });
-  it('#2c: if chooser has stun and enemy has crit successes, that is not enough to override Parry strategy', () => {
-    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Stun2021]));
+  it('#2c: if chooser has shock and enemy has crit successes, that is not enough to override Parry strategy', () => {
+    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
     const enemy = newFighterState(99, 99, 20);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
   });
@@ -185,14 +185,14 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
     const enemy = newFighterState(1, 1, 10, FightStrategy.Strike);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
   });
-  it('MinDmgToSelf, do not use stunning crit strike if could have used that crit to parry an enemy crit', () => {
-    const chooser = newFighterState(1, 1, 99, FightStrategy.MinDmgToSelf, new Set<Ability>([Ability.Stun2021]));
+  it('MinDmgToSelf, do not use shocking crit strike if could have used that crit to parry an enemy crit', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MinDmgToSelf, new Set<Ability>([Ability.Shock]));
     const enemy = newFighterState(1, 1, 99, FightStrategy.Strike);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
   });
 });
 
-describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, dueller', () => {
+describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, dueller', () => {
   const origChooserCrits = 10;
   const origChooserNorms = 20;
   const origEnemyCrits = 30;
@@ -215,7 +215,7 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
     );
   }
 
-  it('CritStrike+noStun, and check even values that shouldn\'t change', () => {
+  it('CritStrike+noShock, and check even values that shouldn\'t change', () => {
     for(let stormShieldMaybe of [Ability.None, Ability.StormShield2021]) { // storm shield shouldn't matter
       const chooser = makeChooser(stormShieldMaybe);
       const enemy = makeEnemy(chooser.profile.critDmg + finalWounds);
@@ -229,10 +229,10 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
       expect(enemy.currentWounds).toBe(finalWounds);
     }
   });
-  it('CritStrike+stun, not already stunned', () => {
+  it('CritStrike+shock, not already shocked', () => {
     for(let stormShield of [false, true]) { // storm shield shouldn't matter
-      const chooser = makeChooser(Ability.Stun2021, stormShield ? Ability.StormShield2021 : Ability.None);
-      chooser.profile.setAbility(Ability.Stun2021, true);
+      const chooser = makeChooser(Ability.Shock, stormShield ? Ability.StormShield2021 : Ability.None);
+      chooser.profile.setAbility(Ability.Shock, true);
       const enemy = makeEnemy(chooser.profile.critDmg + finalWounds);
 
       resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
@@ -244,9 +244,9 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
       expect(enemy.currentWounds).toBe(finalWounds);
     }
   });
-  it('CritStrike+stun, already stunned', () => {
+  it('CritStrike+shock, already shocked', () => {
     for(let stormShieldMaybe of [Ability.None, Ability.StormShield2021]) { // storm shield shouldn't matter
-      const chooser = makeChooser(Ability.Stun2021, stormShieldMaybe);
+      const chooser = makeChooser(Ability.Shock, stormShieldMaybe);
       chooser.hasCritStruck = true;
       const enemy = makeEnemy(chooser.profile.critDmg + finalWounds);
 
@@ -260,10 +260,10 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
     }
   });
   it('NormStrike', () => {
-    for(let stunAndStormShield of [false, true]) { // neither should matter
+    for(let shockAndStormShield of [false, true]) { // neither should matter
       const chooser = makeChooser();
-      chooser.profile.setAbility(Ability.StormShield2021, stunAndStormShield);
-      chooser.profile.setAbility(Ability.Stun2021, stunAndStormShield);
+      chooser.profile.setAbility(Ability.StormShield2021, shockAndStormShield);
+      chooser.profile.setAbility(Ability.Shock, shockAndStormShield);
       const enemy = makeEnemy(chooser.profile.normDmg + finalWounds);
 
       resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
@@ -420,10 +420,10 @@ describe(resolveFight.name + ' smart strategies should optimize goal', () => {
           for(let wounds2 of range(maxWounds)) {
             for(let crits2 of range(maxSuccesses)) {
               for(let norms2 of range(maxSuccesses - crits2)) {
-                for(let stun of [false, true]) {
+                for(let shock of [false, true]) {
                     for(let stormShield of [false, true]) {
                     const abilities = new Set<Ability>();
-                    Util.addOrRemove(abilities, Ability.Stun2021, stun);
+                    Util.addOrRemove(abilities, Ability.Shock, shock);
                     Util.addOrRemove(abilities, Ability.StormShield2021, stormShield);
                     const chooserAlwaysStrike = newFighterState(crits1, norms1, wounds1, FightStrategy.Strike, abilities);
                     const chooserAlwaysParry = newFighterState(crits1, norms1, wounds1, FightStrategy.Parry, abilities);
