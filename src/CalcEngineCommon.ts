@@ -558,7 +558,7 @@ export function applyPostRollModifications(
   // Rending doesn't work if Severe triggered (per KT2024 rules)
   // Rending also cannot upgrade normals retained from Accurate (only rolled normals)
   if (abilities.has(Ability.Rending) && !severeTriggered) {
-    const rollableNorms = norms - accurateNorms;
+    const rollableNorms = Math.max(0, norms - accurateNorms);
     if (crits > 0 && rollableNorms > 0) {
       crits++;
       norms--;
