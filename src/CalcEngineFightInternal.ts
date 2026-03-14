@@ -1,5 +1,3 @@
-import { clone } from "lodash";
-
 import Model from "src/Model";
 import * as Util from 'src/Util';
 import FightStrategy from 'src/FightStrategy';
@@ -43,20 +41,23 @@ export function calcRemainingWoundPairProbs(
     for (let round = 0; round < numRounds; round++) {
       if (guy1Wounds <= 0 || guy2Wounds <= 0) break;
 
-      const guy1ForRound = guy1.withProp('wounds', guy1Wounds);
-      const guy2ForRound = guy2.withProp('wounds', guy2Wounds);
+      // Temporarily set wounds to avoid cloning Model objects
+      const guy1OrigWounds = guy1.wounds;
+      const guy2OrigWounds = guy2.wounds;
+      guy1.wounds = guy1Wounds;
+      guy2.wounds = guy2Wounds;
 
-      const guy1Dice = simulateFighterDice(guy1ForRound, undefined, rng);
-      const guy2Dice = simulateFighterDice(guy2ForRound, undefined, rng);
+      const guy1Dice = simulateFighterDice(guy1, undefined, rng);
+      const guy2Dice = simulateFighterDice(guy2, undefined, rng);
 
       const guy1State = new FighterState(
-        guy1ForRound,
+        guy1,
         guy1Dice.crits,
         guy1Dice.norms,
         guy1Strategy,
       );
       const guy2State = new FighterState(
-        guy2ForRound,
+        guy2,
         guy2Dice.crits,
         guy2Dice.norms,
         guy2Strategy,
@@ -66,6 +67,10 @@ export function calcRemainingWoundPairProbs(
 
       guy1Wounds = guy1State.currentWounds;
       guy2Wounds = guy2State.currentWounds;
+
+      // Restore original wounds
+      guy1.wounds = guy1OrigWounds;
+      guy2.wounds = guy2OrigWounds;
     }
 
     const key = toWoundPairKey(guy1Wounds, guy2Wounds);
@@ -148,10 +153,10 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
   {
     // calc dmgs if all strike or all parry; take better option
     const enemyWeStruck = enemy.withStrategy(FightStrategy.Strike);
-    const enemyWeParried = clone(enemyWeStruck);
+    const enemyWeParried = enemyWeStruck.clone();
 
-    const chooserWhoStruck = clone(chooser);
-    const chooserWhoParried = clone(chooser);
+    const chooserWhoStruck = chooser.clone();
+    const chooserWhoParried = chooser.clone();
     const strikeChoice = chooser.nextStrike();
     const parryChoice = wiseParry(chooser, enemy);
 

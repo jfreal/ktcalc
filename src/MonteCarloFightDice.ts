@@ -19,10 +19,14 @@ function rollD6(rng: RngFunction): number {
   return Math.floor(rng() * 6) + 1;
 }
 
-function classifyDie(value: number, critThreshold: number, normThreshold: number): 'crit' | 'norm' | 'fail' {
-  if (value >= critThreshold) return 'crit';
-  if (value >= normThreshold) return 'norm';
-  return 'fail';
+const DIE_CRIT = 2;
+const DIE_NORM = 1;
+const DIE_FAIL = 0;
+
+function classifyDie(value: number, critThreshold: number, normThreshold: number): number {
+  if (value >= critThreshold) return DIE_CRIT;
+  if (value >= normThreshold) return DIE_NORM;
+  return DIE_FAIL;
 }
 
 export function simulateFighterDice(
@@ -48,9 +52,9 @@ export function simulateFighterDice(
   numDice -= autoNorms;
 
   // Roll raw d6 values
-  const dice: number[] = [];
+  const dice = new Array<number>(numDice);
   for (let i = 0; i < numDice; i++) {
-    dice.push(rollD6(rng));
+    dice[i] = rollD6(rng);
   }
 
   // Apply rerolls
@@ -62,8 +66,8 @@ export function simulateFighterDice(
   let fails = 0;
   for (const die of dice) {
     const result = classifyDie(die, critThreshold, normThreshold);
-    if (result === 'crit') crits++;
-    else if (result === 'norm') norms++;
+    if (result === DIE_CRIT) crits++;
+    else if (result === DIE_NORM) norms++;
     else fails++;
   }
 
@@ -85,8 +89,8 @@ function applyRerolls(
 ): void {
   if (reroll === Ability.None) return;
 
-  const isFail = (v: number) => classifyDie(v, critThreshold, normThreshold) === 'fail';
-  const isCrit = (v: number) => classifyDie(v, critThreshold, normThreshold) === 'crit';
+  const isFail = (v: number) => v < normThreshold;
+  const isCrit = (v: number) => v >= critThreshold;
 
   if (reroll === Ability.RerollOnes) {
     for (let i = 0; i < dice.length; i++) {
@@ -117,17 +121,17 @@ function applyRerolls(
     rerollMostCommonFail(dice, critThreshold, normThreshold, rng);
   }
   else if (reroll === Ability.RerollOnesPlusBalanced) {
-    // Step 1: Reroll all 1s, tracking which dice were rerolled
-    const rerolledByOnes = new Set<number>();
+    // Step 1: Reroll all 1s, tracking which dice were rerolled via bitmask
+    let rerolledMask = 0;
     for (let i = 0; i < dice.length; i++) {
       if (dice[i] === 1) {
         dice[i] = rollD6(rng);
-        rerolledByOnes.add(i);
+        rerolledMask |= (1 << i);
       }
     }
     // Step 2: Balanced rerolls one fail that was NOT already rerolled by RerollOnes
     for (let i = 0; i < dice.length; i++) {
-      if (!rerolledByOnes.has(i) && isFail(dice[i])) {
+      if (!(rerolledMask & (1 << i)) && isFail(dice[i])) {
         dice[i] = rollD6(rng);
         break;
       }
@@ -135,10 +139,10 @@ function applyRerolls(
   }
   else if (reroll === Ability.RerollMostCommonFailPlusBalanced) {
     // Step 1: RerollMostCommonFail, tracking which dice were rerolled
-    const rerolledIndices = rerollMostCommonFail(dice, critThreshold, normThreshold, rng);
+    const rerolledMask = rerollMostCommonFail(dice, critThreshold, normThreshold, rng);
     // Step 2: Balanced rerolls one fail that was NOT already rerolled
     for (let i = 0; i < dice.length; i++) {
-      if (!rerolledIndices.has(i) && isFail(dice[i])) {
+      if (!(rerolledMask & (1 << i)) && isFail(dice[i])) {
         dice[i] = rollD6(rng);
         break;
       }
@@ -151,44 +155,54 @@ function rerollMostCommonFail(
   critThreshold: number,
   normThreshold: number,
   rng: RngFunction,
-): Set<number> {
-  const isFail = (v: number) => classifyDie(v, critThreshold, normThreshold) === 'fail';
-  const rerolledIndices = new Set<number>();
+): number {
+  // Group fail dice by face value using fixed arrays (faces 1-5 max)
+  // counts[face] = count, masks[face] = bitmask of indices
+  const counts = [0, 0, 0, 0, 0, 0, 0]; // index by face value 0-6
+  const masks = [0, 0, 0, 0, 0, 0, 0];
+  let hasAnyFail = false;
 
-  // Group fail dice by face value
-  const failFaceGroups = new Map<number, number[]>(); // face value -> indices
   for (let i = 0; i < dice.length; i++) {
-    if (isFail(dice[i])) {
+    if (dice[i] < normThreshold) {
       const face = dice[i];
-      if (!failFaceGroups.has(face)) failFaceGroups.set(face, []);
-      failFaceGroups.get(face)!.push(i);
+      counts[face]++;
+      masks[face] |= (1 << i);
+      hasAnyFail = true;
     }
   }
 
-  if (failFaceGroups.size === 0) return rerolledIndices;
+  if (!hasAnyFail) return 0;
 
   // Find the most common fail face (break ties randomly)
   let maxCount = 0;
-  const candidates: number[] = [];
-  for (const [face, indices] of failFaceGroups) {
-    if (indices.length > maxCount) {
-      maxCount = indices.length;
-      candidates.length = 0;
-      candidates.push(face);
-    } else if (indices.length === maxCount) {
-      candidates.push(face);
+  let numCandidates = 0;
+  let chosenFace = 0;
+  // candidate faces stored inline
+  const candidates = [0, 0, 0, 0, 0, 0];
+
+  for (let face = 1; face <= 6; face++) {
+    if (counts[face] > maxCount) {
+      maxCount = counts[face];
+      numCandidates = 1;
+      candidates[0] = face;
+    } else if (counts[face] === maxCount && counts[face] > 0) {
+      candidates[numCandidates++] = face;
     }
   }
 
-  const chosenFace = candidates.length === 1
+  chosenFace = numCandidates === 1
     ? candidates[0]
-    : candidates[Math.floor(rng() * candidates.length)];
+    : candidates[Math.floor(rng() * numCandidates)];
 
   // Reroll all dice showing the chosen face
-  for (const idx of failFaceGroups.get(chosenFace)!) {
+  let rerolledMask = masks[chosenFace];
+  let remaining = rerolledMask;
+  while (remaining) {
+    const bit = remaining & (-remaining); // lowest set bit
+    const idx = Math.log2(bit) | 0;
     dice[idx] = rollD6(rng);
-    rerolledIndices.add(idx);
+    remaining ^= bit;
   }
 
-  return rerolledIndices;
+  return rerolledMask;
 }
