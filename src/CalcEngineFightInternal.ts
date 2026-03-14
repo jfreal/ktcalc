@@ -2,11 +2,11 @@ import { clone } from "lodash";
 
 import Model from "src/Model";
 import * as Util from 'src/Util';
-import * as Common from 'src/CalcEngineCommon';
 import FightStrategy from 'src/FightStrategy';
 import FighterState from "src/FighterState";
 import FightChoice from "src/FightChoice";
 import Ability from "src/Ability";
+import { simulateFighterDice, RngFunction } from "src/MonteCarloFightDice";
 
 export const toWoundPairKey = (guy1Wounds: number, guy2Wounds: number): string => [guy1Wounds, guy2Wounds].toString();
 export const fromWoundPairKey = (woundsPairText: string): number[] => woundsPairText.split(',').map(x => parseInt(x));
@@ -30,23 +30,33 @@ export function calcRemainingWoundPairProbs(
   guy1Strategy: FightStrategy = FightStrategy.MaxDmgToEnemy,
   guy2Strategy: FightStrategy = FightStrategy.MaxDmgToEnemy,
   numRounds: number = 1,
+  numSimulations: number = 50_000,
+  rng: RngFunction = Math.random,
 ): Map<string, number> // remaining wound-pairs (as stringified array) to probs
 {
-  const guy1FinalDiceProbs = Common.calcFinalDiceProbsForAttacker(guy1);
-  const guy2FinalDiceProbs = Common.calcFinalDiceProbsForAttacker(guy2);
+  const woundPairCounts = new Map<string, number>();
 
-  let endingWoundPairProbs = new Map<string, number>();
+  for (let sim = 0; sim < numSimulations; sim++) {
+    let guy1Wounds = guy1.wounds;
+    let guy2Wounds = guy2.wounds;
 
-  for(let guy1Dice of guy1FinalDiceProbs) {
-    for(let guy2Dice of guy2FinalDiceProbs) {
+    for (let round = 0; round < numRounds; round++) {
+      if (guy1Wounds <= 0 || guy2Wounds <= 0) break;
+
+      const guy1ForRound = guy1.withProp('wounds', guy1Wounds);
+      const guy2ForRound = guy2.withProp('wounds', guy2Wounds);
+
+      const guy1Dice = simulateFighterDice(guy1ForRound, undefined, rng);
+      const guy2Dice = simulateFighterDice(guy2ForRound, undefined, rng);
+
       const guy1State = new FighterState(
-        guy1,
+        guy1ForRound,
         guy1Dice.crits,
         guy1Dice.norms,
         guy1Strategy,
       );
       const guy2State = new FighterState(
-        guy2,
+        guy2ForRound,
         guy2Dice.crits,
         guy2Dice.norms,
         guy2Strategy,
@@ -54,43 +64,21 @@ export function calcRemainingWoundPairProbs(
 
       resolveFight(guy1State, guy2State);
 
-      const combinedProb = guy1Dice.prob * guy2Dice.prob;
-      Util.addToMapValue(
-        endingWoundPairProbs,
-        toWoundPairKey(guy1State.currentWounds, guy2State.currentWounds),
-        combinedProb,
-      );
-    }
-  }
-
-  if(numRounds > 1) {
-    const woundPairProbsAfterMoreRounds = new Map<string,number>();
-
-    for(let [woundPairText, prob] of endingWoundPairProbs) {
-      const [guy1Wounds, guy2Wounds] = fromWoundPairKey(woundPairText);
-
-      if(guy1Wounds === 0 || guy2Wounds === 0) {
-        Util.addToMapValue(woundPairProbsAfterMoreRounds, woundPairText, prob);
-      }
-      else {
-        const woundPairProbsForBranch = calcRemainingWoundPairProbs(
-          guy1.withProp('wounds', guy1Wounds),
-          guy2.withProp('wounds', guy2Wounds),
-          guy1Strategy,
-          guy2Strategy,
-          numRounds - 1,
-        );
-
-        for(let [branchWoundPairText, branchProb] of woundPairProbsForBranch) {
-          Util.addToMapValue(woundPairProbsAfterMoreRounds, branchWoundPairText, prob * branchProb);
-        }
-      }
+      guy1Wounds = guy1State.currentWounds;
+      guy2Wounds = guy2State.currentWounds;
     }
 
-    endingWoundPairProbs = woundPairProbsAfterMoreRounds;
+    const key = toWoundPairKey(guy1Wounds, guy2Wounds);
+    Util.addToMapValue(woundPairCounts, key, 1);
   }
 
-  return endingWoundPairProbs;
+  // Convert counts to probabilities
+  const woundPairProbs = new Map<string, number>();
+  for (const [key, count] of woundPairCounts) {
+    woundPairProbs.set(key, count / numSimulations);
+  }
+
+  return woundPairProbs;
 }
 
 export function resolveFight(
