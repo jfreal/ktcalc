@@ -74,8 +74,8 @@ export function calcRemainingWoundPairProbs(
       guy1.wounds = guy1Wounds;
       guy2.wounds = guy2Wounds;
 
-      const guy1Dice = simulateFighterDice(guy1, undefined, rng);
-      const guy2Dice = simulateFighterDice(guy2, undefined, rng);
+      const guy1Dice = simulateFighterDice(guy1, guy2, rng);
+      const guy2Dice = simulateFighterDice(guy2, guy1, rng);
 
       // Reset pre-allocated state objects instead of creating new ones
       guy1State.reset(guy1Dice.crits, guy1Dice.norms, guy1Wounds);
