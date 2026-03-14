@@ -49,6 +49,10 @@ export function calcRemainingWoundPairProbs(
   rng: RngFunction = mulberry32(DEFAULT_SEED),
 ): Map<string, number> // remaining wound-pairs (as stringified array) to probs
 {
+  if (!Number.isInteger(numSimulations) || numSimulations <= 0) {
+    throw new RangeError(`numSimulations must be a positive integer, got ${numSimulations}`);
+  }
+
   // Use numeric keys internally to avoid string allocation in hot loop
   const woundPairCounts = new Map<number, number>();
 
