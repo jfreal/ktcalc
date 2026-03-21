@@ -215,8 +215,13 @@ export function resolveDieChoice(
     if(!chooser.hasStruck) {
       if(enemy.profile.abilities.has(Ability.JustAScratch)) {
         dmg = 0;
-      } else if(chooser.profile.abilities.has(Ability.Hammerhand2021)) {
-        dmg++;
+      } else {
+        if(chooser.profile.abilities.has(Ability.Hammerhand2021)) {
+          dmg++;
+        }
+        if(enemy.profile.abilities.has(Ability.HalfDamageFirstStrike)) {
+          dmg = Math.max(2, Math.ceil(dmg / 2));
+        }
       }
       chooser.hasStruck = true;
     }

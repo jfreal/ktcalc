@@ -405,6 +405,67 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
     resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds - 2 * chooser.profile.normDmg - 1);
   });
+  it('HalfDamageFirstStrike halves first norm strike damage (rounded up, min 2)', () => {
+    const initialWounds = 100;
+    const normDmg = 5;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('normDmg', normDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // First strike: 5 dmg halved = ceil(5/2) = 3
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 3);
+
+    // Second strike: full damage
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 3 - normDmg);
+  });
+  it('HalfDamageFirstStrike halves first crit strike damage (rounded up, min 2)', () => {
+    const initialWounds = 100;
+    const critDmg = 7;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('critDmg', critDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // First crit strike: 7 dmg halved = ceil(7/2) = 4
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 4);
+  });
+  it('HalfDamageFirstStrike enforces minimum of 2 damage', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('normDmg', 2); // ceil(2/2) = 1, but min is 2
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 2);
+  });
+  it('HalfDamageFirstStrike with hammerhand: hammerhand applies then halved', () => {
+    const initialWounds = 100;
+    const normDmg = 3;
+    const chooser = makeChooser(Ability.Hammerhand2021);
+    chooser.profile.setProp('normDmg', normDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // Hammerhand: 3+1=4, then halved: ceil(4/2)=2
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 2);
+  });
+  it('JustAScratch takes priority over HalfDamageFirstStrike', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratch, true);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // JustAScratch sets damage to 0, overriding half damage
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+  });
 });
 
 describe(resolveFight.name + ' smart strategies should optimize goal', () => {
