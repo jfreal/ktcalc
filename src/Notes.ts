@@ -121,6 +121,10 @@ export const Duelist = new Note(
   `Duelist/PreParry`,
   `Do one parry before usual dice resolution.`,
 );
+export const HalfDamageFirstStrike = new Note(
+  `Half Dmg 1st Strike`,
+  `First strike damage is halved (rounded up) to a minimum of 2.`,
+);
 export const Dummy = new Note(
   ``,
   ``,

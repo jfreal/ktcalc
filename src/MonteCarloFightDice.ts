@@ -15,9 +15,6 @@ export function mulberry32(seed: number): RngFunction {
   };
 }
 
-const DIE_CRIT = 2;
-const DIE_NORM = 1;
-const DIE_FAIL = 0;
 
 export function simulateFighterDice(
   model: Model,
