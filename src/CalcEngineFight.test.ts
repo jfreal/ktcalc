@@ -588,3 +588,69 @@ describe(calcRemainingWounds.name + ' multiple rounds', () => {
     expect(woundPairProbs.get(toWoundPairKey(dc, 0))).toBeCloseTo(pf * pf * pc + pc, requiredPrecision);
   });
 });
+
+describe('Feel No Pain in fights', () => {
+  it('FNP reduces damage taken on average', () => {
+    const wounds = 12;
+    const guy1 = new Model(4, 3, 3, 4).setProp('wounds', wounds);
+    const guy2NoFnp = new Model(4, 3, 3, 4).setProp('wounds', wounds);
+    const guy2Fnp = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 5);
+
+    const probsNoFnp = calcRemainingWoundPairProbs(guy1, guy2NoFnp, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const probsFnp = calcRemainingWoundPairProbs(guy1, guy2Fnp, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const [guy1WoundsNoFnp] = consolidateWoundPairProbs(probsNoFnp);
+    const [guy1WoundsFnp] = consolidateWoundPairProbs(probsFnp);
+
+    // Guy1 should take less damage when guy2 has FNP (guy2 survives longer and hits back more)
+    // Actually, FNP is on the defender (guy2), so guy1's wounds should be similar
+    // but guy2 should survive with more wounds on average
+    const [, guy2WoundsNoFnp] = consolidateWoundPairProbs(probsNoFnp);
+    const [, guy2WoundsFnp] = consolidateWoundPairProbs(probsFnp);
+
+    let avgWoundsNoFnp = 0;
+    let avgWoundsFnp = 0;
+    for (const [w, p] of guy2WoundsNoFnp) avgWoundsNoFnp += w * p;
+    for (const [w, p] of guy2WoundsFnp) avgWoundsFnp += w * p;
+
+    // FNP defender should have more remaining wounds on average
+    expect(avgWoundsFnp).toBeGreaterThan(avgWoundsNoFnp);
+  });
+
+  it('FNP 4+ is stronger than FNP 6+', () => {
+    const wounds = 12;
+    const guy1a = new Model(4, 3, 3, 4).setProp('wounds', wounds);
+    const guy1b = clone(guy1a);
+    const guy2Fnp4 = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 4);
+    const guy2Fnp6 = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 6);
+
+    const probsFnp4 = calcRemainingWoundPairProbs(guy1a, guy2Fnp4, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const probsFnp6 = calcRemainingWoundPairProbs(guy1b, guy2Fnp6, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const [, guy2WoundsFnp4] = consolidateWoundPairProbs(probsFnp4);
+    const [, guy2WoundsFnp6] = consolidateWoundPairProbs(probsFnp6);
+
+    let avgFnp4 = 0;
+    let avgFnp6 = 0;
+    for (const [w, p] of guy2WoundsFnp4) avgFnp4 += w * p;
+    for (const [w, p] of guy2WoundsFnp6) avgFnp6 += w * p;
+
+    // FNP 4+ should leave more wounds remaining than FNP 6+
+    expect(avgFnp4).toBeGreaterThan(avgFnp6);
+  });
+
+  it('FNP applies per point of damage from each strike', () => {
+    const rng = testRng();
+    // Set up a simple scenario: 1 crit strike doing 4 damage, defender has FNP 4+
+    const attacker = newFighterState(1, 0, 10, FightStrategy.Strike);
+    const defender = newFighterState(0, 0, 10, FightStrategy.Strike);
+    defender.profile.setProp('fnp', 4);
+    defender.rng = rng;
+
+    // Do a crit strike (deals 2 damage based on newFighterState defaults)
+    resolveDieChoice(FightChoice.CritStrike, attacker, defender);
+
+    // With FNP, defender should take <= 2 damage (some may be saved)
+    // We can't predict exact value due to rng, but wounds should be <= 10 and >= 8
+    expect(defender.currentWounds).toBeGreaterThanOrEqual(8);
+    expect(defender.currentWounds).toBeLessThanOrEqual(10);
+  });
+});

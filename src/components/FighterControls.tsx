@@ -91,6 +91,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.Duelist,          toYN(Ability.Duelist),      xAndCheck,      singleHandler(Ability.Duelist)),
     new IncProps(N.JustAScratch2021, toYN(Ability.JustAScratch), xAndCheck,      singleHandler(Ability.JustAScratch)),
     new IncProps(N.Durable2021,      toYN(Ability.Durable),      xAndCheck,      singleHandler(Ability.Durable)),
+    new IncProps(N.FeelNoPain,       atk.fnp + '+',              xspan(6, 2, '+'), numHandler('fnp')),
   ];
 
   const advancedParamsToShow

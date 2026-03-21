@@ -55,8 +55,8 @@ export function calcRemainingWoundPairProbs(
   const woundPairCounts = new Map<number, number>();
 
   // Pre-allocate FighterState objects and reuse across simulations
-  const guy1State = new FighterState(guy1, 0, 0, guy1Strategy);
-  const guy2State = new FighterState(guy2, 0, 0, guy2Strategy);
+  const guy1State = new FighterState(guy1, 0, 0, guy1Strategy, -1, false, false, rng);
+  const guy2State = new FighterState(guy2, 0, 0, guy2Strategy, -1, false, false, rng);
 
   const guy1OrigWounds = guy1.wounds;
   const guy2OrigWounds = guy2.wounds;
