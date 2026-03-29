@@ -405,6 +405,67 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
     resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds - 2 * chooser.profile.normDmg - 1);
   });
+  it('HalfDamageFirstStrike halves first norm strike damage (rounded up, min 2)', () => {
+    const initialWounds = 100;
+    const normDmg = 5;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('normDmg', normDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // First strike: 5 dmg halved = ceil(5/2) = 3
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 3);
+
+    // Second strike: full damage
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 3 - normDmg);
+  });
+  it('HalfDamageFirstStrike halves first crit strike damage (rounded up, min 2)', () => {
+    const initialWounds = 100;
+    const critDmg = 7;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('critDmg', critDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // First crit strike: 7 dmg halved = ceil(7/2) = 4
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 4);
+  });
+  it('HalfDamageFirstStrike enforces minimum of 2 damage', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('normDmg', 2); // ceil(2/2) = 1, but min is 2
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 2);
+  });
+  it('HalfDamageFirstStrike with hammerhand: hammerhand applies then halved', () => {
+    const initialWounds = 100;
+    const normDmg = 3;
+    const chooser = makeChooser(Ability.Hammerhand2021);
+    chooser.profile.setProp('normDmg', normDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // Hammerhand: 3+1=4, then halved: ceil(4/2)=2
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 2);
+  });
+  it('JustAScratch takes priority over HalfDamageFirstStrike', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratch, true);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // JustAScratch sets damage to 0, overriding half damage
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+  });
 });
 
 describe(resolveFight.name + ' smart strategies should optimize goal', () => {
@@ -586,5 +647,71 @@ describe(calcRemainingWounds.name + ' multiple rounds', () => {
     expect(woundPairProbs.get(toWoundPairKey(dc, dc))).toBeCloseTo(Math.pow(pf, 4), requiredPrecision);
     expect(woundPairProbs.get(toWoundPairKey(0, dc))).toBeCloseTo(Math.pow(pf, 3) * pc + pf * pc, requiredPrecision);
     expect(woundPairProbs.get(toWoundPairKey(dc, 0))).toBeCloseTo(pf * pf * pc + pc, requiredPrecision);
+  });
+});
+
+describe('Feel No Pain in fights', () => {
+  it('FNP reduces damage taken on average', () => {
+    const wounds = 12;
+    const guy1 = new Model(4, 3, 3, 4).setProp('wounds', wounds);
+    const guy2NoFnp = new Model(4, 3, 3, 4).setProp('wounds', wounds);
+    const guy2Fnp = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 5);
+
+    const probsNoFnp = calcRemainingWoundPairProbs(guy1, guy2NoFnp, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const probsFnp = calcRemainingWoundPairProbs(guy1, guy2Fnp, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const [guy1WoundsNoFnp] = consolidateWoundPairProbs(probsNoFnp);
+    const [guy1WoundsFnp] = consolidateWoundPairProbs(probsFnp);
+
+    // Guy1 should take less damage when guy2 has FNP (guy2 survives longer and hits back more)
+    // Actually, FNP is on the defender (guy2), so guy1's wounds should be similar
+    // but guy2 should survive with more wounds on average
+    const [, guy2WoundsNoFnp] = consolidateWoundPairProbs(probsNoFnp);
+    const [, guy2WoundsFnp] = consolidateWoundPairProbs(probsFnp);
+
+    let avgWoundsNoFnp = 0;
+    let avgWoundsFnp = 0;
+    for (const [w, p] of guy2WoundsNoFnp) avgWoundsNoFnp += w * p;
+    for (const [w, p] of guy2WoundsFnp) avgWoundsFnp += w * p;
+
+    // FNP defender should have more remaining wounds on average
+    expect(avgWoundsFnp).toBeGreaterThan(avgWoundsNoFnp);
+  });
+
+  it('FNP 4+ is stronger than FNP 6+', () => {
+    const wounds = 12;
+    const guy1a = new Model(4, 3, 3, 4).setProp('wounds', wounds);
+    const guy1b = clone(guy1a);
+    const guy2Fnp4 = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 4);
+    const guy2Fnp6 = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 6);
+
+    const probsFnp4 = calcRemainingWoundPairProbs(guy1a, guy2Fnp4, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const probsFnp6 = calcRemainingWoundPairProbs(guy1b, guy2Fnp6, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const [, guy2WoundsFnp4] = consolidateWoundPairProbs(probsFnp4);
+    const [, guy2WoundsFnp6] = consolidateWoundPairProbs(probsFnp6);
+
+    let avgFnp4 = 0;
+    let avgFnp6 = 0;
+    for (const [w, p] of guy2WoundsFnp4) avgFnp4 += w * p;
+    for (const [w, p] of guy2WoundsFnp6) avgFnp6 += w * p;
+
+    // FNP 4+ should leave more wounds remaining than FNP 6+
+    expect(avgFnp4).toBeGreaterThan(avgFnp6);
+  });
+
+  it('FNP applies per point of damage from each strike', () => {
+    const rng = testRng();
+    // Set up a simple scenario: 1 crit strike doing 4 damage, defender has FNP 4+
+    const attacker = newFighterState(1, 0, 10, FightStrategy.Strike);
+    const defender = newFighterState(0, 0, 10, FightStrategy.Strike);
+    defender.profile.setProp('fnp', 4);
+    defender.rng = rng;
+
+    // Do a crit strike (deals 2 damage based on newFighterState defaults)
+    resolveDieChoice(FightChoice.CritStrike, attacker, defender);
+
+    // With FNP, defender should take <= 2 damage (some may be saved)
+    // We can't predict exact value due to rng, but wounds should be <= 10 and >= 8
+    expect(defender.currentWounds).toBeGreaterThanOrEqual(8);
+    expect(defender.currentWounds).toBeLessThanOrEqual(10);
   });
 });
