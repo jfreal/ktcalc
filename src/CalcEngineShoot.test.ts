@@ -27,34 +27,34 @@ describe(calcDamage.name + ', typical dmgs (norm < crit < 2 * norm)', () => {
   const def = new Model();
 
   it('0ch 0nh vs 0cs 0ns => 0', () => {
-    expect(calcDamage(atker, def, 0, 0, 0, 0)).toBe(0);
+    expect(calcDamage(atker, def, 0, 0, 0, 0).damage).toBe(0);
   });
   it('0ch 2nh vs 0cs 0ns => 2dn', () => {
-    expect(calcDamage(atker, def, 0, 2, 0, 0)).toBe(2 * dn);
+    expect(calcDamage(atker, def, 0, 2, 0, 0).damage).toBe(2 * dn);
   });
   it('0ch 2nh vs 0cs 1ns => 1dn', () => {
-    expect(calcDamage(atker, def, 0, 2, 0, 1)).toBe(dn);
+    expect(calcDamage(atker, def, 0, 2, 0, 1).damage).toBe(dn);
   });
   it('0ch 2nh vs 1cs 1ns => 0', () => {
-    expect(calcDamage(atker, def, 0, 2, 1, 1)).toBe(0);
+    expect(calcDamage(atker, def, 0, 2, 1, 1).damage).toBe(0);
   });
   it('0ch 2nh vs 3cs 3ns => 0', () => {
-    expect(calcDamage(atker, def, 0, 2, 3, 3)).toBe(0);
+    expect(calcDamage(atker, def, 0, 2, 3, 3).damage).toBe(0);
   });
   it('1ch 0nh vs 0cs 1ns => 1dmw + 1dc', () => {
-    expect(calcDamage(atker, def, 1, 0, 0, 1)).toBe(dmw + dc);
+    expect(calcDamage(atker, def, 1, 0, 0, 1).damage).toBe(dmw + dc);
   });
   it('1ch 0nh vs 0cs 2ns => 1dmw', () => {
-    expect(calcDamage(atker, def, 1, 0, 0, 2)).toBe(dmw);
+    expect(calcDamage(atker, def, 1, 0, 0, 2).damage).toBe(dmw);
   });
   it('1ch 1nh vs 0cs 2ns => 1dmw + 1dn', () => {
-    expect(calcDamage(atker, def, 1, 1, 0, 2)).toBe(dmw + dn);
+    expect(calcDamage(atker, def, 1, 1, 0, 2).damage).toBe(dmw + dn);
   });
   it('2ch 2nh vs 0cs 3ns => 2dmw + 1dc + 1dn', () => {
-    expect(calcDamage(atker, def, 2, 2, 0, 3)).toBe(2 * dmw + dc + dn);
+    expect(calcDamage(atker, def, 2, 2, 0, 3).damage).toBe(2 * dmw + dc + dn);
   });
   it('3ch 2nh vs 1cs 3ns => 3dmw + 1dc + 1dn', () => {
-    expect(calcDamage(atker, def, 3, 2, 1, 3)).toBe(3 * dmw + dc + dn);
+    expect(calcDamage(atker, def, 3, 2, 1, 3).damage).toBe(3 * dmw + dc + dn);
   });
 });
 
@@ -67,28 +67,28 @@ describe(calcDamage.name + ', bigCrit (2 * norm < crit)', () => {
   const def = new Model();
 
   it('bigCrit, 0ch 0nh vs 0cs 0ns => 0', () => {
-    expect(calcDamage(atker, def, 0, 0, 0, 0)).toBe(0);
+    expect(calcDamage(atker, def, 0, 0, 0, 0).damage).toBe(0);
   });
   it('bigCrit, 0ch 2nh vs 0cs 1ns => 1dn', () => {
-    expect(calcDamage(atker, def, 0, 2, 0, 1)).toBe(dn);
+    expect(calcDamage(atker, def, 0, 2, 0, 1).damage).toBe(dn);
   });
   it('bigCrit, 0ch 2nh vs 1cs 1ns => 0', () => {
-    expect(calcDamage(atker, def, 0, 2, 1, 1)).toBe(0);
+    expect(calcDamage(atker, def, 0, 2, 1, 1).damage).toBe(0);
   });
   it('bigCrit, 0ch 2nh vs 3cs 3ns => 0', () => {
-    expect(calcDamage(atker, def, 0, 2, 3, 3)).toBe(0);
+    expect(calcDamage(atker, def, 0, 2, 3, 3).damage).toBe(0);
   });
   it('bigtCrit, 1ch 0nh vs 0cs 1ns => 1dmw + 1dc', () => {
-    expect(calcDamage(atker, def, 1, 0, 0, 1)).toBe(dmw + dc);
+    expect(calcDamage(atker, def, 1, 0, 0, 1).damage).toBe(dmw + dc);
   });
   it('bigtCrit, 1ch 0nh vs 0cs 2ns => 1dmw', () => {
-    expect(calcDamage(atker, def, 1, 0, 0, 2)).toBe(dmw);
+    expect(calcDamage(atker, def, 1, 0, 0, 2).damage).toBe(dmw);
   });
   it('bigtCrit, 1ch 2nh vs 0cs 2ns => 1dmw + 2dn', () => {
-    expect(calcDamage(atker, def, 1, 2, 0, 2)).toBe(dmw + 2 * dn);
+    expect(calcDamage(atker, def, 1, 2, 0, 2).damage).toBe(dmw + 2 * dn);
   });
   it('bigtCrit, 2ch 2nh vs 0cs 3ns => 2dmw + 1dc + 1dn', () => {
-    expect(calcDamage(atker, def, 2, 2, 0, 3)).toBe(2 * dmw + dc + dn);
+    expect(calcDamage(atker, def, 2, 2, 0, 3).damage).toBe(2 * dmw + dc + dn);
   });
 });
 
@@ -101,28 +101,28 @@ describe(calcDamage.name + ', smallCrit (crit < norm)', () => {
   const def = new Model();
 
   it('smallCrit, 0ch 0nh vs 0cs 0ns => 0', () => {
-    expect(calcDamage(atker, def, 0, 0, 0, 0)).toBe(0);
+    expect(calcDamage(atker, def, 0, 0, 0, 0).damage).toBe(0);
   });
   it('smallCrit, 0ch 2nh vs 0cs 1ns => 1dn', () => {
-    expect(calcDamage(atker, def, 0, 2, 0, 1)).toBe(dn);
+    expect(calcDamage(atker, def, 0, 2, 0, 1).damage).toBe(dn);
   });
   it('smallCrit, 0ch 2nh vs 1cs 1ns => 0', () => {
-    expect(calcDamage(atker, def, 0, 2, 1, 1)).toBe(0);
+    expect(calcDamage(atker, def, 0, 2, 1, 1).damage).toBe(0);
   });
   it('smallCrit, 0ch 2nh vs 3cs 3ns => 0', () => {
-    expect(calcDamage(atker, def, 0, 2, 3, 3)).toBe(0);
+    expect(calcDamage(atker, def, 0, 2, 3, 3).damage).toBe(0);
   });
   it('smallCrit, 1ch 0nh vs 0cs 1ns => 1dmw + 1dc', () => {
-    expect(calcDamage(atker, def, 1, 0, 0, 1)).toBe(dmw + dc);
+    expect(calcDamage(atker, def, 1, 0, 0, 1).damage).toBe(dmw + dc);
   });
   it('smallCrit, 1ch 0nh vs 0cs 2ns => 1dmw', () => {
-    expect(calcDamage(atker, def, 1, 0, 0, 2)).toBe(dmw);
+    expect(calcDamage(atker, def, 1, 0, 0, 2).damage).toBe(dmw);
   });
   it('smallCrit, 1ch 2nh vs 0cs 2ns => 1dmw + 2dn', () => {
-    expect(calcDamage(atker, def, 1, 2, 0, 2)).toBe(dmw + dc);
+    expect(calcDamage(atker, def, 1, 2, 0, 2).damage).toBe(dmw + dc);
   });
   it('smallCrit, 2ch 2nh vs 0cs 3ns => 2dmw + 2dc', () => {
-    expect(calcDamage(atker, def, 2, 2, 0, 3)).toBe(2 * dmw + 2 * dc);
+    expect(calcDamage(atker, def, 2, 2, 0, 3).damage).toBe(2 * dmw + 2 * dc);
   });
 });
 
@@ -132,56 +132,74 @@ describe(calcDmgProbs.name + ', Durable', () => {
   const atker = new Model(0, 0, dn, dc);
   const def = new Model().setAbility(Ability.Durable);
   it('Durable, D=10/100', () => {
-    expect(calcDamage(atker, def, 2, 2, 0, 0)).toBe(2 * dc - 1 + 2 * dn);
+    expect(calcDamage(atker, def, 2, 2, 0, 0).damage).toBe(2 * dc - 1 + 2 * dn);
   });
   it('Durable, D=10/3', () => {
     const lowDc = 3;
     const lowAtker = new Model(0, 0, dn, lowDc);
-    expect(calcDamage(lowAtker, def, 2, 2, 0, 0)).toBe(2 * lowDc + 2 * dn);
+    expect(calcDamage(lowAtker, def, 2, 2, 0, 0).damage).toBe(2 * lowDc + 2 * dn);
   });
 });
 
 describe(calcPostFnpDamages.name, () => {
-  it('single prefnp damage of 3', () => {
+  it('5 damage from 1 hit, fnp 5+: can only reduce to 4', () => {
     const fnp = 5;
-    const pd = 2 / 3; // probability damage gets through
-    const pa = 1 / 3; // probability avoided the damage
-    const preFnpDmgs = new Map<number,number>([ [3, 1], ]);
+    const ps = 2 / 6; // probability of FNP success (roll >= 5)
+    const pf = 4 / 6; // probability of FNP failure
+    // key = "damage,numHits"
+    const preFnpDmgs = new Map<string,number>([ ['5,1', 1] ]);
     const postFnpDmgs = calcPostFnpDamages(fnp, preFnpDmgs);
 
-    expect(postFnpDmgs.get(1)).toBeCloseTo(Math.pow(pd, 1) * Math.pow(pa, 2) * 3, requiredPrecision);
-    expect(postFnpDmgs.get(2)).toBeCloseTo(Math.pow(pd, 2) * Math.pow(pa, 1) * 3, requiredPrecision);
-    expect(postFnpDmgs.get(3)).toBeCloseTo(Math.pow(pd, 3) * Math.pow(pa, 0) * 1, requiredPrecision);
+    // 1 hit => 1 FNP roll => either pass (dmg=4) or fail (dmg=5)
+    expect(postFnpDmgs.get(4)).toBeCloseTo(ps, requiredPrecision);
+    expect(postFnpDmgs.get(5)).toBeCloseTo(pf, requiredPrecision);
+    expect(postFnpDmgs.size).toBe(2);
+  });
+  it('6 damage from 2 hits, fnp 5+: can reduce by up to 2', () => {
+    const fnp = 5;
+    const ps = 2 / 6; // probability of FNP success
+    const pf = 4 / 6; // probability of FNP failure
+    const preFnpDmgs = new Map<string,number>([ ['6,2', 1] ]);
+    const postFnpDmgs = calcPostFnpDamages(fnp, preFnpDmgs);
+
+    // 2 hits => 2 FNP rolls => binomial(2, ps)
+    // 0 successes => dmg=6, 1 success => dmg=5, 2 successes => dmg=4
+    expect(postFnpDmgs.get(4)).toBeCloseTo(ps * ps, requiredPrecision);
+    expect(postFnpDmgs.get(5)).toBeCloseTo(2 * ps * pf, requiredPrecision);
+    expect(postFnpDmgs.get(6)).toBeCloseTo(pf * pf, requiredPrecision);
     expect(postFnpDmgs.size).toBe(3);
   });
-  it('single prefnp damage of 4', () => {
+  it('2 damage from 2 hits, fnp 5+: minimum damage is 1 (skipZeroDamage)', () => {
     const fnp = 5;
-    const pd = 2 / 3; // probability damage gets through
-    const pa = 1 / 3; // probability avoided the damage
-    const preFnpDmgs = new Map<number,number>([ [4, 1], ]);
+    const ps = 2 / 6;
+    const pf = 4 / 6;
+    const preFnpDmgs = new Map<string,number>([ ['2,2', 1] ]);
     const postFnpDmgs = calcPostFnpDamages(fnp, preFnpDmgs);
 
-    expect(postFnpDmgs.get(1)).toBeCloseTo(Math.pow(pd, 1) * Math.pow(pa, 3) * 4, requiredPrecision);
-    expect(postFnpDmgs.get(2)).toBeCloseTo(Math.pow(pd, 2) * Math.pow(pa, 2) * 6, requiredPrecision);
-    expect(postFnpDmgs.get(3)).toBeCloseTo(Math.pow(pd, 3) * Math.pow(pa, 1) * 4, requiredPrecision);
-    expect(postFnpDmgs.get(4)).toBeCloseTo(Math.pow(pd, 4) * Math.pow(pa, 0) * 1, requiredPrecision);
-    expect(postFnpDmgs.size).toBe(4);
+    // 2 hits, 2 damage => 0 successes(dmg=2), 1 success(dmg=1), 2 successes(dmg=0, dropped)
+    expect(postFnpDmgs.get(1)).toBeCloseTo(2 * ps * pf, requiredPrecision);
+    expect(postFnpDmgs.get(2)).toBeCloseTo(pf * pf, requiredPrecision);
+    expect(postFnpDmgs.size).toBe(2);
   });
-  it('prefnp damages of 1 & 2', () => {
+  it('mixed scenarios with different hit counts', () => {
     const fnp = 5;
-    const pd = 2 / 3; // probability damage gets through
-    const pa = 1 / 3; // probability avoided the damage
-    const p1 = 0.25; // probability of prefnp damage = 1
-    const p2 = 1 - p1; // probability of prefnp damage = 2
-    const preFnpDmgs = new Map<number,number>([
-      [1, p1],
-      [2, p2],
+    const ps = 2 / 6;
+    const pf = 4 / 6;
+    const p1 = 0.4; // prob of 3 damage from 1 hit
+    const p2 = 0.6; // prob of 5 damage from 2 hits
+    const preFnpDmgs = new Map<string,number>([
+      ['3,1', p1],
+      ['5,2', p2],
     ]);
     const postFnpDmgs = calcPostFnpDamages(fnp, preFnpDmgs);
 
-    expect(postFnpDmgs.get(1)).toBeCloseTo(p2 * pd * pa * 2 + p1 * pd, requiredPrecision);
-    expect(postFnpDmgs.get(2)).toBeCloseTo(p2 * pd * pd, requiredPrecision);
-    expect(postFnpDmgs.size).toBe(2);
+    // scenario 1: 3 dmg, 1 hit => pass(dmg=2) or fail(dmg=3)
+    // scenario 2: 5 dmg, 2 hits => 0 pass(dmg=5), 1 pass(dmg=4), 2 pass(dmg=3)
+    expect(postFnpDmgs.get(2)).toBeCloseTo(p1 * ps, requiredPrecision);
+    expect(postFnpDmgs.get(3)).toBeCloseTo(p1 * pf + p2 * ps * ps, requiredPrecision);
+    expect(postFnpDmgs.get(4)).toBeCloseTo(p2 * 2 * ps * pf, requiredPrecision);
+    expect(postFnpDmgs.get(5)).toBeCloseTo(p2 * pf * pf, requiredPrecision);
+    expect(postFnpDmgs.size).toBe(4);
   });
 });
 
@@ -439,20 +457,23 @@ describe(calcDmgProbs.name + ', rending & starfire', () => {
 });
 
 describe(calcDmgProbs.name + ', defender fnp', () => {
-  it('fnp with prefnp damages of 1 and 2', () => {
-    // we already tested fnp at the withFnpAppliedToDamages level, quick redo at higher level
+  it('fnp rolls once per hit, not per damage point', () => {
+    // 1 attack die, BS 3+ => crit on 6 (1/6), norm on 3-5 (1/2), fail on 1-2 (1/3)
+    // normDmg=1, critDmg=2, no defender saves
     const fnp = 5;
-    const pd = 2 / 3; // probability damage gets through
-    const pa = 1 / 3; // probability avoided the damage
-    const p1 = 1 / 2; // probability of prefnp damage = 1
-    const p2 = 1 / 6; // probability of prefnp damage = 2
+    const ps = 2 / 6; // FNP success probability
+    const pf = 4 / 6; // FNP failure probability
+    const pCrit = 1 / 6;
+    const pNorm = 1 / 2;
     const atk = new Model(1, 3, 1, 2);
     const def = new Model(0).setProp('fnp', fnp);
 
     const dmgs = calcDmgProbs(atk, def);
-    expect(dmgs.get(1)).toBeCloseTo(p2 * pd * pa * 2 + p1 * pd, requiredPrecision);
-    expect(dmgs.get(2)).toBeCloseTo(p2 * pd * pd, requiredPrecision);
-    expect(dmgs.size).toBe(3);
+    // crit (dmg=2, 1 hit): fnp pass => dmg=1, fnp fail => dmg=2
+    // norm (dmg=1, 1 hit): fnp pass => dmg=0 (dropped), fnp fail => dmg=1
+    expect(dmgs.get(1)).toBeCloseTo(pCrit * ps + pNorm * pf, requiredPrecision);
+    expect(dmgs.get(2)).toBeCloseTo(pCrit * pf, requiredPrecision);
+    expect(dmgs.size).toBe(3); // includes dmg=0
   });
 });
 
