@@ -6,6 +6,7 @@
 - Removed AutoCrits from fight UI (no longer in KT2024 fight rules; replaced by Severe)
 - Converted all boolean ability dropdowns (X/✔) to checkboxes for cleaner UI
 - Fixed unused variable lint errors (fromNumericKey, rollD6, classifyDie)
+- Feel No Pain now rolls once per surviving hit (reduces that hit's damage by 1) instead of once per damage point. Damage distributions for FNP defenders will shift accordingly.
 
 ## February 2026 - Defender Abilities Update
 

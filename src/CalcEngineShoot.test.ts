@@ -118,7 +118,7 @@ describe(calcDamage.name + ', smallCrit (crit < norm)', () => {
   it('smallCrit, 1ch 0nh vs 0cs 2ns => 1dmw', () => {
     expect(calcDamage(atker, def, 1, 0, 0, 2).damage).toBe(dmw);
   });
-  it('smallCrit, 1ch 2nh vs 0cs 2ns => 1dmw + 2dn', () => {
+  it('smallCrit, 1ch 2nh vs 0cs 2ns => 1dmw + 1dc', () => {
     expect(calcDamage(atker, def, 1, 2, 0, 2).damage).toBe(dmw + dc);
   });
   it('smallCrit, 2ch 2nh vs 0cs 3ns => 2dmw + 2dc', () => {
@@ -138,6 +138,32 @@ describe(calcDmgProbs.name + ', Durable', () => {
     const lowDc = 3;
     const lowAtker = new Model(0, 0, dn, lowDc);
     expect(calcDamage(lowAtker, def, 2, 2, 0, 0).damage).toBe(2 * lowDc + 2 * dn);
+  });
+});
+
+describe(calcDamage.name + ', numHits with MWx', () => {
+  // cancelled crit still counts as a hit when MWx contributed damage
+  const dn = 1;
+  const dc = 4;
+  const dmw = 2;
+  const atker = new Model(0, 0, dn, dc, dmw);
+  const def = new Model();
+
+  it('1 crit cancelled by 1 crit save, mwx leaks => numHits=1', () => {
+    const r = calcDamage(atker, def, 1, 0, 1, 0);
+    expect(r.damage).toBe(dmw);
+    expect(r.numHits).toBe(1);
+  });
+  it('2 crits, 1 cancelled, 1 norm survives => numHits=3 (mwx for both crits)', () => {
+    const r = calcDamage(atker, def, 2, 1, 1, 0);
+    expect(r.damage).toBe(2 * dmw + dc + dn);
+    expect(r.numHits).toBe(3);
+  });
+  it('1 crit cancelled, mwx=0 => numHits=0 (no dmg, no FNP)', () => {
+    const noMwxAtker = new Model(0, 0, dn, dc, 0);
+    const r = calcDamage(noMwxAtker, def, 1, 0, 1, 0);
+    expect(r.damage).toBe(0);
+    expect(r.numHits).toBe(0);
   });
 });
 

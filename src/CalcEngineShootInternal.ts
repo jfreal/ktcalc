@@ -107,6 +107,7 @@ export function calcDamage(
   critSaves: number,
   normSaves: number,
 ): DamageResult {
+  const originalCritHits = critHits;
   let damage = critHits * attacker.mwx;
   const numNormalSavesToCancelCritHit = 2; // for Kill Team rules, not Fire Team rules
 
@@ -174,7 +175,9 @@ export function calcDamage(
   }
 
   damage += critHits * attacker.critDmg + normHits * attacker.normDmg;
-  const numHits = critHits + normHits;
+  // surviving hits get FNP rolls; cancelled crits still count if MWx contributed dmg
+  const mwxCancelledCrits = attacker.mwx > 0 ? (originalCritHits - critHits) : 0;
+  const numHits = critHits + normHits + mwxCancelledCrits;
 
   // TODO: make the above decisions take Durable into account
   if(defender.has(Ability.Durable) && attacker.critDmg > MinCritDmgAfterDurable && critHits > 0) {
