@@ -139,6 +139,16 @@ describe(calcParryForLastEnemySuccessThenKillEnemy.name, () => {
 });
 
 describe(calcDieChoice.name + ', common & strike/parry', () => {
+  it('#0: strike if enemy has no successes (parry would cancel nothing)', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.Parry);
+    const enemy = newFighterState(0, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('#0b: strike if enemy has no successes, chooser only norms', () => {
+    const chooser = newFighterState(0, 1, 99, FightStrategy.Parry);
+    const enemy = newFighterState(0, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
   it('#1a: strike if you can kill with next strike', () => {
     const chooser = newFighterState(1, 1, 99, FightStrategy.Parry);
     const enemy = newFighterState(9, 9, chooser.profile.critDmg);
@@ -713,5 +723,36 @@ describe('Feel No Pain in fights', () => {
     // We can't predict exact value due to rng, but wounds should be <= 10 and >= 8
     expect(defender.currentWounds).toBeGreaterThanOrEqual(8);
     expect(defender.currentWounds).toBeLessThanOrEqual(10);
+  });
+});
+
+describe('JustAScratch + parry monotonicity', () => {
+  // regression: previously, more rerolls for JAS-defender increased death chance
+  // because awesomeParry fired when enemy had 0 successes (chooser wasted crits parrying nothing)
+  // and didn't account for JAS reducing chooser's first post-parry strike to 0
+  function aDeathChance(rerollA: Ability | undefined, strat: FightStrategy): number {
+    const A = new Model(4, 4, 3, 4).setProp('wounds', 8).setAbility(Ability.JustAScratch);
+    if (rerollA) A.reroll = rerollA;
+    const B = new Model(4, 4, 3, 4).setProp('wounds', 8);
+    const probs = calcRemainingWoundPairProbs(B, A,
+      FightStrategy.MaxDmgToEnemy, strat, 1, highSimCount, testRng());
+    const [, aWounds] = consolidateWoundPairProbs(probs);
+    return aWounds.get(0) || 0;
+  }
+
+  it('Parry: more rerolls → less death', () => {
+    const none = aDeathChance(undefined, FightStrategy.Parry);
+    const bal = aDeathChance(Ability.Balanced, FightStrategy.Parry);
+    const dbal = aDeathChance(Ability.DoubleBalanced, FightStrategy.Parry);
+    expect(bal).toBeLessThanOrEqual(none);
+    expect(dbal).toBeLessThanOrEqual(bal);
+  });
+
+  it('MinDmgToSelf: more rerolls → less death', () => {
+    const none = aDeathChance(undefined, FightStrategy.MinDmgToSelf);
+    const bal = aDeathChance(Ability.Balanced, FightStrategy.MinDmgToSelf);
+    const dbal = aDeathChance(Ability.DoubleBalanced, FightStrategy.MinDmgToSelf);
+    expect(bal).toBeLessThanOrEqual(none);
+    expect(dbal).toBeLessThanOrEqual(bal);
   });
 });
