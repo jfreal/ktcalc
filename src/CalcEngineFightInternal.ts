@@ -138,7 +138,12 @@ export function resolveFight(
 }
 
 export function calcDieChoice(chooser: FighterState, enemy: FighterState): FightChoice {
-  // note: this function assumes both chooser and enemy have remaining successes
+  // note: this function assumes chooser has remaining successes
+
+  // if enemy has no successes, parry would cancel nothing — must strike
+  if(enemy.crits + enemy.norms === 0) {
+    return chooser.nextStrike();
+  }
 
   // ALWAYS strike if you can kill enemy with a single strike;
   // also, if enemy has brutal and you have no crits, then you must strike;
@@ -345,9 +350,14 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
   if(fightChoice !== null) {
     const critsAfterParry = chooser.crits - (fightChoice === FightChoice.CritParry ? 1 : 0);
     const normsAfterParry = chooser.norms - (fightChoice === FightChoice.NormParry ? 1 : 0);
-    const remainingDmg = chooser.possibleDmg(critsAfterParry, normsAfterParry);
+    let remainingDmg = chooser.possibleDmg(critsAfterParry, normsAfterParry);
+    // if chooser hasn't struck yet AND enemy has JAS, first post-parry strike does 0 dmg
+    if(!chooser.hasStruck && enemy.profile.has(Ability.JustAScratch) && (critsAfterParry + normsAfterParry) > 0) {
+      const firstStrikeDmg = critsAfterParry > 0 ? chooser.profile.critDmg : chooser.profile.normDmg;
+      remainingDmg -= firstStrikeDmg;
+    }
 
-    if(remainingDmg >= enemy.profile.wounds) {
+    if(remainingDmg >= enemy.currentWounds) {
       return fightChoice;
     }
   }
