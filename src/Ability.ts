@@ -20,6 +20,7 @@ export enum Ability {
     FailToNormIfAtLeastTwoSuccesses = "CloseAssault", // if at least two successes, promote fail to norm; from Imperial Navy Breachers Close Assault
     JustAScratch = "JustAScratch", // cancel one attack die just before damage; both shoot and fight; prefers crits
     JustAScratchNorms = "JustAScratchNorms", // cancel one normal hit just before damage
+    HalfDamageFirstStrike = "HalfDamageFirstStrike", // first strike damage is halved (rounded up, minimum 2)
     Durable = "Durable2021", // one crit hit does 1 less damage, to minimun of 3
     ObscuredTarget = "ObscuredTarget", // all crits become norms; can't do crit-triggered abilities; discard a success at the end
     PuritySeal = "PuritySeal", // 2024; if roll 2 fails, can discard one fail to change other fail to normal success; attack only

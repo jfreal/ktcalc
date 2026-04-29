@@ -97,6 +97,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.AutoNorms,        atk.autoNorms,              xspan(1, 9),    numHandler('autoNorms')),
     new IncProps(N.NormsToCrits,     atk.normsToCrits,           xspan(1, 9),    numHandler('normsToCrits')),
     new IncProps(N.FailsToNorms,     atk.failsToNorms,           xspan(1, 9),    numHandler('failsToNorms')),
+    new IncProps(N.FeelNoPain,       atk.fnp + '+',              xspan(6, 2, '+'), numHandler('fnp')),
   ];
 
   const advancedCheckboxes: { note: Note, ability: Ability }[] = [
@@ -106,6 +107,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     { note: N.Duelist, ability: Ability.Duelist },
     { note: N.JustAScratch2021, ability: Ability.JustAScratch },
     { note: N.Durable2021, ability: Ability.Durable },
+    { note: N.HalfDamageFirstStrike, ability: Ability.HalfDamageFirstStrike },
   ];
 
   const advancedParamsToShow
