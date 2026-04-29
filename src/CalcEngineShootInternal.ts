@@ -80,10 +80,9 @@ export function calcPostFnpDamages(
 
   preFnpDmgs.forEach((prob, key) => {
     const [damage, numHits] = key.split(',').map(Number);
-    // roll FNP once per surviving hit; each success subtracts 1 damage
-    const maxSuccesses = Math.min(numHits, damage - (skipZeroDamage ? 1 : 0));
-    for(let successes = 0; successes <= maxSuccesses; successes++) {
-      const postFnpDmg = damage - successes;
+    // roll FNP once per surviving hit; each success subtracts 1 damage; clamp at 0
+    for(let successes = 0; successes <= numHits; successes++) {
+      const postFnpDmg = Math.max(0, damage - successes);
       if(skipZeroDamage && postFnpDmg <= 0) continue;
       const fnpProb = Util.binomialPmf(numHits, successes, probFnpSuccess);
       Util.addToMapValue(postFnpDmgs, postFnpDmg, prob * fnpProb);
@@ -96,7 +95,7 @@ export function calcPostFnpDamages(
 
 export interface DamageResult {
   damage: number;
-  numHits: number; // surviving hits after saves (for FNP rolls)
+  numHits: number; // damage-causing hits / FNP-relevant hit instances; includes cancelled crits when MWx contributed damage
 }
 
 export function calcDamage(
