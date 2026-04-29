@@ -147,10 +147,10 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
     return chooser.nextStrike();
   }
 
-  // if can stun enemy (crit strike that also cancels an enemy NORM success),
+  // if can shock enemy (crit strike that also cancels an enemy NORM success),
   // and enemy doesn't have any crit successes, then there is no downside
-  // to doing a stunning crit strike now
-  if(chooser.profile.has(Ability.Stun2021) && !chooser.hasCritStruck && chooser.crits > 0 && enemy.crits === 0) {
+  // to doing a shocking crit strike now
+  if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0 && enemy.crits === 0) {
     return FightChoice.CritStrike;
   }
 
@@ -233,8 +233,8 @@ export function resolveDieChoice(
     applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable);
     chooser.crits--;
 
-    if(chooser.profile.has(Ability.Stun2021) && !chooser.hasCritStruck) {
-      enemy.norms = Math.max(0, enemy.norms - 1); // stun ability can only cancel an enemy norm success
+    if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck) {
+      enemy.norms = Math.max(0, enemy.norms - 1); // shock ability cancels an enemy norm success
     }
 
     if (

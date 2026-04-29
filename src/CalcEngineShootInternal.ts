@@ -71,23 +71,32 @@ export function calcDefenderFinalDiceStuff(
 
 export function calcPostFnpDamages(
   fnp: number,
-  preFnpDmgs: Map<number,number>,
+  preFnpDmgs: Map<string,number>, // key = "damage,numHits"
   skipZeroDamage: boolean = true,
 ): Map<number,number>
 {
   const postFnpDmgs = new Map<number,number>();
-  const probDamagePersists = (fnp - 1) / 6;
+  const probFnpSuccess = (7 - fnp) / 6; // prob of passing FNP roll (reducing 1 dmg)
 
-  preFnpDmgs.forEach((preFnpProb, preFnpDmg) => {
-    for(let postFnpDmg = skipZeroDamage ? 1 : 0; postFnpDmg <= preFnpDmg; postFnpDmg++) {
-      const withinFnpProb = Util.binomialPmf(preFnpDmg, postFnpDmg, probDamagePersists);
-      Util.addToMapValue(postFnpDmgs, postFnpDmg, preFnpProb * withinFnpProb);
+  preFnpDmgs.forEach((prob, key) => {
+    const [damage, numHits] = key.split(',').map(Number);
+    // roll FNP once per surviving hit; each success subtracts 1 damage; clamp at 0
+    for(let successes = 0; successes <= numHits; successes++) {
+      const postFnpDmg = Math.max(0, damage - successes);
+      if(skipZeroDamage && postFnpDmg <= 0) continue;
+      const fnpProb = Util.binomialPmf(numHits, successes, probFnpSuccess);
+      Util.addToMapValue(postFnpDmgs, postFnpDmg, prob * fnpProb);
     }
   });
 
   return postFnpDmgs;
 }
 
+
+export interface DamageResult {
+  damage: number;
+  numHits: number; // damage-causing hits / FNP-relevant hit instances; includes cancelled crits when MWx contributed damage
+}
 
 export function calcDamage(
   attacker: Model,
@@ -96,7 +105,8 @@ export function calcDamage(
   normHits: number,
   critSaves: number,
   normSaves: number,
-): number {
+): DamageResult {
+  const originalCritHits = critHits;
   let damage = critHits * attacker.mwx;
   const numNormalSavesToCancelCritHit = 2; // for Kill Team rules, not Fire Team rules
 
@@ -164,11 +174,14 @@ export function calcDamage(
   }
 
   damage += critHits * attacker.critDmg + normHits * attacker.normDmg;
+  // surviving hits get FNP rolls; cancelled crits still count if MWx contributed dmg
+  const mwxCancelledCrits = attacker.mwx > 0 ? (originalCritHits - critHits) : 0;
+  const numHits = critHits + normHits + mwxCancelledCrits;
 
   // TODO: make the above decisions take Durable into account
   if(defender.has(Ability.Durable) && attacker.critDmg > MinCritDmgAfterDurable && critHits > 0) {
     damage -= 1;
   }
 
-  return damage;
+  return { damage, numHits };
 }

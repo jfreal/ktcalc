@@ -47,15 +47,11 @@ export default class FighterState {
   }
 
   private rollFnp(dmg: number): number {
+    // FNP rolls once per strike; on success, reduce that strike's damage by 1
+    if (dmg <= 0) return dmg;
     const fnpThreshold = this.profile.fnp;
-    let survived = 0;
-    for (let i = 0; i < dmg; i++) {
-      const roll = Math.floor(this.rng!() * 6) + 1; // roll 1-6
-      if (roll >= fnpThreshold) {
-        survived++;
-      }
-    }
-    return dmg - survived;
+    const roll = Math.floor(this.rng!() * 6) + 1; // roll 1-6
+    return roll >= fnpThreshold ? dmg - 1 : dmg;
   }
 
   public applyDmgFromStrike(dmg: number, atker: Model, isCrit: boolean) {

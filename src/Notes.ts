@@ -92,7 +92,7 @@ export const Durable2021 = new Note(
 );
 export const FeelNoPain = new Note(
   `FeelNoPain`,
-  `FNP is the category of abilities where just before damage is actually resolved, you roll a die for each potential wound, and each rolled success prevents a wound from being lost. Even MWx damage can be prevented via FNP.`,
+  `FNP is the category of abilities where just before damage is actually resolved, you roll a die for each successful hit (strike). Each rolled success reduces that hit's damage by 1. Even MWx damage can be prevented via FNP.`,
 );
 export const AvgDamageUnbounded = new Note(
   `AvgDamageUnbounded`,
@@ -104,11 +104,7 @@ export const Brutal = new Note(
 );
 export const Shock = new Note(
   `Shock`,
-  `First crit strike also cancels enemy unresolved norm (or crit if no norms).`,
-);
-export const StunMelee2021 = new Note(
-  `Stun2021`,
-  `In KT2021, in melee, first crit strike additionally discards 1 norm success of opponent. Second crit strike decrements opponent APL.`,
+  `First crit strike also cancels one enemy unresolved norm.`,
 );
 export const NicheAbility = new Note(
   `NicheAbility`,

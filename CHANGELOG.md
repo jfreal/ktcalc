@@ -1,5 +1,13 @@
 # Changelog
 
+## March 2026 - KT2024 Fight UI Cleanup
+
+- Renamed Stun2021 to Shock (same effect: first crit strike discards 1 opponent norm; APL decrement removed)
+- Removed AutoCrits from fight UI (no longer in KT2024 fight rules; replaced by Severe)
+- Converted all boolean ability dropdowns (X/✔) to checkboxes for cleaner UI
+- Fixed unused variable lint errors (fromNumericKey, rollD6, classifyDie)
+- Feel No Pain now rolls once per surviving hit (reduces that hit's damage by 1) instead of once per damage point. Damage distributions for FNP defenders will shift accordingly.
+
 ## March 2026 - Fight Defensive Abilities
 
 - Added Feel No Pain (FNP) to fight calculator: for each point of damage from a strike, roll a die; on a result >= the FNP threshold, that damage is prevented. Options: 4+, 5+, 6+
