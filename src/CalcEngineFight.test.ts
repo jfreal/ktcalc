@@ -139,6 +139,16 @@ describe(calcParryForLastEnemySuccessThenKillEnemy.name, () => {
 });
 
 describe(calcDieChoice.name + ', common & strike/parry', () => {
+  it('#0: strike if enemy has no successes (parry would cancel nothing)', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.Parry);
+    const enemy = newFighterState(0, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('#0b: strike if enemy has no successes, chooser only norms', () => {
+    const chooser = newFighterState(0, 1, 99, FightStrategy.Parry);
+    const enemy = newFighterState(0, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
   it('#1a: strike if you can kill with next strike', () => {
     const chooser = newFighterState(1, 1, 99, FightStrategy.Parry);
     const enemy = newFighterState(9, 9, chooser.profile.critDmg);

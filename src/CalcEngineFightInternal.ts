@@ -351,10 +351,12 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
     const critsAfterParry = chooser.crits - (fightChoice === FightChoice.CritParry ? 1 : 0);
     const normsAfterParry = chooser.norms - (fightChoice === FightChoice.NormParry ? 1 : 0);
     let remainingDmg = chooser.possibleDmg(critsAfterParry, normsAfterParry);
-    // if chooser hasn't struck yet AND enemy has JAS, first post-parry strike does 0 dmg
+    // if chooser hasn't struck yet AND enemy has JAS, first post-parry strike does 0 total dmg
+    // (including Hammerhand + MWx); skip that strike entirely when estimating remaining damage
     if(!chooser.hasStruck && enemy.profile.has(Ability.JustAScratch) && (critsAfterParry + normsAfterParry) > 0) {
-      const firstStrikeDmg = critsAfterParry > 0 ? chooser.profile.critDmg : chooser.profile.normDmg;
-      remainingDmg -= firstStrikeDmg;
+      const critsAfterFirstStrike = critsAfterParry - (critsAfterParry > 0 ? 1 : 0);
+      const normsAfterFirstStrike = normsAfterParry - (critsAfterParry > 0 ? 0 : 1);
+      remainingDmg = chooser.possibleDmg(critsAfterFirstStrike, normsAfterFirstStrike);
     }
 
     if(remainingDmg >= enemy.currentWounds) {
