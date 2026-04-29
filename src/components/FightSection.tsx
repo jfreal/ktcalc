@@ -14,11 +14,31 @@ import { calcRemainingWounds } from 'src/CalcEngineFight';
 import FightResultsDisplay from 'src/components/FightResultsDisplay';
 import FightOptions from 'src/FightOptions';
 import * as N from 'src/Notes';
+import { getFightStateFromUrl, useFightUrlState } from 'src/hooks/useUrlState';
+import { useShareContext } from 'src/context/ShareContext';
 
-const FightSection: React.FC = () => {
-  const [fighterA, setFighterA] = React.useState(new Model());
-  const [fighterB, setFighterB] = React.useState(new Model());
-  const [fightOptions, setFightOptions] = React.useState(new FightOptions());
+interface FightSectionProps {
+  isActive: boolean;
+}
+
+const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
+  // Load initial state from URL if present
+  const initialState = React.useMemo(() => getFightStateFromUrl(), []);
+
+  const [fighterA, setFighterA] = React.useState(() => initialState?.fighterA ?? new Model());
+  const [fighterB, setFighterB] = React.useState(() => initialState?.fighterB ?? new Model());
+  const [fightOptions, setFightOptions] = React.useState(() => initialState?.fightOptions ?? new FightOptions());
+
+  // URL sharing functions
+  const { getShareUrl, addParamsToUrl } = useFightUrlState(fighterA, fighterB, fightOptions);
+  const { setShareFunctions } = useShareContext();
+
+  React.useEffect(() => {
+    if (isActive) {
+      setShareFunctions({ getShareUrl, addParamsToUrl });
+    }
+  }, [getShareUrl, addParamsToUrl, setShareFunctions, isActive]);
+
   const aFirst = fightOptions.firstFighter === 'A';
   const [fighter1WoundProbs, fighter2WoundProbs] = React.useMemo(
     () => calcRemainingWounds(
