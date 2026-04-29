@@ -8,6 +8,11 @@
 - Fixed unused variable lint errors (fromNumericKey, rollD6, classifyDie)
 - Feel No Pain now rolls once per surviving hit (reduces that hit's damage by 1) instead of once per damage point. Damage distributions for FNP defenders will shift accordingly.
 
+## March 2026 - Fight Defensive Abilities
+
+- Added Feel No Pain (FNP) to fight calculator: for each point of damage from a strike, roll a die; on a result >= the FNP threshold, that damage is prevented. Options: 4+, 5+, 6+
+- Added Half Damage First Strike: first strike damage against the defender is halved (rounded up) to a minimum of 2. JustAScratch takes priority; Hammerhand bonus applies before halving
+
 ## February 2026 - Defender Abilities Update
 
 - Moved Obscured checkbox to Defender section (was in Attacker advanced params)

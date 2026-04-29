@@ -3,6 +3,7 @@ import FightStrategy from 'src/FightStrategy';
 import FightChoice from "src/FightChoice";
 import Ability from "./Ability";
 import { MinCritDmgAfterDurable } from "./KtMisc";
+import { RngFunction } from "src/MonteCarloFightDice";
 
 export default class FighterState {
   public profile: Model;
@@ -12,6 +13,7 @@ export default class FighterState {
   public currentWounds: number;
   public hasStruck: boolean;
   public hasCritStruck: boolean;
+  public rng: RngFunction | null;
 
   public constructor(
     profile: Model,
@@ -21,6 +23,7 @@ export default class FighterState {
     currentWounds: number = -1,
     hasStruck: boolean = false,
     hasCritStruck: boolean = false,
+    rng: RngFunction | null = null,
   ) {
     this.profile = profile;
     this.crits = crits;
@@ -29,6 +32,7 @@ export default class FighterState {
     this.currentWounds = currentWounds === -1 ? this.profile.wounds : currentWounds;
     this.hasStruck = hasStruck;
     this.hasCritStruck = hasCritStruck;
+    this.rng = rng;
   }
 
   public successes() {
@@ -36,7 +40,22 @@ export default class FighterState {
   }
 
   public applyDmg(dmg: number) {
+    if (this.profile.usesFnp() && this.rng) {
+      dmg = this.rollFnp(dmg);
+    }
     this.currentWounds = Math.max(0, this.currentWounds - dmg);
+  }
+
+  private rollFnp(dmg: number): number {
+    const fnpThreshold = this.profile.fnp;
+    let survived = 0;
+    for (let i = 0; i < dmg; i++) {
+      const roll = Math.floor(this.rng!() * 6) + 1; // roll 1-6
+      if (roll >= fnpThreshold) {
+        survived++;
+      }
+    }
+    return dmg - survived;
   }
 
   public applyDmgFromStrike(dmg: number, atker: Model, isCrit: boolean) {
@@ -121,6 +140,7 @@ export default class FighterState {
       this.currentWounds,
       this.hasStruck,
       this.hasCritStruck,
+      this.rng,
     );
   }
 
