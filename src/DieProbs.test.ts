@@ -1,8 +1,6 @@
 import DieProbs from 'src/DieProbs';
 import Ability from 'src/Ability';
 
-const eps = 1e-9;
-
 describe('DieProbs.fromSkills lethal vs hit-skill', () => {
   it('BS=4+, no lethal: 1/6 crit (nat 6), 2/6 norm', () => {
     const p = DieProbs.fromSkills(6, 4, Ability.None);
