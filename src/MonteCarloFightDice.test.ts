@@ -158,6 +158,14 @@ describe('simulateFighterDice determinism with seeded PRNG', () => {
     expect(result1).toEqual(result2);
   });
 
+  it('Lethal does not promote dice that would otherwise fail (BS=6+ Lethal=4+ → only nat 6 crits)', () => {
+    const model = new Model(6, 6, 1, 2).setProp('lethal', 4); // 6 dice, BS 6+, lethal 4+
+    const { avgCrits, avgNorms } = averageDiceResults(model);
+    // only nat 6 hits at all → 6 dice * 1/6 = 1 crit average; 0 norms
+    expect(avgCrits).toBeCloseTo(1, 1);
+    expect(avgNorms).toBeCloseTo(0, 1);
+  });
+
   it('different seeds produce different results (usually)', () => {
     const model = new Model(10, 3, 3, 4); // lots of dice for variety
 

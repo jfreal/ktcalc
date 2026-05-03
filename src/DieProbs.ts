@@ -16,9 +16,12 @@ export default class DieProbs {
   }
 
   public static fromSkills(critSkill: number, normSkill: number, reroll: Ability) {
+    // lethal must not promote a die that would have failed: clamp critSkill >= normSkill
+    // (e.g. BS=6+, lethal=5+ → a 5 still fails; only a 6 crits)
+    const effCritSkill = Math.max(critSkill, normSkill);
     // BEFORE taking RerollOnes and relentless into account
-    let critHitProb = (7 - critSkill) / 6;
-    let normHitProb = Math.max(0, (critSkill - normSkill) / 6); // handle BS=6+ and Lethal=4+
+    let critHitProb = (7 - effCritSkill) / 6;
+    let normHitProb = Math.max(0, (effCritSkill - normSkill) / 6);
     let failHitProb = 1 - critHitProb - normHitProb;
 
     // now to take RerollOnes and relentless into account...
