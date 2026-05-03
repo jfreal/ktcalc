@@ -604,19 +604,18 @@ describe(calcRemainingWounds.name + ' basic', () => {
     expect(guy2Wounds.get(0)).toBeCloseTo(pc, requiredPrecision);
     expect(guy2Wounds.get(dc)).toBeCloseTo(pf, requiredPrecision);
   });
-  it('WS=6+ and Lethal=4+ should be handled same as WS=4+ and Lethal=4+', () => {
-    const guy1 = new Model(1, 2, 1, 1).setProp('wounds', 2);
-    const guy2a = new Model(1, 4, 1, 2).setProp('wounds', 1).setProp('lethal', 4);
-    const guy2b = new Model(1, 6, 1, 2).setProp('wounds', 1).setProp('lethal', 4);
+  it('Lethal does not promote dice that would otherwise fail (WS=6+ Lethal=4+ → only nat 6 crits)', () => {
+    // WS=6+ means only a 6 hits at all; Lethal=4+ should NOT make 4s/5s into crits
+    // guy2 is the attacker; guy1 is a passive sandbag (no attacks)
+    const guy1 = new Model(0, 7, 1, 1).setProp('wounds', 100);
+    const guy2 = new Model(1, 6, 1, 2).setProp('wounds', 100).setProp('lethal', 4);
 
-    // Both should produce similar probability distributions
-    const probsA = calcRemainingWoundPairProbs(guy1, guy2a, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
-    const probsB = calcRemainingWoundPairProbs(guy1, guy2b, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
-    const [guy1AWounds] = consolidateWoundPairProbs(probsA);
-    const [guy1BWounds] = consolidateWoundPairProbs(probsB);
-    for (const [wounds, prob] of guy1AWounds) {
-      expect(prob).toBeCloseTo(guy1BWounds.get(wounds) ?? 0, requiredPrecision);
-    }
+    const probs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const [guy1Wounds] = consolidateWoundPairProbs(probs);
+    // guy2 hits guy1 only on nat 6 (1/6); damage = critDmg = 2
+    const pHit = 1 / 6;
+    const dmgProb = guy1Wounds.get(100 - 2) ?? 0;
+    expect(dmgProb).toBeCloseTo(pHit, requiredPrecision);
   });
 });
 
