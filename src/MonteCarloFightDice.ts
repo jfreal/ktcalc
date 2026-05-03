@@ -21,7 +21,8 @@ export function simulateFighterDice(
   defender: Model | undefined,
   rng: RngFunction = Math.random,
 ): { crits: number; norms: number } {
-  const critThreshold = model.critSkill();
+  // lethal must not promote a die that would have failed: clamp critThreshold >= normThreshold
+  const critThreshold = Math.max(model.critSkill(), model.diceStat);
   const normThreshold = model.diceStat;
 
   // Merge defender's ObscuredTarget into abilities if present
