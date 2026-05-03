@@ -74,6 +74,14 @@ export const JustAScratch2021 = new Note(
   `Just a Scratch (JaS)`,
   `Just a Scratch (JaS): Ignore damage from an attack die. JaS (Crits) prefers crits; JaS (Normals) can only ignore normal hits.`,
 );
+export const JustAScratchCrits = new Note(
+  `JaS (Crits)`,
+  `Just a Scratch — ignore damage from one attack die, preferring crits.`,
+);
+export const JustAScratchNorms = new Note(
+  `JaS (Normals)`,
+  `Just a Scratch — ignore damage from one normal hit only (cannot ignore crits).`,
+);
 export const PuritySeal = new Note(
   `PuritySeal`,
   `If roll 2 fails, can discard one fail to change other fail to normal success; attack only.`,

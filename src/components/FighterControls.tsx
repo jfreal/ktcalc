@@ -105,7 +105,8 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     { note: N.Punishing, ability: Ability.Punishing },
     { note: N.PuritySeal, ability: Ability.PuritySeal },
     { note: N.Duelist, ability: Ability.Duelist },
-    { note: N.JustAScratch2021, ability: Ability.JustAScratch },
+    { note: N.JustAScratchCrits, ability: Ability.JustAScratch },
+    { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
     { note: N.Durable2021, ability: Ability.Durable },
     { note: N.HalfDamageFirstStrike, ability: Ability.HalfDamageFirstStrike },
   ];

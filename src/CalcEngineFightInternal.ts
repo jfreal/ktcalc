@@ -216,9 +216,14 @@ export function resolveDieChoice(
   chooser: FighterState,
   enemy: FighterState,
 ): void {
-  function applyDmgWithFirstStrikeHandling(dmg: number) {
+  function applyDmgWithFirstStrikeHandling(dmg: number, isCrit: boolean) {
+    // JAS (any) — eats chooser's first strike
+    // JAS-norms — eats chooser's first NORM strike (crits unaffected)
+    const jasEats = !chooser.hasStruck && enemy.profile.abilities.has(Ability.JustAScratch);
+    const jasNormsEats = !isCrit && !chooser.hasNormStruck && enemy.profile.abilities.has(Ability.JustAScratchNorms);
+
     if(!chooser.hasStruck) {
-      if(enemy.profile.abilities.has(Ability.JustAScratch)) {
+      if(jasEats) {
         dmg = 0;
       } else {
         if(chooser.profile.abilities.has(Ability.Hammerhand2021)) {
@@ -230,12 +235,18 @@ export function resolveDieChoice(
       }
       chooser.hasStruck = true;
     }
+    if(jasNormsEats) {
+      dmg = 0;
+    }
+    if(!isCrit) {
+      chooser.hasNormStruck = true;
+    }
     enemy.applyDmg(dmg);
   }
 
   if(choice === FightChoice.CritStrike) {
     let critDmgAfterPossibleDurable = chooser.nextCritDmgWithDurableAndWithoutHammerhand(enemy);
-    applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable);
+    applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable, true);
     chooser.crits--;
 
     if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck) {
@@ -260,7 +271,7 @@ export function resolveDieChoice(
     chooser.hasCritStruck = true;
   }
   else if(choice === FightChoice.NormStrike) {
-    applyDmgWithFirstStrikeHandling(chooser.profile.normDmg);
+    applyDmgWithFirstStrikeHandling(chooser.profile.normDmg, false);
     chooser.norms--;
   }
   else if(choice === FightChoice.CritParry) {
@@ -357,6 +368,10 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
       const critsAfterFirstStrike = critsAfterParry - (critsAfterParry > 0 ? 1 : 0);
       const normsAfterFirstStrike = normsAfterParry - (critsAfterParry > 0 ? 0 : 1);
       remainingDmg = chooser.possibleDmg(critsAfterFirstStrike, normsAfterFirstStrike);
+    }
+    // JAS-norms eats first norm strike (regardless of crit strikes); skip one norm if applicable
+    else if(!chooser.hasNormStruck && enemy.profile.has(Ability.JustAScratchNorms) && normsAfterParry > 0) {
+      remainingDmg = chooser.possibleDmg(critsAfterParry, normsAfterParry - 1);
     }
 
     if(remainingDmg >= enemy.currentWounds) {

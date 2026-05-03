@@ -13,6 +13,7 @@ export default class FighterState {
   public currentWounds: number;
   public hasStruck: boolean;
   public hasCritStruck: boolean;
+  public hasNormStruck: boolean;
   public rng: RngFunction | null;
 
   public constructor(
@@ -24,6 +25,7 @@ export default class FighterState {
     hasStruck: boolean = false,
     hasCritStruck: boolean = false,
     rng: RngFunction | null = null,
+    hasNormStruck: boolean = false,
   ) {
     this.profile = profile;
     this.crits = crits;
@@ -32,6 +34,7 @@ export default class FighterState {
     this.currentWounds = currentWounds === -1 ? this.profile.wounds : currentWounds;
     this.hasStruck = hasStruck;
     this.hasCritStruck = hasCritStruck;
+    this.hasNormStruck = hasNormStruck;
     this.rng = rng;
   }
 
@@ -125,6 +128,7 @@ export default class FighterState {
     this.currentWounds = currentWounds;
     this.hasStruck = false;
     this.hasCritStruck = false;
+    this.hasNormStruck = false;
   }
 
   public clone(): FighterState {
@@ -137,6 +141,7 @@ export default class FighterState {
       this.hasStruck,
       this.hasCritStruck,
       this.rng,
+      this.hasNormStruck,
     );
   }
 

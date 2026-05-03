@@ -465,6 +465,41 @@ describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, duel
     resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds - 2);
   });
+  it('JustAScratchNorms eats first norm strike, not crit strike', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    const critDmg = chooser.profile.critDmg;
+    const normDmg = chooser.profile.normDmg;
+    const enemy = newFighterState(0, 0, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratchNorms, true);
+
+    // crit strike first — JAS-norms does NOT trigger
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg);
+
+    // first norm strike — JAS-norms eats it
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg);
+
+    // second norm strike — full damage (JAS-norms only triggers once)
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg - normDmg);
+  });
+  it('JustAScratchNorms triggered by first strike when it is a norm', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(0, 2, 10);
+    const normDmg = chooser.profile.normDmg;
+    const enemy = newFighterState(0, 0, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratchNorms, true);
+
+    // first strike is norm — JAS-norms eats it
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+
+    // next norm: full dmg
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - normDmg);
+  });
   it('JustAScratch takes priority over HalfDamageFirstStrike', () => {
     const initialWounds = 100;
     const chooser = newFighterState(2, 2, 10);
