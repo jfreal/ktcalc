@@ -414,32 +414,31 @@ describe(calcDmgProbs.name + ', px and lethal', () => {
     expect(dmgs.size).toBe(1);
   });
 
-  it('px branch does not bleed ObscuredTarget onto defender save dice', () => {
+  it('defender ObscuredTarget does not bleed onto defender save dice', () => {
     // Regression: ObscuredTarget is a defender-side flag that modifies the
     // *attacker's* dice (already merged into attacker.abilities by
     // calcFinalDiceProbsForAttacker). It must not also apply to the defender's
     // own save dice, where applyPostRollModifications would otherwise discard
     // save successes via the "norms = norms + crits - 1; crits = 0" line.
-    const atkNoObscure = newTestAttacker(1, 1).setProp('lethal', 1).setProp('px', 1);
-    const defNoObscure = Model.basicDefender(3, 12);
+    //
+    // (Note: ObscuredTarget zeroes attacker crits, so this case routes through
+    // the non-Px branch even with px set. The filter is applied to both
+    // defender branches in calcDefenderFinalDiceStuff, so a single non-Px
+    // assertion covers both code paths against this regression.)
+    //
+    // Setup probes the defender side: 2 always-crit attack dice + Obscured
+    // discards down to 1 norm hit reaching the defender. The defender has
+    // autoNorms=1, which guarantees a normal save that cancels the leftover
+    // norm hit -- *unless* ObscuredTarget also runs against the defender's
+    // own dice, in which case the discard-one rule consumes the autoNorm and
+    // some defender outcomes leak the norm hit through.
+    const atk = newTestAttacker(2, 1).setProp('lethal', 1).setProp('px', 1);
+    const def = Model.basicDefender(3, 12).setProp('autoNorms', 1);
+    def.abilities.add(Ability.ObscuredTarget);
 
-    const atkWithObscure = newTestAttacker(1, 1).setProp('lethal', 1).setProp('px', 1);
-    const defWithObscure = Model.basicDefender(3, 12);
-    defWithObscure.abilities.add(Ability.ObscuredTarget);
-
-    // Attacker has no crits/norms in the Obscured branch (Obscured discards
-    // them down) so damage probabilities should match for the no-Obscured
-    // case on a roll-by-roll basis EXCEPT for ObscuredTarget's effect on the
-    // attacker dice. Verify that defender's own dice are not also being
-    // discarded: ObscuredTarget defender's full save distribution must match
-    // a defender without ObscuredTarget when ObscuredTarget's effect is
-    // accounted for only on the attacker side. The simplest assertion: with
-    // a single guaranteed crit, ObscuredTarget turns it into "0 crit + 0 norm
-    // after the discard-one rule", so damage is always 0 regardless of
-    // defender saves.
-    void atkNoObscure; void defNoObscure;
-    const dmgs = calcDmgProbs(atkWithObscure, defWithObscure);
+    const dmgs = calcDmgProbs(atk, def);
     expect(dmgs.get(0)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.size).toBe(1);
   });
 });
 
