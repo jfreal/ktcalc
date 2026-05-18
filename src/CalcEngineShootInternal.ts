@@ -58,7 +58,9 @@ export function calcDefenderFinalDiceStuff(
       defender.reroll,
       defender.autoCrits,
       defender.autoNorms,
+      defender.failsToNorms,
       defender.normsToCrits,
+      defender.abilities,
     );
   }
 
