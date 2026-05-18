@@ -104,7 +104,14 @@ const AppContent = () => {
 const App = () => (
   <ShareProvider>
     <Routes>
-      <Route path="/notes/lethal-relentless" element={<LethalRelentlessNote />} />
+      <Route
+        path="/notes/lethal-relentless"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <LethalRelentlessNote />
+          </ErrorBoundary>
+        }
+      />
       <Route path="*" element={<AppContent />} />
     </Routes>
   </ShareProvider>

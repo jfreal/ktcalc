@@ -5,6 +5,13 @@ import { Link } from 'react-router-dom';
 const tdRight: React.CSSProperties = { textAlign: 'right', padding: '2px 10px' };
 const tdLeft: React.CSSProperties = { textAlign: 'left', padding: '2px 10px' };
 const th: React.CSSProperties = { textAlign: 'left', padding: '4px 10px', borderBottom: '1px solid #ccc' };
+const captionStyle: React.CSSProperties = {
+  captionSide: 'top',
+  textAlign: 'left',
+  fontWeight: 'bold',
+  padding: '4px 0',
+  fontSize: '13px',
+};
 
 const LethalRelentlessNote: React.FC = () => (
   <Container style={{ maxWidth: '760px', padding: '24px 16px', fontSize: '14px', lineHeight: 1.55 }}>
@@ -16,16 +23,18 @@ const LethalRelentlessNote: React.FC = () => (
       It is possible to set up a Kill Team shooting scenario where the calculator reports a
       <em> higher</em> kill chance at BS 5+ than at BS 2+, even though every other input is identical.
       This is not a calculator bug. It is a real consequence of how Lethal and Relentless are defined
-      in KT2024. This note walks through the math.
+      in KT2024. This note walks through the math for the specific scenario that prompted it:
+      4 attack dice, normal damage 3, crit damage 4, Lethal 5+, Reroll Relentless, Piercing 1,
+      versus a 12-wound defender with a 3+ save and (optionally) Indomitus.
     </p>
 
     <h3>The two rules</h3>
 
     <p>
       <strong>Lethal X+</strong> means an attack die scores a critical hit on an unmodified roll of X
-      or higher, instead of the default 6+. The crit threshold is <em>absolute</em>. It does not move
-      when BS changes. Norm hits fill the band between BS and Lethal; anything below BS is still a
-      fail.
+      or higher, instead of the default 6+. Lethal cannot promote a die that would otherwise have
+      failed: the calculator clamps the effective crit threshold up to the hit threshold, so for
+      example Lethal 5+ at BS 6+ still only crits on a 6.
     </p>
 
     <p>
@@ -37,11 +46,15 @@ const LethalRelentlessNote: React.FC = () => (
     <h3>Per-die crit probability with Lethal 5+, Relentless</h3>
 
     <p>
-      Crit faces are always <code>{'{5, 6}'}</code> (2 of 6) regardless of BS. BS only controls the
-      norm/fail boundary. After one allowed re-roll per fail, per-die probabilities are:
+      For BS 2+ through 5+, the effective crit threshold is 5 (so crit faces are <code>{'{5, 6}'}</code>,
+      2 of 6) and BS only controls the norm/fail boundary. After one allowed re-roll per fail, per-die
+      probabilities are:
     </p>
 
     <table style={{ borderCollapse: 'collapse', margin: '8px 0 16px' }}>
+      <caption style={captionStyle}>
+        Per-die probabilities for Lethal 5+ with Relentless, BS 2+ through 5+
+      </caption>
       <thead>
         <tr>
           <th style={th}>BS</th>
@@ -74,9 +87,11 @@ const LethalRelentlessNote: React.FC = () => (
     </table>
 
     <p>
-      Per-die crit probability <em>rises monotonically as BS degrades</em>. Each fail is a free
-      re-roll, and every re-roll has the same 2/6 chance of landing in the fixed crit band. Worse BS
-      just means more re-rolls feeding the same funnel.
+      Across the BS 2+ to 5+ range shown, per-die crit probability <em>rises monotonically as BS
+      degrades</em>. Each fail is a free re-roll, and every re-roll has the same 2/6 chance of
+      landing in the fixed crit band. Worse BS just means more re-rolls feeding the same funnel.
+      (At BS 6+ the clamp kicks in and Lethal 5+ collapses back to crit-on-6 only, so the monotonic
+      claim does not extend past 5+.)
     </p>
 
     <h3>Average damage falls, but that is not the same as kill chance</h3>
@@ -84,6 +99,9 @@ const LethalRelentlessNote: React.FC = () => (
     <p>Expected damage per die (crit dmg 4, norm dmg 3, before saves):</p>
 
     <table style={{ borderCollapse: 'collapse', margin: '8px 0 16px' }}>
+      <caption style={captionStyle}>
+        Expected pre-save damage per attack die at Lethal 5+ Relentless
+      </caption>
       <thead>
         <tr><th style={th}>BS</th><th style={th}>E[dmg per die]</th></tr>
       </thead>
@@ -103,15 +121,19 @@ const LethalRelentlessNote: React.FC = () => (
     <h3>Why the tail flips</h3>
 
     <p>
-      Against a 12-wound target with 4 attack dice and 2 defender dice (Piercing 1), the defender
-      cancels roughly 1.3 hits on average, so about 2.7 hits leak. To reach 12 leaked damage you
-      essentially need 3+ crits to leak. Norms (3 damage) get preferentially absorbed by the
-      defender&apos;s norm saves and rarely close a 12-damage gap on their own.
+      Against a 12-wound target with 4 attack dice and 2 defender dice (Piercing 1 strips one save
+      die), the defender cancels roughly 1.3 hits on average, so about 2.7 hits leak. To reach 12
+      leaked damage you essentially need 3+ crits to leak. Norms (3 damage each) get preferentially
+      absorbed by the defender&apos;s norm saves and rarely close a 12-damage gap on their own in
+      this two-save-dice setup.
     </p>
 
     <p>So kill probability is dominated by <code>P(&ge; 3 crits in 4 dice)</code>:</p>
 
     <table style={{ borderCollapse: 'collapse', margin: '8px 0 16px' }}>
+      <caption style={captionStyle}>
+        Probability of at least 3 crits in 4 attack dice, by BS
+      </caption>
       <thead>
         <tr><th style={th}>BS</th><th style={th}>p (crit per die)</th><th style={th}>P(&ge; 3 crits in 4)</th></tr>
       </thead>
@@ -130,49 +152,67 @@ const LethalRelentlessNote: React.FC = () => (
       the kill line.
     </p>
 
-    <h3>Indomitus amplifies the inversion</h3>
+    <h3>Indomitus amplifies the inversion (in this setup)</h3>
 
     <p>
-      Indomitus adds one defender norm save when the defender rolls two fails. A norm save eats a
-      norm hit one-for-one (or two norm saves stop a crit). So:
+      Indomitus adds one defender norm save when the defender rolls two fails. A norm save can:
+    </p>
+
+    <ul>
+      <li>cancel one norm hit, one-for-one; or</li>
+      <li>pair with another norm save to cancel one crit hit, two-for-one.</li>
+    </ul>
+
+    <p>
+      With only 2 defender dice (Piercing 1) and no cover saves, the chance of <em>also</em> having a
+      second norm save available to pair off a crit is small, so most of Indomitus&apos; benefit
+      lands on norm hits. In that specific setup:
     </p>
 
     <ul>
       <li>
-        At BS 2+, the attacker generates many norm hits &mdash; Indomitus has a target to cancel,
-        so damage drops noticeably and kill chance drops a lot.
+        At BS 2+, the attacker generates many norm hits &mdash; Indomitus&apos; bonus save almost
+        always finds a norm hit to cancel, damage drops noticeably, and kill chance drops a lot.
       </li>
       <li>
-        At BS 5+, the attacker generates zero norm hits &mdash; Indomitus&apos; bonus norm save
-        lands on nothing, so kill chance is unchanged.
+        At BS 5+, the attacker generates zero norm hits &mdash; the only way the bonus norm save
+        helps is by pairing with another norm save to cancel a crit, which requires the defender to
+        roll two pre-Indom norms (just 9/36) on top of two fails, an outcome that does not exist on
+        2 dice. So in this scenario the bonus is a no-op.
       </li>
     </ul>
 
     <p>
-      Indomitus is essentially a &quot;norm-hit eraser.&quot; It cools off norm-heavy attacks
-      (low-BS Lethal builds) but does nothing to crit-pure attacks (high-BS Lethal builds), which
-      stretches the kill-chance gap between low and high BS.
+      <strong>Important caveat:</strong> with 3 defender dice (no Piercing), or with auto-normal
+      saves from cover, the extra norm save can more often pair with another norm save to cancel a
+      crit. In those cases Indomitus is not a pure &quot;norm-hit eraser&quot; and the amplification
+      pattern above will be different. The behaviour described here is specific to the
+      Piercing 1 / no-cover scenario.
     </p>
 
     <h3>Take-aways</h3>
 
     <ol>
       <li>
-        With Lethal, per-die crit probability is independent of BS. Adding Relentless makes per-die
-        crit probability <em>increase</em> as BS worsens.
+        Across BS 2+ to 5+ with Lethal 5+, per-die crit probability is independent of BS without
+        re-rolls (the crit band is fixed). Adding Relentless makes per-die crit probability
+        <em> increase</em> as BS worsens, because every extra fail becomes another shot at the same
+        fixed crit band. At BS 6+ the clamp kicks in and this trend stops.
       </li>
       <li>
         Against a high wound threshold relative to attack volume, kill chance is driven by crit-spike
         probability, not by expected damage. The two can move in opposite directions.
       </li>
       <li>
-        Indomitus and similar norm-hit cancellers compound the effect because they only suppress the
-        kind of damage that good-BS Lethal builds rely on.
+        Indomitus and similar norm-promoting abilities compound the effect <em>in setups where extra
+        norm saves rarely pair off into crit cancels</em> (e.g. the 2-defender-dice scenario above).
+        With more defender dice or cover saves they can also help against crits.
       </li>
       <li>
-        The rule of thumb &quot;better BS always means more kills&quot; only holds when the crit
-        threshold scales with BS (the default 6+ case). Lethal pins it absolute; Relentless funnels
-        fails into that pin.
+        The rule of thumb &quot;better BS always means more kills&quot; can fail whenever Relentless
+        is combined with Lethal: Relentless converts every failure into another chance at the fixed
+        crit band, so worse BS feeds more dice into that band. Without Relentless, per-die crit
+        probability does not depend on BS at all, so the inversion does not appear.
       </li>
     </ol>
 

@@ -31,6 +31,13 @@ export function calcDefenderFinalDiceStuff(
 
   const numDefDiceWithoutPx = Math.max(0, defender.numDice - attacker.apx);
 
+  // ObscuredTarget is a defender-side flag that modifies the attacker's dice
+  // (calcFinalDiceProbsForAttacker merges it into the attacker's ability set).
+  // It must not be applied to the defender's own save dice, where the shared
+  // applyPostRollModifications would discard save successes.
+  const defenderAbilitiesForSaves = new Set(defender.abilities);
+  defenderAbilitiesForSaves.delete(Ability.ObscuredTarget);
+
   const defenderFinalDiceProbs = Common.calcFinalDiceProbs(
     defenderSingleDieProbs,
     numDefDiceWithoutPx,
@@ -39,7 +46,7 @@ export function calcDefenderFinalDiceStuff(
     defender.autoNorms,
     defender.failsToNorms,
     defender.normsToCrits,
-    defender.abilities,
+    defenderAbilitiesForSaves,
     );
 
   let defenderFinalDiceProbsWithPx: FinalDiceProb[] = [];
@@ -60,7 +67,7 @@ export function calcDefenderFinalDiceStuff(
       defender.autoNorms,
       defender.failsToNorms,
       defender.normsToCrits,
-      defender.abilities,
+      defenderAbilitiesForSaves,
     );
   }
 

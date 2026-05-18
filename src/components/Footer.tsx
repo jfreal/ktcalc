@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
@@ -12,9 +11,9 @@ const Footer: React.FC = () => {
         https://jmegner.github.io/KT21Calculator/
       </a>
       <br />
-      <Link to="/notes/lethal-relentless">
+      <a href="/notes/lethal-relentless" target="_blank" rel="noopener noreferrer">
         Why kill chance can rise as BS gets worse with Lethal + Relentless
-      </Link>
+      </a>
     </div>
   );
 };
