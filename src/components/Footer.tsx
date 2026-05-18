@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
@@ -10,6 +11,10 @@ const Footer: React.FC = () => {
       Forked from <a href="https://jmegner.github.io/KT21Calculator/" target="_blank" rel="noopener noreferrer">
         https://jmegner.github.io/KT21Calculator/
       </a>
+      <br />
+      <Link to="/notes/lethal-relentless">
+        Why kill chance can rise as BS gets worse with Lethal + Relentless
+      </Link>
     </div>
   );
 };
