@@ -1,5 +1,14 @@
 # Changelog
 
+## May 2026 - Px-branch Defender Fixes + Lethal/Relentless Explainer
+
+- Fixed: when attacker Piercing Crits (Px) is greater than Piercing (APx) and the attacker rolls at least one crit, the defender's reduced-dice save roll was silently dropping `defender.abilities` (including Indomitus), dropping `defender.normsToCrits`, and mis-routing `defender.normsToCrits` into the `failsToNorms` positional slot of the dice-prob calculation. All defender parameters now propagate correctly into the Px branch.
+- Fixed: `ObscuredTarget` (a defender-side flag that modifies the *attacker's* dice) was leaking into the defender's own save-dice calculation, where the shared post-roll modification function would discard save successes. ObscuredTarget is now stripped from the ability set used for defender saves in both Px and non-Px branches.
+- Clarified the Indomitus and PuritySeal tooltips/comments: the strict KT2024 rule requires two unmodified 1s, but the calculator triggers on any 2 failed dice. The benefit is slightly overstated on rolls where fails include non-1 values (e.g. 2s on a 3+ stat).
+- Added a `/notes/lethal-relentless` page (linked from the footer) walking through why kill chance can rise as BS gets worse with Lethal + Relentless. Covers the per-die crit-probability math, the kill-tail vs average-damage distinction, the Indomitus amplification (with caveats for setups with more defender dice or cover saves), and the BS 6+ crit-clamp edge case.
+- Added `public/_redirects` so direct visits and refreshes of `/notes/lethal-relentless` (and any future client-side route) resolve to `index.html` instead of 404 on Netlify.
+- Added regression tests for the Px-branch defender save path: one for `failsToNorms` propagation, one for ObscuredTarget no-bleed.
+
 ## March 2026 - KT2024 Fight UI Cleanup
 
 - Renamed Stun2021 to Shock (same effect: first crit strike discards 1 opponent norm; APL decrement removed)

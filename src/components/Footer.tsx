@@ -10,6 +10,10 @@ const Footer: React.FC = () => {
       Forked from <a href="https://jmegner.github.io/KT21Calculator/" target="_blank" rel="noopener noreferrer">
         https://jmegner.github.io/KT21Calculator/
       </a>
+      <br />
+      <a href="/notes/lethal-relentless" target="_blank" rel="noopener noreferrer">
+        Why kill chance can rise as BS gets worse with Lethal + Relentless
+      </a>
     </div>
   );
 };

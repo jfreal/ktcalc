@@ -23,8 +23,8 @@ export enum Ability {
     HalfDamageFirstStrike = "HalfDamageFirstStrike", // first strike damage is halved (rounded up, minimum 2)
     Durable = "Durable2021", // one crit hit does 1 less damage, to minimun of 3
     ObscuredTarget = "ObscuredTarget", // all crits become norms; can't do crit-triggered abilities; discard a success at the end
-    PuritySeal = "PuritySeal", // 2024; if roll 2 fails, can discard one fail to change other fail to normal success; attack only
-    Indomitus = "Indomitus", // 2024; if roll 2 fails, can discard one fail to change other fail to normal success; defense only (Space Marines defending ANGEL OF DEATH)
+    PuritySeal = "PuritySeal", // 2024; if at least 2 dice fail, discard one fail and change another fail to a normal success; attack only. Rule strictly requires two unmodified 1s; implementation triggers on any 2 fails.
+    Indomitus = "Indomitus", // 2024; if at least 2 dice fail, discard one fail and change another fail to a normal success; defense only (Space Marines defending ANGEL OF DEATH). Rule strictly requires two unmodified 1s; implementation triggers on any 2 fails.
 
     // fight stuff relevant to 2024
     Brutal = "Brutal", // opponent can only parry with crit

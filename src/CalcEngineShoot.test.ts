@@ -395,6 +395,51 @@ describe(calcDmgProbs.name + ', px and lethal', () => {
     expect(dmgs.get(atk.critDmg)).toBeCloseTo(pc, requiredPrecision);
     expect(dmgs.size).toBe(2);
   });
+
+  it('px branch carries failsToNorms and abilities to defender save calc', () => {
+    // Regression for a bug where the Px-branch call to calcFinalDiceProbs
+    // routed defender.normsToCrits into the failsToNorms slot and dropped
+    // defender.abilities entirely. Setup: attacker always crits; defender's
+    // failsToNorms is large enough that, on a 2-die Px save, every fail is
+    // promoted to a norm and the cumulative defender result always cancels
+    // the single incoming crit. If the Px branch silently dropped
+    // failsToNorms, kill chance would be non-zero from (0,0,2)/(0,1,1) rolls.
+    const atk = newTestAttacker(1, 1)
+      .setProp('lethal', 1) // always crit
+      .setProp('px', 1);
+    const def = Model.basicDefender(3, 12).setProp('failsToNorms', 2);
+
+    const dmgs = calcDmgProbs(atk, def);
+    expect(dmgs.get(0)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.size).toBe(1);
+  });
+
+  it('defender ObscuredTarget does not bleed onto defender save dice', () => {
+    // Regression: ObscuredTarget is a defender-side flag that modifies the
+    // *attacker's* dice (already merged into attacker.abilities by
+    // calcFinalDiceProbsForAttacker). It must not also apply to the defender's
+    // own save dice, where applyPostRollModifications would otherwise discard
+    // save successes via the "norms = norms + crits - 1; crits = 0" line.
+    //
+    // (Note: ObscuredTarget zeroes attacker crits, so this case routes through
+    // the non-Px branch even with px set. The filter is applied to both
+    // defender branches in calcDefenderFinalDiceStuff, so a single non-Px
+    // assertion covers both code paths against this regression.)
+    //
+    // Setup probes the defender side: 2 always-crit attack dice + Obscured
+    // discards down to 1 norm hit reaching the defender. The defender has
+    // autoNorms=1, which guarantees a normal save that cancels the leftover
+    // norm hit -- *unless* ObscuredTarget also runs against the defender's
+    // own dice, in which case the discard-one rule consumes the autoNorm and
+    // some defender outcomes leak the norm hit through.
+    const atk = newTestAttacker(2, 1).setProp('lethal', 1).setProp('px', 1);
+    const def = Model.basicDefender(3, 12).setProp('autoNorms', 1);
+    def.abilities.add(Ability.ObscuredTarget);
+
+    const dmgs = calcDmgProbs(atk, def);
+    expect(dmgs.get(0)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.size).toBe(1);
+  });
 });
 
 describe(calcDmgProbs.name + ', balanced', () => {

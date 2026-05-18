@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Button, Col, Container, Row } from 'react-bootstrap';
 import { ErrorBoundary } from 'react-error-boundary';
-import { useSearchParams } from 'react-router-dom';
+import { Route, Routes, useSearchParams } from 'react-router-dom';
 
 import { CalculatorViewChoice } from 'src/CalculatorViewChoice';
 import { centerHoriz, } from 'src/Util';
 import AppHeader from "src/components/AppHeader";
 import FightSection from 'src/components/FightSection';
+import LethalRelentlessNote from 'src/components/notes/LethalRelentlessNote';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
 import ShootSection from 'src/components/ShootSection';
 import { ShareProvider, useShareContext } from 'src/context/ShareContext';
@@ -102,7 +103,17 @@ const AppContent = () => {
 
 const App = () => (
   <ShareProvider>
-    <AppContent />
+    <Routes>
+      <Route
+        path="/notes/lethal-relentless"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <LethalRelentlessNote />
+          </ErrorBoundary>
+        }
+      />
+      <Route path="*" element={<AppContent />} />
+    </Routes>
   </ShareProvider>
 );
 
