@@ -4,6 +4,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Table from 'react-bootstrap/Table';
 import Accordion from 'react-bootstrap/Accordion';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 import 'src/components/Accordion.css'
 
@@ -96,6 +97,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
 
   let avgDmgUnbounded = 0;
   const dmgProbTableBody: JSX.Element[] = [];
+  const histogramData: { dmg: number; prob: number }[] = [];
 
   const chosenSaveDmgToProb = props.saveToDmgToProb.get(props.defender.diceStat)!;
   const killChance = killProb(chosenSaveDmgToProb, props.defender.wounds);
@@ -105,6 +107,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
 
   for(const [dmg, prob] of ascendingDmgToProb) {
     avgDmgUnbounded += dmg * prob;
+    histogramData.push({ dmg, prob: prob * 100 });
 
     const probAtLeastThisMuchDmg = 1 - probCumulative;
     probCumulative += prob;
@@ -120,9 +123,20 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
     );
   }
 
+  const histogram =
+    <ResponsiveContainer width="100%" height={140}>
+      <BarChart data={histogramData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="dmg" tick={{ fontSize: 10 }} label={{ value: 'Dmg', position: 'insideBottom', offset: -2, fontSize: 10 }} />
+        <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v.toFixed(0)}%`} />
+        <Tooltip formatter={(v: number) => `${v.toFixed(2)}%`} labelFormatter={(l) => `Dmg ${l}`} />
+        <Bar dataKey="prob" fill="#e8541a" />
+      </BarChart>
+    </ResponsiveContainer>;
+
   const dmgProbTable =
     <>
-      {/*<span style={{ fontSize: '13px' }}>Dmg probs for exact scenario...</span>*/}
+      {histogram}
       <Table bordered={true} striped={true} style={{ fontSize: '11px' }}>
         <thead>
           <tr>
