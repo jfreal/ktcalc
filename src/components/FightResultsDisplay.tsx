@@ -5,6 +5,7 @@ import Col from 'react-bootstrap/Col';
 import Table from 'react-bootstrap/Table';
 
 import * as Util from 'src/Util';
+import ProbabilityHistogram from 'src/components/ProbabilityHistogram';
 
 export interface Props {
   fighterAWoundProbs: Map<number,number>;
@@ -42,8 +43,10 @@ function makeFighterResultsSection(
 
   let ascendingWoundProbs = Util.toAscendingMap(woundProbs);
   let probCumulative = 0;
+  const histogramData: { wounds: number; prob: number }[] = [];
 
   ascendingWoundProbs.forEach((prob, wounds) => {
+     histogramData.push({ wounds, prob });
      const probAtLeastThisManyWounds = 1 - probCumulative;
      probCumulative += prob;
      const probAtMostThisManyWounds = probCumulative;
@@ -82,6 +85,17 @@ function makeFighterResultsSection(
         </Col>
         <Col>
           {avgDmg.toFixed(digitsPastDecimal)}
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <ProbabilityHistogram
+            data={histogramData}
+            xKey="wounds"
+            xLabel="Wnds"
+            ariaLabel="Wound probability distribution"
+            digitsPastDecimal={digitsPastDecimal}
+          />
         </Col>
       </Row>
       <Row>
