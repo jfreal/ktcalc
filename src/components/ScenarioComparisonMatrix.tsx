@@ -81,11 +81,17 @@ const ThemedCard: React.FC<ThemedCardProps> = ({ title, titleFontSize = '13px', 
   );
 };
 
+// Epsilon for treating a diff as zero; kept in sync with getComparisonStyles
+// so that cells styled as "Equal" never render a misleading signed zero (e.g.
+// "+0%") in the Δ column.
+const DIFF_EPSILON = 0.001;
+const isEqualDiff = (diff: number) => Math.abs(diff) < DIFF_EPSILON;
+
 function getComparisonStyles(diff: number, alt = false): [React.CSSProperties, React.CSSProperties] {
   const better = alt ? betterStyleAlt : betterStyle;
   const worse = alt ? worseStyleAlt : worseStyle;
   const equal = alt ? equalStyleAlt : equalStyle;
-  if (Math.abs(diff) < 0.001) {
+  if (isEqualDiff(diff)) {
     return [equal, equal];
   } else if (diff > 0) {
     return [better, worse];
@@ -154,7 +160,9 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
       <React.Fragment key={`cells_${save}`}>
         <td style={{ ...cellBase, ...groupCellStyle, ...rowBg, ...s1Style }}>{fmt(v1)}</td>
         <td style={{ ...cellBase, ...rowBg, ...s2Style }}>{fmt(v2)}</td>
-        <td style={{ ...cellBase, ...rowBg }}>{diffPrefix && diff > 0 ? '+' : ''}{fmt(diff)}</td>
+        <td style={{ ...cellBase, ...rowBg }}>
+          {isEqualDiff(diff) ? fmt(0) : `${diffPrefix && diff > 0 ? '+' : ''}${fmt(diff)}`}
+        </td>
       </React.Fragment>
     );
   };
