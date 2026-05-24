@@ -58,7 +58,6 @@ const cardTitleStyleMuted: React.CSSProperties = {
 };
 
 const themedTheadStyle: React.CSSProperties = { backgroundColor: themeDark, color: 'white' };
-const themedTheadStyleMuted: React.CSSProperties = { backgroundColor: themeMuted, color: themeDark };
 
 interface ThemedCardProps {
   title: React.ReactNode;
