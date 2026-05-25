@@ -267,7 +267,7 @@ export function injuryProb(dmgToProb: Map<number,number>, wounds: number): numbe
   let probSum = 0;
   const injuryThreshold = wounds / 2;
   for(const [dmg, prob] of dmgToProb) {
-    if(dmg > injuryThreshold) {
+    if(dmg > injuryThreshold && dmg < wounds) {
       probSum += prob;
     }
   }

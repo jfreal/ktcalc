@@ -168,7 +168,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
           <Accordion flush>
             <Accordion.Item eventKey='1'>
               <Accordion.Header as="p">Injury Chance: {toPercentString(injuryChance)}%</Accordion.Header>
-              <Accordion.Body>Probability of doing damage &lt; {(props.defender.wounds / 2).toFixed(1)} wounds (less than half)</Accordion.Body>
+              <Accordion.Body>Probability of doing more than {(props.defender.wounds / 2).toFixed(1)} but less than {props.defender.wounds} wounds (injured but not killed)</Accordion.Body>
             </Accordion.Item>
           </Accordion>
         </Col>
