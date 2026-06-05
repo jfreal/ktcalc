@@ -11,6 +11,10 @@ const Footer: React.FC = () => {
         https://jmegner.github.io/KT21Calculator/
       </a>
       <br />
+      Alternative KT math tool: <a href="https://brandongreen00.github.io/ballistica-imperialis/" target="_blank" rel="noopener noreferrer">
+        Ballistica Imperialis
+      </a>
+      <br />
       <a href="/notes/lethal-relentless" target="_blank" rel="noopener noreferrer">
         Why kill chance can rise as BS gets worse with Lethal + Relentless
       </a>
