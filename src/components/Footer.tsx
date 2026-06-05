@@ -34,6 +34,10 @@ const Footer: React.FC = () => {
           Preloaded weapon &amp; defence profiles and a cool design.
         </div>
       </div>
+      Make nemesis operatives with <a href="https://nemesisforge.netlify.app/" target="_blank" rel="noopener noreferrer">
+        NemesisForge
+      </a>
+      <br />
       <a href="/notes/lethal-relentless" target="_blank" rel="noopener noreferrer">
         Why kill chance can rise as BS gets worse with Lethal + Relentless
       </a>
