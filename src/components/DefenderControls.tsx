@@ -61,7 +61,7 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.FailsToNorms,   def.failsToNorms,         xspan(1, 9),      numHandler('failsToNorms')),
     new IncProps(N.Punishing, toYN(Ability.Punishing), xAndCheck, singleHandler(Ability.Punishing)),
     new IncProps(N.HardyX,         def.hardyx + '+',         xspan(5, 2, '+'), numHandler('hardyx')),
-    new IncProps(N.FeelNoPain,     def.fnp + '+',            xspan(6, 2, '+'), numHandler('fnp')),
+    new IncProps(N.FeelNoPain,     def.fnp + '+',            xspan(6, 4, '+'), numHandler('fnp')),
     new IncProps(N.Reroll,         def.reroll,               preX(rerolls),    textHandler('reroll')),
   ];
 

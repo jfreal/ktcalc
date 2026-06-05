@@ -1,5 +1,11 @@
 # Changelog
 
+## June 2026 - Feel No Pain on Shooting Defense
+
+- Added Feel No Pain (FNP) to the shooting Defender profile (Advanced params): just before damage is resolved, roll one die per surviving hit; each roll at or above the threshold reduces that hit's damage by 1 (minimum 0). Even MWx damage can be prevented.
+- Threshold options limited to 4+, 5+, and 6+ (plus off).
+- Documented FNP in `rules/COMBAT_RULES.md` under Defender Abilities and in the attack sequence.
+
 ## May 2026 - Px-branch Defender Fixes + Lethal/Relentless Explainer
 
 - Fixed: when attacker Piercing Crits (Px) is greater than Piercing (APx) and the attacker rolls at least one crit, the defender's reduced-dice save roll was silently dropping `defender.abilities` (including Indomitus), dropping `defender.normsToCrits`, and mis-routing `defender.normsToCrits` into the `failsToNorms` positional slot of the dice-prob calculation. All defender parameters now propagate correctly into the Px branch.
