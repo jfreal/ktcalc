@@ -97,7 +97,7 @@ export const Durable2021 = new Note(
 );
 export const FeelNoPain = new Note(
   `FeelNoPain`,
-  `FNP is the category of abilities where just before damage is actually resolved, you roll a die for each successful hit (strike). Each rolled success reduces that hit's damage by 1. Even MWx damage can be prevented via FNP.`,
+  `FNP is the category of abilities where just before damage is actually resolved, you roll a die for each successful hit (strike). On a roll at or above the threshold, that hit's damage is reduced by 1. Even MWx damage can be prevented via FNP.`,
 );
 export const AvgDamageUnbounded = new Note(
   `AvgDamageUnbounded`,
