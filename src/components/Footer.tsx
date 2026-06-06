@@ -18,20 +18,36 @@ const Footer: React.FC = () => {
         borderRadius: '8px',
         background: 'linear-gradient(135deg, #fffaf0 0%, #fdf3df 100%)',
         boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+        textAlign: 'left',
       }}>
-        <div style={{ fontSize: '14px', fontWeight: 700, color: '#8a6400', marginBottom: '4px' }}>
-          ⚔️ Try Ballistica Imperialis
+        <div style={{ fontSize: '14px', fontWeight: 700, color: '#8a6400', marginBottom: '8px', textAlign: 'center' }}>
+          ⚔️ Alternative Tools
         </div>
-        <a
-          href="https://brandongreen00.github.io/ballistica-imperialis/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ fontSize: '15px', fontWeight: 600 }}
-        >
-          Alternative KT math tool →
-        </a>
-        <div style={{ fontSize: '12px', color: '#555', marginTop: '6px' }}>
-          Preloaded weapon &amp; defence profiles and a cool design.
+        <div style={{ marginBottom: '8px' }}>
+          <a
+            href="https://brandongreen00.github.io/ballistica-imperialis/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: '14px', fontWeight: 600 }}
+          >
+            Ballistica Imperialis →
+          </a>
+          <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>
+            Alternative KT math tool with preloaded weapon &amp; defence profiles and a cool design.
+          </div>
+        </div>
+        <div>
+          <a
+            href="https://nemesisforge.netlify.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: '14px', fontWeight: 600 }}
+          >
+            NemesisForge →
+          </a>
+          <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>
+            Build your own nemesis operatives.
+          </div>
         </div>
       </div>
       <a href="/notes/lethal-relentless" target="_blank" rel="noopener noreferrer">
