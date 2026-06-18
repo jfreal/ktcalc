@@ -355,40 +355,27 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
   }
 
   if(fightChoice !== null) {
-    const critsAfterParry = chooser.crits - (fightChoice === FightChoice.CritParry ? 1 : 0);
-    const normsAfterParry = chooser.norms - (fightChoice === FightChoice.NormParry ? 1 : 0);
-    let remainingDmg = chooser.possibleDmg(critsAfterParry, normsAfterParry);
-    // account for the enemy's Just a Scratch ignoring one of the chooser's strikes
-    // when estimating remaining damage:
-    // - JaS (Crits): if chooser hasn't struck yet, the first post-parry strike does 0
-    //   total dmg (including Hammerhand + MWx), preferring a crit.
-    // - JaS (Normals): if unspent, one normal strike does 0 dmg.
-    if(critsAfterParry + normsAfterParry > 0) {
-      let critsLeft = critsAfterParry;
-      let normsLeft = normsAfterParry;
-      // when the nullified strike is the chooser's first strike, its Hammerhand
-      // bonus is also lost; possibleDmg would otherwise re-credit it to later strikes
-      let firstStrikeNullified = false;
-      if(!chooser.hasStruck && enemy.profile.has(Ability.JustAScratch)) {
-        firstStrikeNullified = true;
-        if(critsLeft > 0) { critsLeft--; } else { normsLeft--; }
-      }
-      if(!enemy.normScratchUsed && enemy.profile.has(Ability.JustAScratchNorms) && normsLeft > 0) {
-        // JaS (Normals) only hits the first strike when there are no crits ahead of it
-        if(!chooser.hasStruck && critsLeft === 0) { firstStrikeNullified = true; }
-        normsLeft--;
-      }
-      if(critsLeft !== critsAfterParry || normsLeft !== normsAfterParry) {
-        remainingDmg = chooser.possibleDmg(critsLeft, normsLeft);
-        if(firstStrikeNullified
-          && chooser.profile.abilities.has(Ability.Hammerhand2021)
-          && critsLeft + normsLeft > 0) {
-          remainingDmg--;
-        }
-      }
+    // Estimate the chooser's remaining damage by cloning the fighters, applying
+    // the parry, then striking out the rest through the real resolution path.
+    // This keeps resolveDieChoice the single source of truth for first-strike
+    // handling (JaS Crits, JaS Normals, Hammerhand, Durable, etc.) instead of
+    // re-deriving it here. rng is cleared on the clones so the estimate stays
+    // deterministic and doesn't consume Monte Carlo draws (matching the old
+    // possibleDmg-based estimate, which also ignored Feel No Pain).
+    const chooserClone = chooser.clone();
+    const enemyClone = enemy.clone();
+    chooserClone.rng = null;
+    enemyClone.rng = null;
+
+    resolveDieChoice(fightChoice, chooserClone, enemyClone);
+
+    // After parrying the enemy's last success the enemy is out of successes,
+    // so the chooser simply strikes until the enemy dies or its successes run out.
+    while(chooserClone.successes() > 0 && enemyClone.currentWounds > 0) {
+      resolveDieChoice(chooserClone.nextStrike(), chooserClone, enemyClone);
     }
 
-    if(remainingDmg >= enemy.currentWounds) {
+    if(enemyClone.currentWounds <= 0) {
       return fightChoice;
     }
   }
