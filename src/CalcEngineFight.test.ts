@@ -476,6 +476,51 @@ describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, duel
     resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds);
   });
+  it('JustAScratchNorms ignores a normal strike but not a crit strike', () => {
+    const initialWounds = 100;
+    const critDmg = 5;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('critDmg', critDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratchNorms, true);
+
+    // crit strike is unaffected by JaS (Normals)
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg);
+
+    // first norm strike is ignored (scratch spent)
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg);
+
+    // second norm strike does full damage (scratch already spent)
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg - chooser.profile.normDmg);
+  });
+  it('JustAScratchNorms ignores the first normal strike when it is first', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(0, 2, 10);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratchNorms, true);
+
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+  });
+  it('JustAScratch and JustAScratchNorms together ignore two hits', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(0, 3, 10);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratch, true);
+    enemy.profile.setAbility(Ability.JustAScratchNorms, true);
+
+    // first norm strike zeroed by JaS (Crits), second zeroed by JaS (Normals)
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+
+    // third norm strike does full damage
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - chooser.profile.normDmg);
+  });
 });
 
 describe(resolveFight.name + ' smart strategies should optimize goal', () => {

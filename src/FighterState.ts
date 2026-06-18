@@ -13,6 +13,7 @@ export default class FighterState {
   public currentWounds: number;
   public hasStruck: boolean;
   public hasCritStruck: boolean;
+  public normScratchUsed: boolean; // JaS (Normals): whether this fighter's norm-only scratch is spent
   public rng: RngFunction | null;
 
   public constructor(
@@ -24,6 +25,7 @@ export default class FighterState {
     hasStruck: boolean = false,
     hasCritStruck: boolean = false,
     rng: RngFunction | null = null,
+    normScratchUsed: boolean = false,
   ) {
     this.profile = profile;
     this.crits = crits;
@@ -32,6 +34,7 @@ export default class FighterState {
     this.currentWounds = currentWounds === -1 ? this.profile.wounds : currentWounds;
     this.hasStruck = hasStruck;
     this.hasCritStruck = hasCritStruck;
+    this.normScratchUsed = normScratchUsed;
     this.rng = rng;
   }
 
@@ -125,6 +128,7 @@ export default class FighterState {
     this.currentWounds = currentWounds;
     this.hasStruck = false;
     this.hasCritStruck = false;
+    this.normScratchUsed = false;
   }
 
   public clone(): FighterState {
@@ -137,6 +141,7 @@ export default class FighterState {
       this.hasStruck,
       this.hasCritStruck,
       this.rng,
+      this.normScratchUsed,
     );
   }
 

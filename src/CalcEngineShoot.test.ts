@@ -326,7 +326,7 @@ describe(calcDmgProbs.name + ', MWx', () => {
     const pc = 1 / 6;
     const pn = 5 / 6;
     const atk = newTestAttacker(1, 1).setProp('mwx', dmw);
-    const def = new Model(3, 1); // 3 defense dice, always saves on 1+
+    const def = new Model(1, 1); // 1 defense die, always saves on 1+
 
     const dmgs = calcDmgProbs(atk, def);
     expect(dmgs.get(0)).toBeCloseTo(pn, requiredPrecision); // norm hit, any save
@@ -643,7 +643,7 @@ describe(calcDmgProbs.name + ', defender cover saves', () => {
 describe(calcDmgProbs.name + ', defender chitin', () => {
   it('chitin, 1 atk die & 1 def die', () => {
     const atk = newTestAttacker(1, 4);
-    const def = Model.basicDefender(1, 4).setProp('reroll', Ability.Balanced);
+    const def = new Model(1, 4).setProp('reroll', Ability.Balanced); // 1 def die, save 4+
     const [pc, pn, pf] = atk.toAttackerDieProbs().toCritNormFail();
 
     const dmgs = calcDmgProbs(atk, def);
