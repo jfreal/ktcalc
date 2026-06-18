@@ -521,6 +521,15 @@ describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, duel
     resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds - chooser.profile.normDmg);
   });
+  it('possibleDmg(0,0) is 0 even with Hammerhand and remaining dice (no falsy-0 fallback)', () => {
+    // regression: hammerhandDmg used `crits || this.crits`, so possibleDmg(0,0)
+    // returned 1 for a Hammerhand fighter, inflating the parry kill-lookahead
+    const chooser = newFighterState(2, 2, 10, FightStrategy.MaxDmgToEnemy,
+      new Set([Ability.Hammerhand2021]));
+    expect(chooser.possibleDmg(0, 0)).toBe(0);
+    // sanity: with a real strike remaining, Hammerhand's +1 still counts
+    expect(chooser.possibleDmg(0, 1)).toBe(chooser.profile.normDmg + 1);
+  });
   it('JustAScratchNorms ignores a Murderous Entrance bonus normal hit', () => {
     const initialWounds = 100;
     const critDmg = 5;

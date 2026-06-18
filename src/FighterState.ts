@@ -71,8 +71,8 @@ export default class FighterState {
     crits: number | undefined = undefined,
     norms: number | undefined = undefined,
   ) {
-    crits = crits || this.crits;
-    norms = norms || this.norms;
+    crits = crits ?? this.crits;
+    norms = norms ?? this.norms;
     return this.profile.abilities.has(Ability.Hammerhand2021)
       && !this.hasStruck
       && (crits > 0 || norms > 0)
