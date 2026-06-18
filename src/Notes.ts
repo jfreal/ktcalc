@@ -71,8 +71,12 @@ export const CoverCritSaves = new Note(
   `How many saves can be automatically retained as a critical success. High enough APx/Px can limit these auto-saves.`,
 );
 export const JustAScratch2021 = new Note(
-  `Just a Scratch (JaS)`,
-  `Just a Scratch (JaS): Ignore damage from an attack die. JaS (Crits) prefers crits; JaS (Normals) can only ignore normal hits.`,
+  `JaS (Crits)`,
+  `Just a Scratch (JaS): Ignore damage from one attack die, preferring crits.`,
+);
+export const JustAScratchNorms = new Note(
+  `JaS (Normals)`,
+  `Just a Scratch (JaS): Ignore damage from one normal hit only (cannot ignore crits).`,
 );
 export const PuritySeal = new Note(
   `PuritySeal`,
