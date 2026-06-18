@@ -136,6 +136,26 @@ describe(calcParryForLastEnemySuccessThenKillEnemy.name, () => {
     expect(calcParryForLastEnemySuccessThenKillEnemy(guy99Dueller, newFighterState(0, 2))).toBe(FightChoice.CritParry);
     expect(calcParryForLastEnemySuccessThenKillEnemy(guy99Dueller, newFighterState(1, 2))).toBe(null);
   });
+  it('HalfDamageFirstStrike enemy: lookahead must account for halved post-parry strike', () => {
+    // chooser: 2 crits @ critDmg 3. enemy: 1 crit. CritParry leaves chooser 1 crit.
+    // Without HalfDamageFirstStrike that lone strike does 3 dmg -> kills a 3-wound enemy.
+    // With it, the (first) post-parry strike is halved to ceil(3/2)=2 -> cannot kill 3 wounds.
+    // The old arithmetic ignored HalfDamageFirstStrike and wrongly chose to parry here.
+    const chooser = newFighterState(2, 0);
+    chooser.profile.critDmg = 3;
+
+    const enemyNoHalf = newFighterState(1, 0, 3);
+    expect(calcParryForLastEnemySuccessThenKillEnemy(chooser, enemyNoHalf)).toBe(FightChoice.CritParry);
+
+    const enemyHalf = newFighterState(1, 0, 3);
+    enemyHalf.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+    expect(calcParryForLastEnemySuccessThenKillEnemy(chooser, enemyHalf)).toBe(null);
+
+    // but a 2-wound HalfDamageFirstStrike enemy still dies to the halved 2-dmg strike
+    const enemyHalf2 = newFighterState(1, 0, 2);
+    enemyHalf2.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+    expect(calcParryForLastEnemySuccessThenKillEnemy(chooser, enemyHalf2)).toBe(FightChoice.CritParry);
+  });
 });
 
 describe(calcDieChoice.name + ', common & strike/parry', () => {
