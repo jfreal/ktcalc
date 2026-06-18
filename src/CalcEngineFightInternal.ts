@@ -216,7 +216,7 @@ export function resolveDieChoice(
   chooser: FighterState,
   enemy: FighterState,
 ): void {
-  function applyDmgWithFirstStrikeHandling(dmg: number) {
+  function applyDmgWithFirstStrikeHandling(dmg: number, isNorm: boolean) {
     if(!chooser.hasStruck) {
       if(enemy.profile.abilities.has(Ability.JustAScratch)) {
         dmg = 0;
@@ -230,12 +230,19 @@ export function resolveDieChoice(
       }
       chooser.hasStruck = true;
     }
+    // JaS (Normals): ignore the first normal strike's damage; cannot ignore crits.
+    // Guarded on dmg > 0 so a strike already zeroed by JaS (Crits) doesn't spend it.
+    if(isNorm && dmg > 0 && !enemy.normScratchUsed
+      && enemy.profile.abilities.has(Ability.JustAScratchNorms)) {
+      dmg = 0;
+      enemy.normScratchUsed = true;
+    }
     enemy.applyDmg(dmg);
   }
 
   if(choice === FightChoice.CritStrike) {
     let critDmgAfterPossibleDurable = chooser.nextCritDmgWithDurableAndWithoutHammerhand(enemy);
-    applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable);
+    applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable, false);
     chooser.crits--;
 
     if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck) {
@@ -248,11 +255,11 @@ export function resolveDieChoice(
       && !chooser.hasCritStruck
     ) {
       if(chooser.crits > 0) {
-        enemy.applyDmg(chooser.profile.critDmg);
+        applyDmgWithFirstStrikeHandling(chooser.profile.critDmg, false);
         chooser.crits--;
       }
       else {
-        enemy.applyDmg(chooser.profile.normDmg);
+        applyDmgWithFirstStrikeHandling(chooser.profile.normDmg, true);
         chooser.norms--;
       }
     }
@@ -260,7 +267,7 @@ export function resolveDieChoice(
     chooser.hasCritStruck = true;
   }
   else if(choice === FightChoice.NormStrike) {
-    applyDmgWithFirstStrikeHandling(chooser.profile.normDmg);
+    applyDmgWithFirstStrikeHandling(chooser.profile.normDmg, true);
     chooser.norms--;
   }
   else if(choice === FightChoice.CritParry) {
@@ -351,12 +358,34 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
     const critsAfterParry = chooser.crits - (fightChoice === FightChoice.CritParry ? 1 : 0);
     const normsAfterParry = chooser.norms - (fightChoice === FightChoice.NormParry ? 1 : 0);
     let remainingDmg = chooser.possibleDmg(critsAfterParry, normsAfterParry);
-    // if chooser hasn't struck yet AND enemy has JAS, first post-parry strike does 0 total dmg
-    // (including Hammerhand + MWx); skip that strike entirely when estimating remaining damage
-    if(!chooser.hasStruck && enemy.profile.has(Ability.JustAScratch) && (critsAfterParry + normsAfterParry) > 0) {
-      const critsAfterFirstStrike = critsAfterParry - (critsAfterParry > 0 ? 1 : 0);
-      const normsAfterFirstStrike = normsAfterParry - (critsAfterParry > 0 ? 0 : 1);
-      remainingDmg = chooser.possibleDmg(critsAfterFirstStrike, normsAfterFirstStrike);
+    // account for the enemy's Just a Scratch ignoring one of the chooser's strikes
+    // when estimating remaining damage:
+    // - JaS (Crits): if chooser hasn't struck yet, the first post-parry strike does 0
+    //   total dmg (including Hammerhand + MWx), preferring a crit.
+    // - JaS (Normals): if unspent, one normal strike does 0 dmg.
+    if(critsAfterParry + normsAfterParry > 0) {
+      let critsLeft = critsAfterParry;
+      let normsLeft = normsAfterParry;
+      // when the nullified strike is the chooser's first strike, its Hammerhand
+      // bonus is also lost; possibleDmg would otherwise re-credit it to later strikes
+      let firstStrikeNullified = false;
+      if(!chooser.hasStruck && enemy.profile.has(Ability.JustAScratch)) {
+        firstStrikeNullified = true;
+        if(critsLeft > 0) { critsLeft--; } else { normsLeft--; }
+      }
+      if(!enemy.normScratchUsed && enemy.profile.has(Ability.JustAScratchNorms) && normsLeft > 0) {
+        // JaS (Normals) only hits the first strike when there are no crits ahead of it
+        if(!chooser.hasStruck && critsLeft === 0) { firstStrikeNullified = true; }
+        normsLeft--;
+      }
+      if(critsLeft !== critsAfterParry || normsLeft !== normsAfterParry) {
+        remainingDmg = chooser.possibleDmg(critsLeft, normsLeft);
+        if(firstStrikeNullified
+          && chooser.profile.abilities.has(Ability.Hammerhand2021)
+          && critsLeft + normsLeft > 0) {
+          remainingDmg--;
+        }
+      }
     }
 
     if(remainingDmg >= enemy.currentWounds) {

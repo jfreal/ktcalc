@@ -77,6 +77,7 @@ const ShootSection: React.FC = () => {
     N.HardyX,
     N.FeelNoPain,
     N.JustAScratch2021,
+    N.JustAScratchNorms,
   ].map(note => <li key={note.name}><b>{note.name}</b>: {note.description}</li>);
 
   return (
