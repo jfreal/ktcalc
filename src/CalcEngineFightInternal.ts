@@ -255,11 +255,11 @@ export function resolveDieChoice(
       && !chooser.hasCritStruck
     ) {
       if(chooser.crits > 0) {
-        enemy.applyDmg(chooser.profile.critDmg);
+        applyDmgWithFirstStrikeHandling(chooser.profile.critDmg, false);
         chooser.crits--;
       }
       else {
-        enemy.applyDmg(chooser.profile.normDmg);
+        applyDmgWithFirstStrikeHandling(chooser.profile.normDmg, true);
         chooser.norms--;
       }
     }
@@ -366,14 +366,25 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
     if(critsAfterParry + normsAfterParry > 0) {
       let critsLeft = critsAfterParry;
       let normsLeft = normsAfterParry;
+      // when the nullified strike is the chooser's first strike, its Hammerhand
+      // bonus is also lost; possibleDmg would otherwise re-credit it to later strikes
+      let firstStrikeNullified = false;
       if(!chooser.hasStruck && enemy.profile.has(Ability.JustAScratch)) {
+        firstStrikeNullified = true;
         if(critsLeft > 0) { critsLeft--; } else { normsLeft--; }
       }
       if(!enemy.normScratchUsed && enemy.profile.has(Ability.JustAScratchNorms) && normsLeft > 0) {
+        // JaS (Normals) only hits the first strike when there are no crits ahead of it
+        if(!chooser.hasStruck && critsLeft === 0) { firstStrikeNullified = true; }
         normsLeft--;
       }
       if(critsLeft !== critsAfterParry || normsLeft !== normsAfterParry) {
         remainingDmg = chooser.possibleDmg(critsLeft, normsLeft);
+        if(firstStrikeNullified
+          && chooser.profile.abilities.has(Ability.Hammerhand2021)
+          && critsLeft + normsLeft > 0) {
+          remainingDmg--;
+        }
       }
     }
 

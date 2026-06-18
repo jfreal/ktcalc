@@ -521,6 +521,20 @@ describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, duel
     resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds - chooser.profile.normDmg);
   });
+  it('JustAScratchNorms ignores a Murderous Entrance bonus normal hit', () => {
+    const initialWounds = 100;
+    const critDmg = 5;
+    const chooser = newFighterState(1, 1, 10, FightStrategy.MaxDmgToEnemy,
+      new Set([Ability.MurderousEntrance2021]));
+    chooser.profile.setProp('critDmg', critDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratchNorms, true);
+
+    // crit strike lands full; the bonus normal hit from Murderous Entrance is the
+    // first normal hit, so JaS (Normals) ignores it
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg);
+  });
 });
 
 describe(resolveFight.name + ' smart strategies should optimize goal', () => {
