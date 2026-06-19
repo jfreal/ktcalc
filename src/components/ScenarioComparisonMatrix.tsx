@@ -2,6 +2,8 @@ import React from 'react';
 import Table from 'react-bootstrap/Table';
 import { killProb, weightedAverage } from 'src/Util';
 import { range } from 'lodash';
+import * as T from 'src/theme';
+import Panel from 'src/components/Panel';
 
 export interface Props {
   saveToDmgToProb1: Map<number, Map<number, number>>;
@@ -10,76 +12,16 @@ export interface Props {
   comboWounds: number;
 }
 
-// Style constants
-const betterStyle: React.CSSProperties = { backgroundColor: '#e8f5e9' }; // very light green
-const worseStyle: React.CSSProperties = { backgroundColor: '#ffebee' };  // very light red
-const equalStyle: React.CSSProperties = { backgroundColor: '#f5f5f5' };  // very light gray
-// Slightly darker variants for zebra striping
-const betterStyleAlt: React.CSSProperties = { backgroundColor: '#c8e6c9' };
-const worseStyleAlt: React.CSSProperties = { backgroundColor: '#ffcdd2' };
-const equalStyleAlt: React.CSSProperties = { backgroundColor: '#e0e0e0' };
+// Comparison-cell fills (better / worse / equal), with darker zebra variants.
+const betterStyle: React.CSSProperties = { backgroundColor: T.better };
+const worseStyle: React.CSSProperties = { backgroundColor: T.worse };
+const equalStyle: React.CSSProperties = { backgroundColor: T.equal };
+const betterStyleAlt: React.CSSProperties = { backgroundColor: T.betterAlt };
+const worseStyleAlt: React.CSSProperties = { backgroundColor: T.worseAlt };
+const equalStyleAlt: React.CSSProperties = { backgroundColor: T.equalAlt };
 const cellStyle: React.CSSProperties = { width: '50px', maxWidth: '50px' };
 
-// Theme constants — match AppHeader dark/orange palette
-const themeDark = 'rgb(37,43,50)';
-const themeMuted = '#d1d5db'; // light grey for secondary tables
-const themeMutedBorder = '#9ca3af';
-const themeAccent = '#e8731a';
-
-const cardStyleBase: React.CSSProperties = {
-  borderRadius: '4px',
-  overflow: 'hidden',
-  display: 'inline-block',
-  verticalAlign: 'top',
-  margin: '4px',
-};
-const cardStyle: React.CSSProperties = {
-  ...cardStyleBase,
-  border: `1px solid ${themeDark}`,
-  borderLeft: `4px solid ${themeAccent}`,
-};
-const cardStyleMuted: React.CSSProperties = {
-  ...cardStyleBase,
-  border: `1px solid ${themeMutedBorder}`,
-  borderLeft: `4px solid ${themeMutedBorder}`,
-};
-
-const cardTitleStyle: React.CSSProperties = {
-  fontWeight: 'bold',
-  color: 'white',
-  backgroundColor: themeDark,
-  padding: '4px 8px',
-};
-const cardTitleStyleMuted: React.CSSProperties = {
-  fontWeight: 'bold',
-  color: themeDark,
-  backgroundColor: themeMuted,
-  padding: '4px 8px',
-};
-
-const themedTheadStyle: React.CSSProperties = { backgroundColor: themeDark, color: 'white' };
-
-interface ThemedCardProps {
-  title: React.ReactNode;
-  titleFontSize?: string;
-  variant?: 'primary' | 'muted';
-  fullWidth?: boolean;
-  noPadding?: boolean;
-  children: React.ReactNode;
-}
-const ThemedCard: React.FC<ThemedCardProps> = ({ title, titleFontSize = '13px', variant = 'primary', fullWidth = false, noPadding = false, children }) => {
-  const wrap = variant === 'muted' ? cardStyleMuted : cardStyle;
-  const titleStyle = variant === 'muted' ? cardTitleStyleMuted : cardTitleStyle;
-  const wrapFinal: React.CSSProperties = fullWidth
-    ? { ...wrap, display: 'block', width: '100%', margin: 0 }
-    : wrap;
-  return (
-    <div style={wrapFinal}>
-      <div style={{ ...titleStyle, fontSize: titleFontSize }}>{title}</div>
-      <div style={{ padding: noPadding ? 0 : '4px 8px' }}>{children}</div>
-    </div>
-  );
-};
+const themedTheadStyle: React.CSSProperties = { backgroundColor: T.dark, color: 'white' };
 
 // Epsilon for treating a diff as zero; kept in sync with getComparisonStyles
 // so that cells styled as "Equal" never render a misleading signed zero (e.g.
@@ -132,18 +74,19 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
 
   const cellBase: React.CSSProperties = { textAlign: 'center', padding: '4px 4px' };
   const subHeaderStyle: React.CSSProperties = { ...cellBase, fontSize: '10px', fontWeight: 'normal' };
+  // 2px divider between save-groups — an internal table rule, not a card accent.
   const groupHeaderStyle: React.CSSProperties = {
     ...cellBase,
-    borderLeft: `2px solid ${themeMutedBorder}`,
+    borderLeft: `2px solid ${T.borderMuted}`,
   };
   const groupCellStyle: React.CSSProperties = {
-    borderLeft: `2px solid ${themeMutedBorder}`,
+    borderLeft: `2px solid ${T.borderMuted}`,
   };
-  const zebraEven: React.CSSProperties = { backgroundColor: '#ffffff' };
-  const zebraOdd: React.CSSProperties = { backgroundColor: '#eef1f5' };
-  const wColEven: React.CSSProperties = { backgroundColor: '#e2e8f0' };
-  const wColOdd: React.CSSProperties = { backgroundColor: '#cbd5e1' };
-  const labelCellStyle: React.CSSProperties = { ...cellBase, fontWeight: 'bold', backgroundColor: '#eeeeee' };
+  const zebraEven: React.CSSProperties = { backgroundColor: T.zebraEven };
+  const zebraOdd: React.CSSProperties = { backgroundColor: T.zebraOdd };
+  const wColEven: React.CSSProperties = { backgroundColor: T.wColEven };
+  const wColOdd: React.CSSProperties = { backgroundColor: T.wColOdd };
+  const labelCellStyle: React.CSSProperties = { ...cellBase, fontWeight: 'bold', backgroundColor: T.labelCellBg };
 
   const renderSaveCells = (
     save: number,
@@ -168,23 +111,22 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
   };
 
   const unifiedTable = (
-    <ThemedCard
-      title={
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-          <span>Comparison Matrix (Avg Dmg + Kill % vs W)</span>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 'normal', cursor: 'pointer', marginBottom: 0 }}>
-            <input
-              type="checkbox"
-              checked={showSv6}
-              onChange={e => setShowSv6(e.target.checked)}
-              style={{ cursor: 'pointer' }}
-            />
-            Show Sv 6+
-          </label>
-        </div>
+    <Panel
+      title="Comparison Matrix (Avg Dmg + Kill % vs W)"
+      right={
+        <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 'normal', cursor: 'pointer', marginBottom: 0 }}>
+          <input
+            type="checkbox"
+            checked={showSv6}
+            onChange={e => setShowSv6(e.target.checked)}
+            style={{ cursor: 'pointer' }}
+          />
+          Show Sv 6+
+        </label>
       }
       fullWidth
       noPadding
+      bodyScrollX
     >
       <Table bordered style={{ fontSize: '11px', marginTop: 0, marginBottom: 0, width: '100%' }}>
         <thead style={themedTheadStyle}>
@@ -224,8 +166,8 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
                   if (w > p.lastNonZeroWound) {
                     return (
                       <React.Fragment key={`cells_${p.save}_${w}`}>
-                        <td style={{ ...cellBase, ...groupCellStyle, ...rowBg, color: '#999' }}>0%</td>
-                        <td style={{ ...cellBase, ...rowBg, color: '#999' }}>0%</td>
+                        <td style={{ ...cellBase, ...groupCellStyle, ...rowBg, color: T.textFaint }}>0%</td>
+                        <td style={{ ...cellBase, ...rowBg, color: T.textFaint }}>0%</td>
                         <td style={{ ...cellBase, ...rowBg }}>—</td>
                       </React.Fragment>
                     );
@@ -241,16 +183,16 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
           {globalLastNonZeroWound < woundRange[woundRange.length - 1] && (
             <tr key="row_zero_tail">
               <td style={{ ...cellBase, ...zebraEven, fontWeight: 'bold' }}>{globalLastNonZeroWound + 1}+</td>
-              <td style={{ ...cellBase, ...zebraEven, color: '#999' }} colSpan={perSave.length * 3}>0%</td>
+              <td style={{ ...cellBase, ...zebraEven, color: T.textFaint }} colSpan={perSave.length * 3}>0%</td>
             </tr>
           )}
         </tbody>
       </Table>
-    </ThemedCard>
+    </Panel>
   );
 
   const comboBlock = (
-    <ThemedCard title={`S1 & S2 Combined Shots (Kill chance vs W=${comboWounds})`} titleFontSize="15px">
+    <Panel title={`S1 & S2 Combined Shots (Kill chance vs W=${comboWounds})`} titleFontSize="15px" style={{ margin: '4px' }}>
       <Table bordered style={{ fontSize: '11px', marginTop: '2px', marginBottom: 0, tableLayout: 'fixed', width: 'auto' }}>
         <thead style={themedTheadStyle}>
           <tr>
@@ -274,21 +216,21 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
           })}
         </tbody>
       </Table>
-    </ThemedCard>
+    </Panel>
   );
 
   return (
-    <div style={{ padding: '8px', maxWidth: '100%', overflow: 'hidden' }}>
+    <div style={{ padding: '8px', maxWidth: '100%' }}>
       <div style={{ marginBottom: '16px' }}>
         {comboBlock}
       </div>
 
-      <div style={{ fontSize: '11px', marginBottom: '8px', color: '#666' }}>
-        <span style={{ backgroundColor: '#e8f5e9', padding: '2px 4px' }}>Green = Better</span>
+      <div style={{ fontSize: '11px', marginBottom: '8px', color: T.textMuted }}>
+        <span style={{ backgroundColor: T.better, padding: '2px 4px' }}>Green = Better</span>
         {' | '}
-        <span style={{ backgroundColor: '#ffebee', padding: '2px 4px' }}>Red = Worse</span>
+        <span style={{ backgroundColor: T.worse, padding: '2px 4px' }}>Red = Worse</span>
         {' | '}
-        <span style={{ backgroundColor: '#f5f5f5', padding: '2px 4px' }}>Gray = Equal</span>
+        <span style={{ backgroundColor: T.equal, padding: '2px 4px' }}>Gray = Equal</span>
       </div>
 
       <div style={{ width: '100%' }}>

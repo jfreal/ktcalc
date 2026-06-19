@@ -17,7 +17,6 @@ export interface Props {
 const FightResultsDisplay: React.FC<Props> = (props: Props) => {
   return (
     <Container>
-      <Row>Results</Row>
       <Row>
         <Col className='border'>
           {makeFighterResultsSection('FighterA', props.fighterAWoundProbs, props.fighterAWoundsOrig)}

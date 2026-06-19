@@ -1,5 +1,14 @@
 # Changelog
 
+## June 2026 - Unified Visual System + Side-by-Side Situations
+
+- Introduced a single container vocabulary: a `Panel` component (dark title bar over a bordered body) now wraps every section across the Shoot and Fight calculators, replacing the previous mix of Bootstrap `.border rounded` boxes, the comparison matrix's local card, and the footer's gradient card.
+- Removed the thick colored `border-left` "side-stripe" accents from the comparison matrix cards (kept the 2px internal save-group dividers, which are legitimate table rules).
+- Centralized colors in `src/theme.ts`. Muted text tokens now meet WCAG AA contrast; the failing `#999` cells (~2.8:1 on white) were replaced with an AA-compliant tone.
+- Retoned the footer "Alternative Tools" block from a cream/gold gradient card to the app's dark panel style.
+- Made the layout responsive: Situation 1/2 (and Fighter A/B) sit side by side on desktop (≥992px) and stack on narrower screens; wide tables scroll instead of clipping. Replaced the fixed `fit-content` containers with fluid, capped-width centered containers.
+- Added `PRODUCT.md` capturing the product register, users, brand personality, and design principles that guided this pass.
+
 ## June 2026 - Feel No Pain Threshold Options on Shooting Defense
 
 - Limited the shooting Defender's Feel No Pain (FNP) threshold options to 4+, 5+, and 6+ (plus off); previously 2+ and 3+ were also selectable.
