@@ -6,6 +6,7 @@ import {
 } from 'react-bootstrap';
 
 import Footer from 'src/components/Footer';
+import Panel from 'src/components/Panel';
 import * as Util from "src/Util";
 import FighterControls from 'src/components/FighterControls';
 import Model from 'src/Model';
@@ -46,41 +47,51 @@ const FightSection: React.FC = () => {
   ].map(note => <li key={note.name}><b>{note.name}</b>: {note.description}</li>);
 
   return (
-    <Container style={{width: 'fit-content', margin: '0 auto'}}>
+    <Container style={{maxWidth: '1000px', margin: '0 auto'}}>
       <Row>
-        Kill Team 2024 Edition, Fighting&nbsp;
-        <a href='https://assets.warhammer-community.com/killteam_keydownloads_literules_eng-jfhe9v0j7c-n0x6ozmgo9.pdf'>[Lite Rules]</a>
-      </Row>
-      <Row>
-        <Col className={Util.centerHoriz + ' p-0 border'}>
-          <FighterControls title="Fighter A" attacker={fighterA} changeHandler={setFighterA} />
-        </Col>
-        <Col className={Util.centerHoriz + ' p-0 border'}>
-          <FighterControls title="Fighter B" attacker={fighterB} changeHandler={setFighterB} />
-        </Col>
-      </Row>
-      <Row className='border'>
-        <Col className={Util.centerHoriz + ' p-0 border'}>
-          <FightOptionControls
-            fightOptions={fightOptions}
-            changeHandler={setFightOptions}
-          />
-        </Col>
-      </Row>
-      <Row className='border'>
-        <Col className={Util.centerHoriz + ' p-0 border'}>
-          <FightResultsDisplay
-            fighterAWoundProbs={fighterAWoundProbs}
-            fighterBWoundProbs={fighterBWoundProbs}
-            fighterAWoundsOrig={fighterA.wounds}
-            fighterBWoundsOrig={fighterB.wounds}
-          />
+        <Col className='p-1'>
+          Kill Team 2024 Edition, Fighting&nbsp;
+          <a href='https://assets.warhammer-community.com/killteam_keydownloads_literules_eng-jfhe9v0j7c-n0x6ozmgo9.pdf'>[Lite Rules]</a>
         </Col>
       </Row>
       <Row>
-        <Col>
-            Notes:
-            <ul>
+        <Col xs={12} lg={6} className={Util.centerHoriz + ' p-1'}>
+          <Panel title="Fighter A" fullWidth bodyScrollX>
+            <FighterControls title="Fighter A" attacker={fighterA} changeHandler={setFighterA} />
+          </Panel>
+        </Col>
+        <Col xs={12} lg={6} className={Util.centerHoriz + ' p-1'}>
+          <Panel title="Fighter B" fullWidth bodyScrollX>
+            <FighterControls title="Fighter B" attacker={fighterB} changeHandler={setFighterB} />
+          </Panel>
+        </Col>
+      </Row>
+      <Row>
+        <Col className='p-1'>
+          <Panel title="Fight Options" fullWidth bodyScrollX>
+            <FightOptionControls
+              fightOptions={fightOptions}
+              changeHandler={setFightOptions}
+            />
+          </Panel>
+        </Col>
+      </Row>
+      <Row>
+        <Col className='p-1'>
+          <Panel title="Results" fullWidth bodyScrollX>
+            <FightResultsDisplay
+              fighterAWoundProbs={fighterAWoundProbs}
+              fighterBWoundProbs={fighterBWoundProbs}
+              fighterAWoundsOrig={fighterA.wounds}
+              fighterBWoundsOrig={fighterB.wounds}
+            />
+          </Panel>
+        </Col>
+      </Row>
+      <Row>
+        <Col className='p-1'>
+          <Panel title="Notes" fullWidth>
+            <ul style={{ marginBottom: 0 }}>
               <li>
                 All strategies will do certain no-downside actions, with the consequence that
                 "Strike" will still sometimes parry and "Parry" will still sometimes strike.
@@ -94,6 +105,7 @@ const FightSection: React.FC = () => {
               </li>
               {noteListItems}
             </ul>
+          </Panel>
         </Col>
       </Row>
       <Footer />

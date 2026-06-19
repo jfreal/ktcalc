@@ -1,0 +1,81 @@
+import React from 'react';
+import * as T from 'src/theme';
+
+// The one container vocabulary for the whole app: a dark title bar over a
+// bordered body. Replaces the old mix of Bootstrap `.border rounded` boxes,
+// the matrix's local ThemedCard, and the footer's gradient card.
+//
+// Note: no colored side-stripe border. A thick `border-left` accent is the
+// single most recognizable AI-UI tell; the dark title bar carries the accent.
+
+export interface PanelProps {
+  title?: React.ReactNode;
+  right?: React.ReactNode;            // content pinned to the right of the title bar
+  variant?: 'primary' | 'muted';
+  titleFontSize?: string;
+  fullWidth?: boolean;                // block + 100% width vs inline-block
+  noPadding?: boolean;                // drop body padding (for flush tables)
+  bodyScrollX?: boolean;              // allow horizontal scroll for wide content (mobile)
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}
+
+const Panel: React.FC<PanelProps> = ({
+  title,
+  right,
+  variant = 'primary',
+  titleFontSize = '13px',
+  fullWidth = false,
+  noPadding = false,
+  bodyScrollX = false,
+  className,
+  style,
+  children,
+}) => {
+  const muted = variant === 'muted';
+
+  const wrapStyle: React.CSSProperties = {
+    border: `1px solid ${muted ? T.borderMuted : T.borderStrong}`,
+    borderRadius: '4px',
+    overflow: 'hidden',
+    background: T.panelBg,
+    display: fullWidth ? 'block' : 'inline-block',
+    width: fullWidth ? '100%' : undefined,
+    verticalAlign: 'top',
+    ...style,
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontWeight: 'bold',
+    fontSize: titleFontSize,
+    color: muted ? T.dark : '#ffffff',
+    background: muted ? T.mutedBg : T.dark,
+    padding: '4px 8px',
+  };
+
+  const bodyStyle: React.CSSProperties = {
+    padding: noPadding ? 0 : '4px 8px',
+    overflowX: bodyScrollX ? 'auto' : undefined,
+  };
+
+  return (
+    <div className={className} style={wrapStyle}>
+      {title !== undefined && (
+        <div style={titleStyle}>
+          {right !== undefined ? (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+              <span>{title}</span>
+              {right}
+            </div>
+          ) : (
+            title
+          )}
+        </div>
+      )}
+      <div style={bodyStyle}>{children}</div>
+    </div>
+  );
+};
+
+export default Panel;
