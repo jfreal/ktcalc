@@ -83,7 +83,7 @@ const AppContent = () => {
   return (
     <>
       <AppHeader navCallback={setCurrentView} currentView={currentView} rightContent={<ShareButtons />} />
-        <Container>
+        <Container fluid>
           <Row>
             <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px'}}>
               Starred (*) items have explanations in hovertext and 'Notes' at bottom.

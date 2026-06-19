@@ -12,6 +12,7 @@ export const accent = '#e8731a';          // orange, used sparingly for emphasis
 // Borders
 export const borderStrong = dark;
 export const borderMuted = '#9ca3af';
+export const borderFaint = '#dddddd';  // hairline rules (e.g. footer divider)
 
 // Surfaces
 export const panelBg = '#ffffff';

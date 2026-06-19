@@ -192,7 +192,7 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
   );
 
   const comboBlock = (
-    <Panel title={`S1 & S2 Combined Shots (Kill chance vs W=${comboWounds})`} titleFontSize="15px">
+    <Panel title={`S1 & S2 Combined Shots (Kill chance vs W=${comboWounds})`} titleFontSize="15px" style={{ margin: '4px' }}>
       <Table bordered style={{ fontSize: '11px', marginTop: '2px', marginBottom: 0, tableLayout: 'fixed', width: 'auto' }}>
         <thead style={themedTheadStyle}>
           <tr>

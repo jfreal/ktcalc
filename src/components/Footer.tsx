@@ -4,7 +4,7 @@ import * as T from 'src/theme';
 
 const Footer: React.FC = () => {
   return (
-    <div style={{ fontSize: '12px', color: T.textMuted, textAlign: 'center', padding: '16px 0', borderTop: `1px solid ${T.borderMuted}`, marginTop: '16px' }}>
+    <div style={{ fontSize: '12px', color: T.textMuted, textAlign: 'center', padding: '16px 0', borderTop: `1px solid ${T.borderFaint}`, marginTop: '16px' }}>
       <a href="https://github.com/jfreal/ktcalc" target="_blank" rel="noopener noreferrer">
         Open source on GitHub
       </a> — Pull requests welcome!

@@ -59,9 +59,11 @@ const Panel: React.FC<PanelProps> = ({
     overflowX: bodyScrollX ? 'auto' : undefined,
   };
 
+  const hasTitleBar = title !== undefined || right !== undefined;
+
   return (
     <div className={className} style={wrapStyle}>
-      {title !== undefined && (
+      {hasTitleBar && (
         <div style={titleStyle}>
           {right !== undefined ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
