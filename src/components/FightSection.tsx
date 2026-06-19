@@ -57,12 +57,12 @@ const FightSection: React.FC = () => {
       <Row>
         <Col xs={12} lg={6} className={Util.centerHoriz + ' p-1'}>
           <Panel title="Fighter A" fullWidth bodyScrollX>
-            <FighterControls title="Fighter A" attacker={fighterA} changeHandler={setFighterA} />
+            <FighterControls attacker={fighterA} changeHandler={setFighterA} />
           </Panel>
         </Col>
         <Col xs={12} lg={6} className={Util.centerHoriz + ' p-1'}>
           <Panel title="Fighter B" fullWidth bodyScrollX>
-            <FighterControls title="Fighter B" attacker={fighterB} changeHandler={setFighterB} />
+            <FighterControls attacker={fighterB} changeHandler={setFighterB} />
           </Panel>
         </Col>
       </Row>

@@ -32,7 +32,6 @@ import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 
 
 export interface Props {
-  title: string;
   attacker: Model;
   changeHandler: Accepter<Model>;
 }

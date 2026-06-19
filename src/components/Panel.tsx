@@ -64,13 +64,15 @@ const Panel: React.FC<PanelProps> = ({
     overflowX: bodyScrollX ? 'auto' : undefined,
   };
 
-  const hasTitleBar = title !== undefined || right !== undefined;
+  // Truthiness, not `!== undefined`: a falsy node (e.g. `right={cond && <X/>}`
+  // when `cond` is false) must not render an empty title bar.
+  const hasTitleBar = Boolean(title) || Boolean(right);
 
   return (
     <div className={className} style={wrapStyle}>
       {hasTitleBar && (
         <div style={titleStyle}>
-          {right !== undefined ? (
+          {right ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flex: 1 }}>
               <span>{title}</span>
               {right}
