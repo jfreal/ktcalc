@@ -51,7 +51,12 @@ const Panel: React.FC<PanelProps> = ({
     fontSize: titleFontSize,
     color: muted ? T.dark : '#ffffff',
     background: muted ? T.mutedBg : T.dark,
-    padding: '4px 8px',
+    // Flex-centered with a min-height so a title bar's height doesn't depend on
+    // whether it hosts a `right` action (e.g. a button) — bars stay uniform.
+    padding: '0 8px',
+    minHeight: '34px',
+    display: 'flex',
+    alignItems: 'center',
   };
 
   const bodyStyle: React.CSSProperties = {
@@ -66,7 +71,7 @@ const Panel: React.FC<PanelProps> = ({
       {hasTitleBar && (
         <div style={titleStyle}>
           {right !== undefined ? (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flex: 1 }}>
               <span>{title}</span>
               {right}
             </div>

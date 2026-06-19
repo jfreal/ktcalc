@@ -8,6 +8,7 @@ import {
 
 import Footer from 'src/components/Footer';
 import Panel from 'src/components/Panel';
+import * as T from 'src/theme';
 
 import { clone } from 'lodash';
 import * as N from 'src/Notes';
@@ -105,7 +106,7 @@ const ShootSection: React.FC = () => {
         <Col xs={12} lg={6} className='p-1'>
           <Panel
             title="Situation 2"
-            right={<Button variant="outline-light" size="sm" onClick={copyS1toS2}>Copy From Situation 1</Button>}
+            right={<Button variant="dark" size="sm" onClick={copyS1toS2} style={{ backgroundColor: T.darkHover, borderColor: '#5a6470' }}>Copy From Situation 1</Button>}
             fullWidth
             bodyScrollX
           >
