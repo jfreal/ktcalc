@@ -6,6 +6,7 @@ import { Route, Routes, useSearchParams } from 'react-router-dom';
 import { CalculatorViewChoice } from 'src/CalculatorViewChoice';
 import { centerHoriz, } from 'src/Util';
 import AppHeader from "src/components/AppHeader";
+import kofiIcon from 'src/images/kofi.svg';
 import FightSection from 'src/components/FightSection';
 import LethalRelentlessNote from 'src/components/notes/LethalRelentlessNote';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
@@ -85,8 +86,17 @@ const AppContent = () => {
       <AppHeader navCallback={setCurrentView} currentView={currentView} rightContent={<ShareButtons />} />
         <Container fluid>
           <Row>
-            <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px'}}>
+            <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px', gap: '8px'}}>
               Starred (*) items have explanations in hovertext and 'Notes' at bottom.
+              <a
+                href='https://ko-fi.com/jfreal'
+                target='_blank'
+                rel='noopener noreferrer'
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', whiteSpace: 'nowrap' }}
+              >
+                <img src={kofiIcon} alt='Ko-fi' width='16' height='16' />
+                buy me <s>a coffee</s> grey plastic
+              </a>
             </Col>
           </Row>
           <Row>
