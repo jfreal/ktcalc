@@ -161,7 +161,6 @@ function encodeFighter(f: Model): string {
   if (f.has(Ability.Severe)) abilities.push('sev');
   if (f.has(Ability.Brutal)) abilities.push('bru');
   if (f.has(Ability.Punishing)) abilities.push('pun');
-  if (f.has(Ability.Stun2021)) abilities.push('stun');
   if (f.has(Ability.PuritySeal)) abilities.push('purity');
   if (f.has(Ability.Duelist)) abilities.push('duelist');
   if (f.has(Ability.JustAScratch)) abilities.push('jas');
@@ -218,7 +217,6 @@ function decodeFighter(param: string): Model {
   if (abilities.includes('sev')) f.abilities.add(Ability.Severe);
   if (abilities.includes('bru')) f.abilities.add(Ability.Brutal);
   if (abilities.includes('pun')) f.abilities.add(Ability.Punishing);
-  if (abilities.includes('stun')) f.abilities.add(Ability.Stun2021);
   if (abilities.includes('purity')) f.abilities.add(Ability.PuritySeal);
   if (abilities.includes('duelist')) f.abilities.add(Ability.Duelist);
   if (abilities.includes('jas')) f.abilities.add(Ability.JustAScratch);
@@ -311,7 +309,7 @@ export function useUrlState(
     const a2 = encodeAttacker(attacker2);
     const d2 = encodeDefender(defender2);
     const so2 = encodeShootOptions(shootOptions2);
-    return `${window.location.origin}${window.location.pathname}?view=shoot&a1=${a1}&d1=${d1}&so1=${so1}&a2=${a2}&d2=${d2}&so2=${so2}`;
+    return `${window.location.origin}${window.location.pathname}?view=shoot&a1=${encodeURIComponent(a1)}&d1=${encodeURIComponent(d1)}&so1=${encodeURIComponent(so1)}&a2=${encodeURIComponent(a2)}&d2=${encodeURIComponent(d2)}&so2=${encodeURIComponent(so2)}`;
   }, [attacker1, defender1, shootOptions1, attacker2, defender2, shootOptions2]);
 
   const addParamsToUrl = useCallback(() => {
@@ -321,7 +319,7 @@ export function useUrlState(
     const a2 = encodeAttacker(attacker2);
     const d2 = encodeDefender(defender2);
     const so2 = encodeShootOptions(shootOptions2);
-    const newUrl = `${window.location.pathname}?view=shoot&a1=${a1}&d1=${d1}&so1=${so1}&a2=${a2}&d2=${d2}&so2=${so2}`;
+    const newUrl = `${window.location.pathname}?view=shoot&a1=${encodeURIComponent(a1)}&d1=${encodeURIComponent(d1)}&so1=${encodeURIComponent(so1)}&a2=${encodeURIComponent(a2)}&d2=${encodeURIComponent(d2)}&so2=${encodeURIComponent(so2)}`;
     window.history.replaceState({}, '', newUrl);
   }, [attacker1, defender1, shootOptions1, attacker2, defender2, shootOptions2]);
 
@@ -337,14 +335,14 @@ export function useFightUrlState(
     const fa = encodeFighter(fighterA);
     const fb = encodeFighter(fighterB);
     const fo = encodeFightOptions(fightOptions);
-    return `${window.location.origin}${window.location.pathname}?view=fight&fa=${fa}&fb=${fb}&fo=${fo}`;
+    return `${window.location.origin}${window.location.pathname}?view=fight&fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
   }, [fighterA, fighterB, fightOptions]);
 
   const addParamsToUrl = useCallback(() => {
     const fa = encodeFighter(fighterA);
     const fb = encodeFighter(fighterB);
     const fo = encodeFightOptions(fightOptions);
-    const newUrl = `${window.location.pathname}?view=fight&fa=${fa}&fb=${fb}&fo=${fo}`;
+    const newUrl = `${window.location.pathname}?view=fight&fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
     window.history.replaceState({}, '', newUrl);
   }, [fighterA, fighterB, fightOptions]);
 
