@@ -20,17 +20,17 @@ export enum Ability {
     FailToNormIfAtLeastTwoSuccesses = "CloseAssault", // if at least two successes, promote fail to norm; from Imperial Navy Breachers Close Assault
     JustAScratch = "JustAScratch", // cancel one attack die just before damage; both shoot and fight; prefers crits
     JustAScratchNorms = "JustAScratchNorms", // cancel one normal hit just before damage
+    HalfDamageFirstStrike = "HalfDamageFirstStrike", // first strike damage is halved (rounded up, minimum 2)
     Durable = "Durable2021", // one crit hit does 1 less damage, to minimun of 3
     ObscuredTarget = "ObscuredTarget", // all crits become norms; can't do crit-triggered abilities; discard a success at the end
-    PuritySeal = "PuritySeal", // 2024; if roll 2 fails, can discard one fail to change other fail to normal success; attack only
-    Indomitus = "Indomitus", // 2024; if roll 2 fails, can discard one fail to change other fail to normal success; defense only (Space Marines defending ANGEL OF DEATH)
+    PuritySeal = "PuritySeal", // 2024; if at least 2 dice fail, discard one fail and change another fail to a normal success; attack only. Rule strictly requires two unmodified 1s; implementation triggers on any 2 fails.
+    Indomitus = "Indomitus", // 2024; if at least 2 dice fail, discard one fail and change another fail to a normal success; defense only (Space Marines defending ANGEL OF DEATH). Rule strictly requires two unmodified 1s; implementation triggers on any 2 fails.
 
     // fight stuff relevant to 2024
     Brutal = "Brutal", // opponent can only parry with crit
-    Shock = "Shock", // "the first time you strike with a crit, also discard one of opponent's unresolved norms (or crit if no norms)"
+    Shock = "Shock", // "the first time you strike with a crit, also discard one of opponent's unresolved norms"
 
     // fight stuff relevant to only 2021 or I have not checked for 2024
-    Stun2021 = "Stun2021", // effect different between shoot and fight
     StormShield2021 = "StormShield2021", // each parry cancels two successes
     Hammerhand2021 = "Hammerhand2021", // first strike does one extra dmg
     Dueller = "Dueller2021", // each crit parry cancels extra normal success

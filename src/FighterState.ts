@@ -3,6 +3,7 @@ import FightStrategy from 'src/FightStrategy';
 import FightChoice from "src/FightChoice";
 import Ability from "./Ability";
 import { MinCritDmgAfterDurable } from "./KtMisc";
+import { RngFunction } from "src/MonteCarloFightDice";
 
 export default class FighterState {
   public profile: Model;
@@ -12,6 +13,8 @@ export default class FighterState {
   public currentWounds: number;
   public hasStruck: boolean;
   public hasCritStruck: boolean;
+  public normScratchUsed: boolean; // JaS (Normals): whether this fighter's norm-only scratch is spent
+  public rng: RngFunction | null;
 
   public constructor(
     profile: Model,
@@ -21,6 +24,8 @@ export default class FighterState {
     currentWounds: number = -1,
     hasStruck: boolean = false,
     hasCritStruck: boolean = false,
+    rng: RngFunction | null = null,
+    normScratchUsed: boolean = false,
   ) {
     this.profile = profile;
     this.crits = crits;
@@ -29,6 +34,8 @@ export default class FighterState {
     this.currentWounds = currentWounds === -1 ? this.profile.wounds : currentWounds;
     this.hasStruck = hasStruck;
     this.hasCritStruck = hasCritStruck;
+    this.normScratchUsed = normScratchUsed;
+    this.rng = rng;
   }
 
   public successes() {
@@ -36,7 +43,18 @@ export default class FighterState {
   }
 
   public applyDmg(dmg: number) {
+    if (this.profile.usesFnp() && this.rng) {
+      dmg = this.rollFnp(dmg);
+    }
     this.currentWounds = Math.max(0, this.currentWounds - dmg);
+  }
+
+  private rollFnp(dmg: number): number {
+    // FNP rolls once per strike; on success, reduce that strike's damage by 1
+    if (dmg <= 0) return dmg;
+    const fnpThreshold = this.profile.fnp;
+    const roll = Math.floor(this.rng!() * 6) + 1; // roll 1-6
+    return roll >= fnpThreshold ? dmg - 1 : dmg;
   }
 
   public applyDmgFromStrike(dmg: number, atker: Model, isCrit: boolean) {
@@ -53,8 +71,8 @@ export default class FighterState {
     crits: number | undefined = undefined,
     norms: number | undefined = undefined,
   ) {
-    crits = crits || this.crits;
-    norms = norms || this.norms;
+    crits = crits ?? this.crits;
+    norms = norms ?? this.norms;
     return this.profile.abilities.has(Ability.Hammerhand2021)
       && !this.hasStruck
       && (crits > 0 || norms > 0)
@@ -110,6 +128,7 @@ export default class FighterState {
     this.currentWounds = currentWounds;
     this.hasStruck = false;
     this.hasCritStruck = false;
+    this.normScratchUsed = false;
   }
 
   public clone(): FighterState {
@@ -121,6 +140,8 @@ export default class FighterState {
       this.currentWounds,
       this.hasStruck,
       this.hasCritStruck,
+      this.rng,
+      this.normScratchUsed,
     );
   }
 

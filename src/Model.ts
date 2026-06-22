@@ -17,7 +17,7 @@ export default class Model {
   public reroll: Ability; // all
   public lethal: number; // fight and shoot-attack; 0 means default of crit on 6+; can be 7 to force never-crit
   public hardyx: number; // shoot-defense, like Lethal
-  public fnp: number; // fight and shoot-def; Feel No Pain: for each point of dmg, roll a die and on given number or better, avoid dmg
+  public fnp: number; // fight and shoot-def; Feel No Pain: roll once per hit, on given number or better, reduce that hit's damage by 1
   public autoNorms: number; // all
   public autoCrits: number; // all
   public failsToNorms: number; // all

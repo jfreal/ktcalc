@@ -20,6 +20,9 @@ export function calcDmgProbs(
 
   // don't add damage=0 stuff until just before multi-round handling
   let damageToProb = new Map<number, number>();
+  // for FNP: track (damage,numHits) pairs to know how many FNP rolls to make
+  const damageHitsToProb = new Map<string, number>();
+  const usesFnp = defender.usesFnp();
 
   function addAtkDefScenario(
     atk: FinalDiceProb,
@@ -27,7 +30,7 @@ export function calcDmgProbs(
   ): void {
     const currProb = atk.prob * def.prob;
 
-    const damage = calcDamage(
+    const result = calcDamage(
       attacker,
       defender,
       atk.crits,
@@ -35,8 +38,13 @@ export function calcDmgProbs(
       def.crits,
       def.norms);
 
-    if (damage > 0) {
-      Util.addToMapValue(damageToProb, damage, currProb);
+    if (result.damage > 0) {
+      if (usesFnp) {
+        const key = `${result.damage},${result.numHits}`;
+        Util.addToMapValue(damageHitsToProb, key, currProb);
+      } else {
+        Util.addToMapValue(damageToProb, result.damage, currProb);
+      }
     }
   }
 
@@ -55,8 +63,8 @@ export function calcDmgProbs(
     }
   }
 
-  if(defender.usesFnp()) {
-    damageToProb = calcPostFnpDamages(defender.fnp, damageToProb);
+  if(usesFnp) {
+    damageToProb = calcPostFnpDamages(defender.fnp, damageHitsToProb);
   }
 
   Util.fillInProbForZero(damageToProb);

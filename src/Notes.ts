@@ -71,16 +71,25 @@ export const CoverCritSaves = new Note(
   `How many saves can be automatically retained as a critical success. High enough APx/Px can limit these auto-saves.`,
 );
 export const JustAScratch2021 = new Note(
-  `Just a Scratch (JaS)`,
-  `Just a Scratch (JaS): Ignore damage from an attack die. JaS (Crits) prefers crits; JaS (Normals) can only ignore normal hits.`,
+  `JaS (Crits)`,
+  `Just a Scratch (JaS): Ignore damage from one attack die, preferring crits.`,
+);
+export const JustAScratchNorms = new Note(
+  `JaS (Normals)`,
+  `Just a Scratch (JaS): Ignore damage from one normal hit only (cannot ignore crits).`,
 );
 export const PuritySeal = new Note(
   `PuritySeal`,
-  `If roll 2 fails, can discard one fail to change other fail to normal success; attack only.`,
+  `If at least 2 dice fail, discard one fail and change another fail to a normal success; attack only. ` +
+  `Note: KT2024 rule strictly requires two unmodified 1s; this calculator triggers on any 2 failed dice, ` +
+  `so the benefit is slightly overstated on rolls where fails include non-1 values (e.g. 2s on a 3+ stat).`,
 );
 export const Indomitus = new Note(
   `Indomitus`,
-  `If roll 2 fails, can discard one fail to change other fail to normal success; defense only.Angels of Death Firefight ploy.`,
+  `If at least 2 dice fail, discard one fail and change another fail to a normal success; defense only. ` +
+  `Angels of Death Firefight ploy. ` +
+  `Note: KT2024 rule strictly requires two unmodified 1s; this calculator triggers on any 2 failed dice, ` +
+  `so the benefit is slightly overstated on rolls where fails include non-1 values (e.g. 2s on a 3+ save).`,
 );
 export const HardyX = new Note(
   `HardyX`,
@@ -92,7 +101,7 @@ export const Durable2021 = new Note(
 );
 export const FeelNoPain = new Note(
   `FeelNoPain`,
-  `FNP is the category of abilities where just before damage is actually resolved, you roll a die for each potential wound, and each rolled success prevents a wound from being lost. Even MWx damage can be prevented via FNP.`,
+  `FNP is the category of abilities where just before damage is actually resolved, you roll a die for each successful hit (strike). On a roll at or above the threshold, that hit's damage is reduced by 1. Even MWx damage can be prevented via FNP.`,
 );
 export const AvgDamageUnbounded = new Note(
   `AvgDamageUnbounded`,
@@ -104,11 +113,7 @@ export const Brutal = new Note(
 );
 export const Shock = new Note(
   `Shock`,
-  `First crit strike also cancels enemy unresolved norm (or crit if no norms).`,
-);
-export const StunMelee2021 = new Note(
-  `Stun2021`,
-  `In KT2021, in melee, first crit strike additionally discards 1 norm success of opponent. Second crit strike decrements opponent APL.`,
+  `First crit strike also cancels one enemy unresolved norm.`,
 );
 export const NicheAbility = new Note(
   `NicheAbility`,
@@ -120,6 +125,10 @@ export const NicheAbility = new Note(
 export const Duelist = new Note(
   `Duelist/PreParry`,
   `Do one parry before usual dice resolution.`,
+);
+export const HalfDamageFirstStrike = new Note(
+  `Half Dmg 1st Strike`,
+  `First strike damage is halved (rounded up) to a minimum of 2.`,
 );
 export const Dummy = new Note(
   ``,

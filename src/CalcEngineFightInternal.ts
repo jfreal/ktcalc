@@ -55,8 +55,8 @@ export function calcRemainingWoundPairProbs(
   const woundPairCounts = new Map<number, number>();
 
   // Pre-allocate FighterState objects and reuse across simulations
-  const guy1State = new FighterState(guy1, 0, 0, guy1Strategy);
-  const guy2State = new FighterState(guy2, 0, 0, guy2Strategy);
+  const guy1State = new FighterState(guy1, 0, 0, guy1Strategy, -1, false, false, rng);
+  const guy2State = new FighterState(guy2, 0, 0, guy2Strategy, -1, false, false, rng);
 
   const guy1OrigWounds = guy1.wounds;
   const guy2OrigWounds = guy2.wounds;
@@ -138,7 +138,12 @@ export function resolveFight(
 }
 
 export function calcDieChoice(chooser: FighterState, enemy: FighterState): FightChoice {
-  // note: this function assumes both chooser and enemy have remaining successes
+  // note: this function assumes chooser has remaining successes
+
+  // if enemy has no successes, parry would cancel nothing — must strike
+  if(enemy.crits + enemy.norms === 0) {
+    return chooser.nextStrike();
+  }
 
   // ALWAYS strike if you can kill enemy with a single strike;
   // also, if enemy has brutal and you have no crits, then you must strike;
@@ -147,10 +152,10 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
     return chooser.nextStrike();
   }
 
-  // if can stun enemy (crit strike that also cancels an enemy NORM success),
+  // if can shock enemy (crit strike that also cancels an enemy NORM success),
   // and enemy doesn't have any crit successes, then there is no downside
-  // to doing a stunning crit strike now
-  if(chooser.profile.has(Ability.Stun2021) && !chooser.hasCritStruck && chooser.crits > 0 && enemy.crits === 0) {
+  // to doing a shocking crit strike now
+  if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0 && enemy.crits === 0) {
     return FightChoice.CritStrike;
   }
 
@@ -211,25 +216,37 @@ export function resolveDieChoice(
   chooser: FighterState,
   enemy: FighterState,
 ): void {
-  function applyDmgWithFirstStrikeHandling(dmg: number) {
+  function applyDmgWithFirstStrikeHandling(dmg: number, isNorm: boolean) {
     if(!chooser.hasStruck) {
       if(enemy.profile.abilities.has(Ability.JustAScratch)) {
         dmg = 0;
-      } else if(chooser.profile.abilities.has(Ability.Hammerhand2021)) {
-        dmg++;
+      } else {
+        if(chooser.profile.abilities.has(Ability.Hammerhand2021)) {
+          dmg++;
+        }
+        if(enemy.profile.abilities.has(Ability.HalfDamageFirstStrike)) {
+          dmg = Math.max(2, Math.ceil(dmg / 2));
+        }
       }
       chooser.hasStruck = true;
+    }
+    // JaS (Normals): ignore the first normal strike's damage; cannot ignore crits.
+    // Guarded on dmg > 0 so a strike already zeroed by JaS (Crits) doesn't spend it.
+    if(isNorm && dmg > 0 && !enemy.normScratchUsed
+      && enemy.profile.abilities.has(Ability.JustAScratchNorms)) {
+      dmg = 0;
+      enemy.normScratchUsed = true;
     }
     enemy.applyDmg(dmg);
   }
 
   if(choice === FightChoice.CritStrike) {
     let critDmgAfterPossibleDurable = chooser.nextCritDmgWithDurableAndWithoutHammerhand(enemy);
-    applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable);
+    applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable, false);
     chooser.crits--;
 
-    if(chooser.profile.has(Ability.Stun2021) && !chooser.hasCritStruck) {
-      enemy.norms = Math.max(0, enemy.norms - 1); // stun ability can only cancel an enemy norm success
+    if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck) {
+      enemy.norms = Math.max(0, enemy.norms - 1); // shock ability cancels an enemy norm success
     }
 
     if (
@@ -238,11 +255,11 @@ export function resolveDieChoice(
       && !chooser.hasCritStruck
     ) {
       if(chooser.crits > 0) {
-        enemy.applyDmg(chooser.profile.critDmg);
+        applyDmgWithFirstStrikeHandling(chooser.profile.critDmg, false);
         chooser.crits--;
       }
       else {
-        enemy.applyDmg(chooser.profile.normDmg);
+        applyDmgWithFirstStrikeHandling(chooser.profile.normDmg, true);
         chooser.norms--;
       }
     }
@@ -250,7 +267,7 @@ export function resolveDieChoice(
     chooser.hasCritStruck = true;
   }
   else if(choice === FightChoice.NormStrike) {
-    applyDmgWithFirstStrikeHandling(chooser.profile.normDmg);
+    applyDmgWithFirstStrikeHandling(chooser.profile.normDmg, true);
     chooser.norms--;
   }
   else if(choice === FightChoice.CritParry) {
@@ -338,11 +355,27 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
   }
 
   if(fightChoice !== null) {
-    const critsAfterParry = chooser.crits - (fightChoice === FightChoice.CritParry ? 1 : 0);
-    const normsAfterParry = chooser.norms - (fightChoice === FightChoice.NormParry ? 1 : 0);
-    const remainingDmg = chooser.possibleDmg(critsAfterParry, normsAfterParry);
+    // Estimate the chooser's remaining damage by cloning the fighters, applying
+    // the parry, then striking out the rest through the real resolution path.
+    // This keeps resolveDieChoice the single source of truth for first-strike
+    // handling (JaS Crits, JaS Normals, Hammerhand, Durable, etc.) instead of
+    // re-deriving it here. rng is cleared on the clones so the estimate stays
+    // deterministic and doesn't consume Monte Carlo draws (matching the old
+    // possibleDmg-based estimate, which also ignored Feel No Pain).
+    const chooserClone = chooser.clone();
+    const enemyClone = enemy.clone();
+    chooserClone.rng = null;
+    enemyClone.rng = null;
 
-    if(remainingDmg >= enemy.profile.wounds) {
+    resolveDieChoice(fightChoice, chooserClone, enemyClone);
+
+    // After parrying the enemy's last success the enemy is out of successes,
+    // so the chooser simply strikes until the enemy dies or its successes run out.
+    while(chooserClone.successes() > 0 && enemyClone.currentWounds > 0) {
+      resolveDieChoice(chooserClone.nextStrike(), chooserClone, enemyClone);
+    }
+
+    if(enemyClone.currentWounds <= 0) {
       return fightChoice;
     }
   }

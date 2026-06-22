@@ -15,16 +15,14 @@ export function mulberry32(seed: number): RngFunction {
   };
 }
 
-const DIE_CRIT = 2;
-const DIE_NORM = 1;
-const DIE_FAIL = 0;
 
 export function simulateFighterDice(
   model: Model,
   defender: Model | undefined,
   rng: RngFunction = Math.random,
 ): { crits: number; norms: number } {
-  const critThreshold = model.critSkill();
+  // lethal must not promote a die that would have failed: clamp critThreshold >= normThreshold
+  const critThreshold = Math.max(model.critSkill(), model.diceStat);
   const normThreshold = model.diceStat;
 
   // Merge defender's ObscuredTarget into abilities if present

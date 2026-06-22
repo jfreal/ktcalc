@@ -6,6 +6,7 @@ import Table from 'react-bootstrap/Table';
 import Accordion from 'react-bootstrap/Accordion';
 
 import 'src/components/Accordion.css'
+import ProbabilityHistogram from 'src/components/ProbabilityHistogram';
 
 import Model from 'src/Model';
 import {
@@ -96,6 +97,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
 
   let avgDmgUnbounded = 0;
   const dmgProbTableBody: JSX.Element[] = [];
+  const histogramData: { dmg: number; prob: number }[] = [];
 
   const chosenSaveDmgToProb = props.saveToDmgToProb.get(props.defender.diceStat)!;
   const killChance = killProb(chosenSaveDmgToProb, props.defender.wounds);
@@ -105,6 +107,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
 
   for(const [dmg, prob] of ascendingDmgToProb) {
     avgDmgUnbounded += dmg * prob;
+    histogramData.push({ dmg, prob });
 
     const probAtLeastThisMuchDmg = 1 - probCumulative;
     probCumulative += prob;
@@ -120,9 +123,19 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
     );
   }
 
+  const histogram = (
+    <ProbabilityHistogram
+      data={histogramData}
+      xKey="dmg"
+      xLabel="Dmg"
+      ariaLabel="Damage probability distribution"
+      digitsPastDecimal={digitsPastDecimal}
+    />
+  );
+
   const dmgProbTable =
     <>
-      {/*<span style={{ fontSize: '13px' }}>Dmg probs for exact scenario...</span>*/}
+      {histogram}
       <Table bordered={true} striped={true} style={{ fontSize: '11px' }}>
         <thead>
           <tr>
@@ -155,7 +168,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
           <Accordion flush>
             <Accordion.Item eventKey='1'>
               <Accordion.Header as="p">Injury Chance: {toPercentString(injuryChance)}%</Accordion.Header>
-              <Accordion.Body>Probability of doing damage &lt; {(props.defender.wounds / 2).toFixed(1)} wounds (less than half)</Accordion.Body>
+              <Accordion.Body>Probability of doing more than {(props.defender.wounds / 2).toFixed(1)} but less than {props.defender.wounds} wounds (injured but not killed)</Accordion.Body>
             </Accordion.Item>
           </Accordion>
         </Col>

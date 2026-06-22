@@ -61,6 +61,7 @@ Operatives in cover can retain **automatic saves** without rolling:
 6. **Resolve damage**
    - Remaining hits deal damage
    - Devastating damage occurs regardless of saves
+   - Feel No Pain (if any): roll one die per surviving hit; each roll at/above the threshold reduces that hit's damage by 1
 
 ---
 
@@ -82,6 +83,13 @@ Cancel one normal hit just before damage is resolved:
 - **Only targets normals**: Will not cancel critical hits
 - Useful when you want to preserve the option to cancel crits with saves
 
+### Feel No Pain (FNP)
+Just before damage is resolved, roll one die for each surviving hit (strike):
+- **Threshold**: 4+, 5+, or 6+ (set in the Defender's advanced params)
+- On a roll **at or above** the threshold, that hit's damage is reduced by 1 (to a minimum of 0)
+- One roll per surviving hit, not per point of damage
+- Even MWx (Devastating) damage can be prevented via FNP
+
 ---
 
 ## Key Principles
@@ -93,4 +101,4 @@ Cancel one normal hit just before damage is resolved:
 
 ---
 
-*Last updated: February 2026*
+*Last updated: June 2026*

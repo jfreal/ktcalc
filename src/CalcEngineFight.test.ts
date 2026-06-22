@@ -136,9 +136,39 @@ describe(calcParryForLastEnemySuccessThenKillEnemy.name, () => {
     expect(calcParryForLastEnemySuccessThenKillEnemy(guy99Dueller, newFighterState(0, 2))).toBe(FightChoice.CritParry);
     expect(calcParryForLastEnemySuccessThenKillEnemy(guy99Dueller, newFighterState(1, 2))).toBe(null);
   });
+  it('HalfDamageFirstStrike enemy: lookahead must account for halved post-parry strike', () => {
+    // chooser: 2 crits @ critDmg 3. enemy: 1 crit. CritParry leaves chooser 1 crit.
+    // Without HalfDamageFirstStrike that lone strike does 3 dmg -> kills a 3-wound enemy.
+    // With it, the (first) post-parry strike is halved to ceil(3/2)=2 -> cannot kill 3 wounds.
+    // The old arithmetic ignored HalfDamageFirstStrike and wrongly chose to parry here.
+    const chooser = newFighterState(2, 0);
+    chooser.profile.critDmg = 3;
+
+    const enemyNoHalf = newFighterState(1, 0, 3);
+    expect(calcParryForLastEnemySuccessThenKillEnemy(chooser, enemyNoHalf)).toBe(FightChoice.CritParry);
+
+    const enemyHalf = newFighterState(1, 0, 3);
+    enemyHalf.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+    expect(calcParryForLastEnemySuccessThenKillEnemy(chooser, enemyHalf)).toBe(null);
+
+    // but a 2-wound HalfDamageFirstStrike enemy still dies to the halved 2-dmg strike
+    const enemyHalf2 = newFighterState(1, 0, 2);
+    enemyHalf2.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+    expect(calcParryForLastEnemySuccessThenKillEnemy(chooser, enemyHalf2)).toBe(FightChoice.CritParry);
+  });
 });
 
 describe(calcDieChoice.name + ', common & strike/parry', () => {
+  it('#0: strike if enemy has no successes (parry would cancel nothing)', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.Parry);
+    const enemy = newFighterState(0, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('#0b: strike if enemy has no successes, chooser only norms', () => {
+    const chooser = newFighterState(0, 1, 99, FightStrategy.Parry);
+    const enemy = newFighterState(0, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
   it('#1a: strike if you can kill with next strike', () => {
     const chooser = newFighterState(1, 1, 99, FightStrategy.Parry);
     const enemy = newFighterState(9, 9, chooser.profile.critDmg);
@@ -149,19 +179,19 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
     const enemy = newFighterState(9, 9, chooser.profile.critDmg + 1);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
   });
-  it('#2a: crit strike if you have stun, enemy is not already stunned, and enemy has no crit successes', () => {
-    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Stun2021]));
+  it('#2a: crit strike if you have shock, enemy is not already shocked, and enemy has no crit successes', () => {
+    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
     const enemy = newFighterState(0, 99, 20);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
   });
-  it('#2b: if enemy already stunned, then cannot stun again', () => {
-    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Stun2021]));
+  it('#2b: if enemy already shocked, then cannot shock again', () => {
+    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
     chooser.hasCritStruck = true;
     const enemy = newFighterState(0, 99, 20);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormParry);
   });
-  it('#2c: if chooser has stun and enemy has crit successes, that is not enough to override Parry strategy', () => {
-    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Stun2021]));
+  it('#2c: if chooser has shock and enemy has crit successes, that is not enough to override Parry strategy', () => {
+    const chooser = newFighterState(99, 99, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
     const enemy = newFighterState(99, 99, 20);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
   });
@@ -185,14 +215,14 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
     const enemy = newFighterState(1, 1, 10, FightStrategy.Strike);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
   });
-  it('MinDmgToSelf, do not use stunning crit strike if could have used that crit to parry an enemy crit', () => {
-    const chooser = newFighterState(1, 1, 99, FightStrategy.MinDmgToSelf, new Set<Ability>([Ability.Stun2021]));
+  it('MinDmgToSelf, do not use shocking crit strike if could have used that crit to parry an enemy crit', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MinDmgToSelf, new Set<Ability>([Ability.Shock]));
     const enemy = newFighterState(1, 1, 99, FightStrategy.Strike);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
   });
 });
 
-describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, dueller', () => {
+describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, dueller', () => {
   const origChooserCrits = 10;
   const origChooserNorms = 20;
   const origEnemyCrits = 30;
@@ -215,7 +245,7 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
     );
   }
 
-  it('CritStrike+noStun, and check even values that shouldn\'t change', () => {
+  it('CritStrike+noShock, and check even values that shouldn\'t change', () => {
     for(let stormShieldMaybe of [Ability.None, Ability.StormShield2021]) { // storm shield shouldn't matter
       const chooser = makeChooser(stormShieldMaybe);
       const enemy = makeEnemy(chooser.profile.critDmg + finalWounds);
@@ -229,10 +259,10 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
       expect(enemy.currentWounds).toBe(finalWounds);
     }
   });
-  it('CritStrike+stun, not already stunned', () => {
+  it('CritStrike+shock, not already shocked', () => {
     for(let stormShield of [false, true]) { // storm shield shouldn't matter
-      const chooser = makeChooser(Ability.Stun2021, stormShield ? Ability.StormShield2021 : Ability.None);
-      chooser.profile.setAbility(Ability.Stun2021, true);
+      const chooser = makeChooser(Ability.Shock, stormShield ? Ability.StormShield2021 : Ability.None);
+      chooser.profile.setAbility(Ability.Shock, true);
       const enemy = makeEnemy(chooser.profile.critDmg + finalWounds);
 
       resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
@@ -244,9 +274,9 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
       expect(enemy.currentWounds).toBe(finalWounds);
     }
   });
-  it('CritStrike+stun, already stunned', () => {
+  it('CritStrike+shock, already shocked', () => {
     for(let stormShieldMaybe of [Ability.None, Ability.StormShield2021]) { // storm shield shouldn't matter
-      const chooser = makeChooser(Ability.Stun2021, stormShieldMaybe);
+      const chooser = makeChooser(Ability.Shock, stormShieldMaybe);
       chooser.hasCritStruck = true;
       const enemy = makeEnemy(chooser.profile.critDmg + finalWounds);
 
@@ -260,10 +290,10 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
     }
   });
   it('NormStrike', () => {
-    for(let stunAndStormShield of [false, true]) { // neither should matter
+    for(let shockAndStormShield of [false, true]) { // neither should matter
       const chooser = makeChooser();
-      chooser.profile.setAbility(Ability.StormShield2021, stunAndStormShield);
-      chooser.profile.setAbility(Ability.Stun2021, stunAndStormShield);
+      chooser.profile.setAbility(Ability.StormShield2021, shockAndStormShield);
+      chooser.profile.setAbility(Ability.Shock, shockAndStormShield);
       const enemy = makeEnemy(chooser.profile.normDmg + finalWounds);
 
       resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
@@ -405,6 +435,135 @@ describe(resolveDieChoice.name + ': basic, stun, storm shield, hammerhand, duell
     resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds - 2 * chooser.profile.normDmg - 1);
   });
+  it('HalfDamageFirstStrike halves first norm strike damage (rounded up, min 2)', () => {
+    const initialWounds = 100;
+    const normDmg = 5;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('normDmg', normDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // First strike: 5 dmg halved = ceil(5/2) = 3
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 3);
+
+    // Second strike: full damage
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 3 - normDmg);
+  });
+  it('HalfDamageFirstStrike halves first crit strike damage (rounded up, min 2)', () => {
+    const initialWounds = 100;
+    const critDmg = 7;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('critDmg', critDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // First crit strike: 7 dmg halved = ceil(7/2) = 4
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 4);
+  });
+  it('HalfDamageFirstStrike enforces minimum of 2 damage', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('normDmg', 2); // ceil(2/2) = 1, but min is 2
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 2);
+  });
+  it('HalfDamageFirstStrike with hammerhand: hammerhand applies then halved', () => {
+    const initialWounds = 100;
+    const normDmg = 3;
+    const chooser = makeChooser(Ability.Hammerhand2021);
+    chooser.profile.setProp('normDmg', normDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // Hammerhand: 3+1=4, then halved: ceil(4/2)=2
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 2);
+  });
+  it('JustAScratch takes priority over HalfDamageFirstStrike', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratch, true);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    // JustAScratch sets damage to 0, overriding half damage
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+  });
+  it('JustAScratchNorms ignores a normal strike but not a crit strike', () => {
+    const initialWounds = 100;
+    const critDmg = 5;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('critDmg', critDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratchNorms, true);
+
+    // crit strike is unaffected by JaS (Normals)
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg);
+
+    // first norm strike is ignored (scratch spent)
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg);
+
+    // second norm strike does full damage (scratch already spent)
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg - chooser.profile.normDmg);
+  });
+  it('JustAScratchNorms ignores the first normal strike when it is first', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(0, 2, 10);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratchNorms, true);
+
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+  });
+  it('JustAScratch and JustAScratchNorms together ignore two hits', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(0, 3, 10);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratch, true);
+    enemy.profile.setAbility(Ability.JustAScratchNorms, true);
+
+    // first norm strike zeroed by JaS (Crits), second zeroed by JaS (Normals)
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+
+    // third norm strike does full damage
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - chooser.profile.normDmg);
+  });
+  it('possibleDmg(0,0) is 0 even with Hammerhand and remaining dice (no falsy-0 fallback)', () => {
+    // regression: hammerhandDmg used `crits || this.crits`, so possibleDmg(0,0)
+    // returned 1 for a Hammerhand fighter, inflating the parry kill-lookahead
+    const chooser = newFighterState(2, 2, 10, FightStrategy.MaxDmgToEnemy,
+      new Set([Ability.Hammerhand2021]));
+    expect(chooser.possibleDmg(0, 0)).toBe(0);
+    // sanity: with a real strike remaining, Hammerhand's +1 still counts
+    expect(chooser.possibleDmg(0, 1)).toBe(chooser.profile.normDmg + 1);
+  });
+  it('JustAScratchNorms ignores a Murderous Entrance bonus normal hit', () => {
+    const initialWounds = 100;
+    const critDmg = 5;
+    const chooser = newFighterState(1, 1, 10, FightStrategy.MaxDmgToEnemy,
+      new Set([Ability.MurderousEntrance2021]));
+    chooser.profile.setProp('critDmg', critDmg);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratchNorms, true);
+
+    // crit strike lands full; the bonus normal hit from Murderous Entrance is the
+    // first normal hit, so JaS (Normals) ignores it
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg);
+  });
 });
 
 describe(resolveFight.name + ' smart strategies should optimize goal', () => {
@@ -420,10 +579,10 @@ describe(resolveFight.name + ' smart strategies should optimize goal', () => {
           for(let wounds2 of range(maxWounds)) {
             for(let crits2 of range(maxSuccesses)) {
               for(let norms2 of range(maxSuccesses - crits2)) {
-                for(let stun of [false, true]) {
+                for(let shock of [false, true]) {
                     for(let stormShield of [false, true]) {
                     const abilities = new Set<Ability>();
-                    Util.addOrRemove(abilities, Ability.Stun2021, stun);
+                    Util.addOrRemove(abilities, Ability.Shock, shock);
                     Util.addOrRemove(abilities, Ability.StormShield2021, stormShield);
                     const chooserAlwaysStrike = newFighterState(crits1, norms1, wounds1, FightStrategy.Strike, abilities);
                     const chooserAlwaysParry = newFighterState(crits1, norms1, wounds1, FightStrategy.Parry, abilities);
@@ -533,19 +692,18 @@ describe(calcRemainingWounds.name + ' basic', () => {
     expect(guy2Wounds.get(0)).toBeCloseTo(pc, requiredPrecision);
     expect(guy2Wounds.get(dc)).toBeCloseTo(pf, requiredPrecision);
   });
-  it('WS=6+ and Lethal=4+ should be handled same as WS=4+ and Lethal=4+', () => {
-    const guy1 = new Model(1, 2, 1, 1).setProp('wounds', 2);
-    const guy2a = new Model(1, 4, 1, 2).setProp('wounds', 1).setProp('lethal', 4);
-    const guy2b = new Model(1, 6, 1, 2).setProp('wounds', 1).setProp('lethal', 4);
+  it('Lethal does not promote dice that would otherwise fail (WS=6+ Lethal=4+ → only nat 6 crits)', () => {
+    // WS=6+ means only a 6 hits at all; Lethal=4+ should NOT make 4s/5s into crits
+    // guy2 is the attacker; guy1 is a passive sandbag (no attacks)
+    const guy1 = new Model(0, 7, 1, 1).setProp('wounds', 100);
+    const guy2 = new Model(1, 6, 1, 2).setProp('wounds', 100).setProp('lethal', 4);
 
-    // Both should produce similar probability distributions
-    const probsA = calcRemainingWoundPairProbs(guy1, guy2a, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
-    const probsB = calcRemainingWoundPairProbs(guy1, guy2b, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
-    const [guy1AWounds] = consolidateWoundPairProbs(probsA);
-    const [guy1BWounds] = consolidateWoundPairProbs(probsB);
-    for (const [wounds, prob] of guy1AWounds) {
-      expect(prob).toBeCloseTo(guy1BWounds.get(wounds) ?? 0, requiredPrecision);
-    }
+    const probs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const [guy1Wounds] = consolidateWoundPairProbs(probs);
+    // guy2 hits guy1 only on nat 6 (1/6); damage = critDmg = 2
+    const pHit = 1 / 6;
+    const dmgProb = guy1Wounds.get(100 - 2) ?? 0;
+    expect(dmgProb).toBeCloseTo(pHit, requiredPrecision);
   });
 });
 
@@ -586,5 +744,102 @@ describe(calcRemainingWounds.name + ' multiple rounds', () => {
     expect(woundPairProbs.get(toWoundPairKey(dc, dc))).toBeCloseTo(Math.pow(pf, 4), requiredPrecision);
     expect(woundPairProbs.get(toWoundPairKey(0, dc))).toBeCloseTo(Math.pow(pf, 3) * pc + pf * pc, requiredPrecision);
     expect(woundPairProbs.get(toWoundPairKey(dc, 0))).toBeCloseTo(pf * pf * pc + pc, requiredPrecision);
+  });
+});
+
+describe('Feel No Pain in fights', () => {
+  it('FNP reduces damage taken on average', () => {
+    const wounds = 12;
+    const guy1 = new Model(4, 3, 3, 4).setProp('wounds', wounds);
+    const guy2NoFnp = new Model(4, 3, 3, 4).setProp('wounds', wounds);
+    const guy2Fnp = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 5);
+
+    const probsNoFnp = calcRemainingWoundPairProbs(guy1, guy2NoFnp, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const probsFnp = calcRemainingWoundPairProbs(guy1, guy2Fnp, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const [guy1WoundsNoFnp] = consolidateWoundPairProbs(probsNoFnp);
+    const [guy1WoundsFnp] = consolidateWoundPairProbs(probsFnp);
+
+    // Guy1 should take less damage when guy2 has FNP (guy2 survives longer and hits back more)
+    // Actually, FNP is on the defender (guy2), so guy1's wounds should be similar
+    // but guy2 should survive with more wounds on average
+    const [, guy2WoundsNoFnp] = consolidateWoundPairProbs(probsNoFnp);
+    const [, guy2WoundsFnp] = consolidateWoundPairProbs(probsFnp);
+
+    let avgWoundsNoFnp = 0;
+    let avgWoundsFnp = 0;
+    for (const [w, p] of guy2WoundsNoFnp) avgWoundsNoFnp += w * p;
+    for (const [w, p] of guy2WoundsFnp) avgWoundsFnp += w * p;
+
+    // FNP defender should have more remaining wounds on average
+    expect(avgWoundsFnp).toBeGreaterThan(avgWoundsNoFnp);
+  });
+
+  it('FNP 4+ is stronger than FNP 6+', () => {
+    const wounds = 12;
+    const guy1a = new Model(4, 3, 3, 4).setProp('wounds', wounds);
+    const guy1b = clone(guy1a);
+    const guy2Fnp4 = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 4);
+    const guy2Fnp6 = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 6);
+
+    const probsFnp4 = calcRemainingWoundPairProbs(guy1a, guy2Fnp4, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const probsFnp6 = calcRemainingWoundPairProbs(guy1b, guy2Fnp6, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const [, guy2WoundsFnp4] = consolidateWoundPairProbs(probsFnp4);
+    const [, guy2WoundsFnp6] = consolidateWoundPairProbs(probsFnp6);
+
+    let avgFnp4 = 0;
+    let avgFnp6 = 0;
+    for (const [w, p] of guy2WoundsFnp4) avgFnp4 += w * p;
+    for (const [w, p] of guy2WoundsFnp6) avgFnp6 += w * p;
+
+    // FNP 4+ should leave more wounds remaining than FNP 6+
+    expect(avgFnp4).toBeGreaterThan(avgFnp6);
+  });
+
+  it('FNP applies per point of damage from each strike', () => {
+    const rng = testRng();
+    // Set up a simple scenario: 1 crit strike doing 4 damage, defender has FNP 4+
+    const attacker = newFighterState(1, 0, 10, FightStrategy.Strike);
+    const defender = newFighterState(0, 0, 10, FightStrategy.Strike);
+    defender.profile.setProp('fnp', 4);
+    defender.rng = rng;
+
+    // Do a crit strike (deals 2 damage based on newFighterState defaults)
+    resolveDieChoice(FightChoice.CritStrike, attacker, defender);
+
+    // With FNP, defender should take <= 2 damage (some may be saved)
+    // We can't predict exact value due to rng, but wounds should be <= 10 and >= 8
+    expect(defender.currentWounds).toBeGreaterThanOrEqual(8);
+    expect(defender.currentWounds).toBeLessThanOrEqual(10);
+  });
+});
+
+describe('JustAScratch + parry monotonicity', () => {
+  // regression: previously, more rerolls for JAS-defender increased death chance
+  // because awesomeParry fired when enemy had 0 successes (chooser wasted crits parrying nothing)
+  // and didn't account for JAS reducing chooser's first post-parry strike to 0
+  function aDeathChance(rerollA: Ability | undefined, strat: FightStrategy): number {
+    const A = new Model(4, 4, 3, 4).setProp('wounds', 8).setAbility(Ability.JustAScratch);
+    if (rerollA) A.reroll = rerollA;
+    const B = new Model(4, 4, 3, 4).setProp('wounds', 8);
+    const probs = calcRemainingWoundPairProbs(B, A,
+      FightStrategy.MaxDmgToEnemy, strat, 1, highSimCount, testRng());
+    const [, aWounds] = consolidateWoundPairProbs(probs);
+    return aWounds.get(0) || 0;
+  }
+
+  it('Parry: more rerolls → less death', () => {
+    const none = aDeathChance(undefined, FightStrategy.Parry);
+    const bal = aDeathChance(Ability.Balanced, FightStrategy.Parry);
+    const dbal = aDeathChance(Ability.DoubleBalanced, FightStrategy.Parry);
+    expect(bal).toBeLessThanOrEqual(none);
+    expect(dbal).toBeLessThanOrEqual(bal);
+  });
+
+  it('MinDmgToSelf: more rerolls → less death', () => {
+    const none = aDeathChance(undefined, FightStrategy.MinDmgToSelf);
+    const bal = aDeathChance(Ability.Balanced, FightStrategy.MinDmgToSelf);
+    const dbal = aDeathChance(Ability.DoubleBalanced, FightStrategy.MinDmgToSelf);
+    expect(bal).toBeLessThanOrEqual(none);
+    expect(dbal).toBeLessThanOrEqual(bal);
   });
 });

@@ -7,6 +7,8 @@ import {
 } from 'react-bootstrap';
 
 import Footer from 'src/components/Footer';
+import Panel from 'src/components/Panel';
+import * as T from 'src/theme';
 
 import { clone } from 'lodash';
 import * as N from 'src/Notes';
@@ -83,45 +85,52 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
     N.HardyX,
     N.FeelNoPain,
     N.JustAScratch2021,
+    N.JustAScratchNorms,
   ].map(note => <li key={note.name}><b>{note.name}</b>: {note.description}</li>);
 
   return (
-    <Container style={{width: 'fit-content'}}>
+    <Container fluid style={{maxWidth: '1320px', margin: '0 auto'}}>
       <Row>
-        Kill Team 2024 Edition, Shooting&nbsp;
-        <a href='https://assets.warhammer-community.com/killteam_keydownloads_literules_eng-jfhe9v0j7c-n0x6ozmgo9.pdf'>[Lite Rules]</a>
-      </Row>
-      <Row>
-        <Col className='border rounded p-1'>
-          Situation 1
-          <ShootSituation
-            attacker={attacker1}
-            setAttacker={setAttacker1}
-            defender={defender1}
-            setDefender={setDefender1}
-            shootOptions={shootOptions1}
-            setShootOptions={setShootOptions1}
-            saveToDmgToProb={saveToDmgToProb1}
-            />
-        </Col>
-        <Col className='border rounded p-1'>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>Situation 2</span>
-            <Button variant="outline-secondary" size="sm" onClick={copyS1toS2}>Copy From Situation 1</Button>
-          </div>
-          <ShootSituation
-            attacker={attacker2}
-            setAttacker={setAttacker2}
-            defender={defender2}
-            setDefender={setDefender2}
-            shootOptions={shootOptions2}
-            setShootOptions={setShootOptions2}
-            saveToDmgToProb={saveToDmgToProb2}
-            />
+        <Col className='p-1'>
+          Kill Team 2024 Edition, Shooting&nbsp;
+          <a href='https://assets.warhammer-community.com/killteam_keydownloads_literules_eng-jfhe9v0j7c-n0x6ozmgo9.pdf'>[Lite Rules]</a>
         </Col>
       </Row>
       <Row>
-        <Col className='border rounded p-0'>
+        <Col xs={12} lg={6} className='p-1'>
+          <Panel title="Situation 1" fullWidth bodyScrollX>
+            <ShootSituation
+              attacker={attacker1}
+              setAttacker={setAttacker1}
+              defender={defender1}
+              setDefender={setDefender1}
+              shootOptions={shootOptions1}
+              setShootOptions={setShootOptions1}
+              saveToDmgToProb={saveToDmgToProb1}
+              />
+          </Panel>
+        </Col>
+        <Col xs={12} lg={6} className='p-1'>
+          <Panel
+            title="Situation 2"
+            right={<Button variant="dark" size="sm" onClick={copyS1toS2} style={{ backgroundColor: T.darkHover, borderColor: '#5a6470' }}>Copy From Situation 1</Button>}
+            fullWidth
+            bodyScrollX
+          >
+            <ShootSituation
+              attacker={attacker2}
+              setAttacker={setAttacker2}
+              defender={defender2}
+              setDefender={setDefender2}
+              shootOptions={shootOptions2}
+              setShootOptions={setShootOptions2}
+              saveToDmgToProb={saveToDmgToProb2}
+              />
+          </Panel>
+        </Col>
+      </Row>
+      <Row>
+        <Col className='p-1'>
           <ScenarioComparisonMatrix
             saveToDmgToProb1={saveToDmgToProb1}
             saveToDmgToProb2={saveToDmgToProb2}
@@ -131,11 +140,12 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
         </Col>
       </Row>
       <Row>
-        <Col>
-          Notes:
-          <ul>
-            {noteListItems}
-          </ul>
+        <Col className='p-1'>
+          <Panel title="Notes" fullWidth>
+            <ul style={{ marginBottom: 0 }}>
+              {noteListItems}
+            </ul>
+          </Panel>
         </Col>
       </Row>
       <Footer />
