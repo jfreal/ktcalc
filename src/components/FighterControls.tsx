@@ -17,6 +17,7 @@ import {
   Accepter,
   extractFromSet,
   incDecPropsHasNondefaultSelectedValue,
+  makeIncDecPropsFromLookup,
   makeNumChangeHandler,
   makeSetChangeHandler,
   makeSetChangeHandlerForSingle,
@@ -27,6 +28,7 @@ import {
   span,
   xspan,
 } from 'src/Util';
+import { relicModeToLabel } from 'src/SaintlyRelics';
 import { Props as IncProps, propsToRows } from 'src/components/IncDecSelect';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 
@@ -97,6 +99,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.NormsToCrits,     atk.normsToCrits,           xspan(1, 9),    numHandler('normsToCrits')),
     new IncProps(N.FailsToNorms,     atk.failsToNorms,           xspan(1, 9),    numHandler('failsToNorms')),
     new IncProps(N.FeelNoPain,       atk.fnp + '+',              xspan(6, 2, '+'), numHandler('fnp')),
+    makeIncDecPropsFromLookup(N.SaintlyRelics, atk, props.changeHandler, 'saintlyRelics', relicModeToLabel),
   ];
 
   const advancedCheckboxes: { note: Note, ability: Ability }[] = [

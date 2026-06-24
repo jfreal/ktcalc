@@ -64,6 +64,7 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
     N.PuritySeal,
     N.CloseAssault2021,
     N.Waaagh2021,
+    N.SaintlyRelics,
   ].map(note => <li key={note.name}><b>{note.name}</b>: {note.description}</li>);
 
   return (

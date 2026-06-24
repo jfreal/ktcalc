@@ -1,5 +1,16 @@
 # Changelog
 
+## June 2026 - Saintly Relics Defensive Ability
+
+- Added Saintly Relics as an advanced defender/fighter option on both the Shoot and Fight calculators, with two modes: **1D6** (normal) and **2D6** (the operative is INSPIRING).
+- Rule: whenever an attack dice would inflict damage, roll the relic dice; if any result is a 6, ignore all of that attack dice's damage. At most one attack dice is ignored per action.
+- Caps: at most one attack dice ignored per action and two per battle. The Shoot engine enforces the per-battle cap exactly across multiple Rounds (a capped convolution that tracks ignores spent), instead of letting every round ignore independently.
+- Targeting: both engines aim the ignore at the highest-damage hit (crits before norms). Shoot computes this exactly; Fight spends the ignore on a strike only when no larger strike is still pending from that attacker.
+- Feel No Pain: composes with relics, and a crit's un-ignorable MWx residual still gets its FNP roll.
+- Limitation (in the in-app note and `rules/COMBAT_RULES.md`): mortal (MWx) damage is never ignored, matching Just a Scratch.
+- Relics mode is part of shareable URL state for both defenders and fighters; older share links (without the field) decode as "off".
+- Added unit tests for the exact per-scenario relic expansion and the shoot distribution, plus a Monte Carlo fight test confirming more relic dice leave the holder with more expected wounds.
+
 ## June 2026 - Unified Visual System + Side-by-Side Situations
 
 - Introduced a single container vocabulary: a `Panel` component (dark title bar over a bordered body) now wraps every section across the Shoot and Fight calculators, replacing the previous mix of Bootstrap `.border rounded` boxes, the comparison matrix's local card, and the footer's gradient card.

@@ -103,6 +103,15 @@ export const FeelNoPain = new Note(
   `FeelNoPain`,
   `FNP is the category of abilities where just before damage is actually resolved, you roll a die for each successful hit (strike). On a roll at or above the threshold, that hit's damage is reduced by 1. Even MWx damage can be prevented via FNP.`,
 );
+export const SaintlyRelics = new Note(
+  `Saintly Relics`,
+  `Whenever an attack dice would inflict damage, roll one D6 ("1D6"), or two D6 if the operative is INSPIRING ("2D6"); ` +
+  `if any result is a 6, ignore all of that attack dice's damage. At most one attack dice is ignored per action and ` +
+  `two per battle; a failed roll doesn't use up either cap. Both calculators target the highest-damage hit (crits before ` +
+  `norms): Shoot does this exactly, and over multiple Rounds the two-per-battle cap is enforced across the battle; Fight ` +
+  `spends the ignore on a strike only when no larger strike is still pending. ` +
+  `Note: mortal (MWx) damage is never ignored, matching Just a Scratch.`,
+);
 export const AvgDamageUnbounded = new Note(
   `AvgDamageUnbounded`,
   `The average of damage without regard to defender's wounds.`,

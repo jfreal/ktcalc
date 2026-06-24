@@ -65,6 +65,10 @@ export function calcRemainingWoundPairProbs(
     let guy1Wounds = guy1OrigWounds;
     let guy2Wounds = guy2OrigWounds;
 
+    // SaintlyRelics two-per-battle cap resets each battle (simulation), not each round/action
+    guy1State.relicIgnoresUsed = 0;
+    guy2State.relicIgnoresUsed = 0;
+
     for (let round = 0; round < numRounds; round++) {
       if (guy1Wounds <= 0 || guy2Wounds <= 0) break;
 
@@ -237,7 +241,24 @@ export function resolveDieChoice(
       dmg = 0;
       enemy.normScratchUsed = true;
     }
-    enemy.applyDmg(dmg);
+    // SaintlyRelics targets the highest-damage strike: spend the single ignore now only if no
+    // larger strike is still pending from this attacker (otherwise save it). chooser.crits/norms
+    // still include the current strike here, so discount it when measuring what remains.
+    const pendingCrits = chooser.crits - (isNorm ? 0 : 1);
+    let pendingNorms = chooser.norms - (isNorm ? 1 : 0);
+    // an unspent JaS (Normals) will scratch one pending normal to 0, so it isn't real pending damage
+    if(pendingNorms > 0 && !enemy.normScratchUsed
+      && enemy.profile.abilities.has(Ability.JustAScratchNorms)) {
+      pendingNorms--;
+    }
+    let maxPendingDmg = 0;
+    if(pendingCrits > 0) {
+      maxPendingDmg = Math.max(maxPendingDmg, chooser.profile.critDmg);
+    }
+    if(pendingNorms > 0) {
+      maxPendingDmg = Math.max(maxPendingDmg, chooser.profile.normDmg);
+    }
+    enemy.applyDmg(dmg, dmg >= maxPendingDmg);
   }
 
   if(choice === FightChoice.CritStrike) {

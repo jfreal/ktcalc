@@ -61,6 +61,7 @@ Operatives in cover can retain **automatic saves** without rolling:
 6. **Resolve damage**
    - Remaining hits deal damage
    - Devastating damage occurs regardless of saves
+   - Saintly Relics (if any): for a damaging attack dice, roll 1 D6 (or 2 D6 if INSPIRING); on any 6, ignore that dice's damage entirely (at most one dice per action)
    - Feel No Pain (if any): roll one die per surviving hit; each roll at/above the threshold reduces that hit's damage by 1
 
 ---
@@ -89,6 +90,16 @@ Just before damage is resolved, roll one die for each surviving hit (strike):
 - On a roll **at or above** the threshold, that hit's damage is reduced by 1 (to a minimum of 0)
 - One roll per surviving hit, not per point of damage
 - Even MWx (Devastating) damage can be prevented via FNP
+
+### Saintly Relics
+
+Whenever an attack dice would inflict damage, roll to ignore all of that dice's damage:
+- **Modes**: `1D6` (normal) or `2D6` (the operative is INSPIRING), set in the Defender's/Fighter's advanced params
+- Roll the relic dice; on **any 6**, ignore all damage from that attack dice
+- **Caps**: at most one attack dice ignored per action and two per battle; a failed roll uses up neither
+- **Shoot (exact)**: targets the highest-damage surviving hit first (crits before norms), trying each damaging dice in turn until one is ignored; over multiple rounds the two-per-battle cap is enforced across the battle
+- **Fight (Monte Carlo)**: spends the ignore on a strike only when no larger strike is still pending from that attacker (so it lands on the biggest)
+- **Not modeled**: MWx (Devastating) damage is never ignored (matching Just a Scratch)
 
 ---
 

@@ -5,7 +5,7 @@ import Ability from "src/Ability";
 import Model from "src/Model";
 import DieProbs from "src/DieProbs";
 import FinalDiceProb from 'src/FinalDiceProb';
-import { addToMapValue, upTo } from 'src/Util';
+import { addMapValues, addToMapValue, upTo } from 'src/Util';
 
 export function calcFinalDiceProbsForAttacker(
   attacker: Model,
@@ -477,6 +477,71 @@ export function calcMultiRoundDamage(
   }
 
   return dmgsCumulative;
+}
+
+// Multi-round damage when SaintlyRelics is active: the relic may ignore one attack dice per
+// round (per action) but only two across the whole battle. That battle cap couples the rounds,
+// so a plain convolution (which would let every round ignore) overstates mitigation. We convolve
+// while tracking how many ignores have been spent, switching a round to the relic-unavailable
+// distribution once the cap is reached.
+//   on0: one round, relic available, NO ignore spent (full damage)
+//   on1: one round, relic available, ONE ignore spent (reduced damage)
+//   off: one round, relic unavailable because the battle cap is already spent
+export function calcCappedMultiRoundDamage(
+  on0: Map<number,number>,
+  on1: Map<number,number>,
+  off: Map<number,number>,
+  numRounds: number,
+  maxIgnores: number,
+): Map<number, number>
+{
+  // state[j] = cumulative-damage distribution given j ignores already spent (j up to maxIgnores)
+  let state: Map<number,number>[] = [];
+  for(let j = 0; j <= maxIgnores; j++) {
+    state.push(new Map<number,number>());
+  }
+  state[0].set(0, 1);
+
+  for(let round = 0; round < numRounds; round++) {
+    const next: Map<number,number>[] = [];
+    for(let j = 0; j <= maxIgnores; j++) {
+      next.push(new Map<number,number>());
+    }
+
+    for(let j = 0; j <= maxIgnores; j++) {
+      const cur = state[j];
+      if(cur.size === 0) {
+        continue;
+      }
+
+      if(j < maxIgnores) {
+        // relic still available this round: spend 0 ignores (on0) or 1 ignore (on1)
+        for(const [dmg, prob] of cur) {
+          for(const [d0, p0] of on0) {
+            addToMapValue(next[j], dmg + d0, prob * p0);
+          }
+          for(const [d1, p1] of on1) {
+            addToMapValue(next[j + 1], dmg + d1, prob * p1);
+          }
+        }
+      }
+      else {
+        // battle cap already spent: this round cannot ignore anything
+        for(const [dmg, prob] of cur) {
+          for(const [dOff, pOff] of off) {
+            addToMapValue(next[j], dmg + dOff, prob * pOff);
+          }
+        }
+      }
+    }
+    state = next;
+  }
+
+  const combined = new Map<number,number>();
+  for(const dmgMap of state) {
+    addMapValues(combined, dmgMap);
+  }
+  return combined;
 }
 
 export function combineDmgProbs(
