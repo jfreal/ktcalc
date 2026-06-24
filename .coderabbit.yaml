@@ -1,0 +1,15 @@
+# CodeRabbit configuration
+# Schema: https://docs.coderabbit.ai/configuration/
+reviews:
+  # Thorough reviews: surface nitpicks, style, and minor issues (not just
+  # major bugs). Other option is "chill" (default, fewer comments).
+  profile: assertive
+
+  # Skip the poetic walkthrough commentary (pure noise).
+  poem: false
+
+  auto_review:
+    # Pause incremental auto-reviews after this many reviewed commits on a
+    # branch (counter resets when the pause is lifted). Conserves review quota
+    # on branches with frequent small pushes. 0 = never pause.
+    auto_pause_after_reviewed_commits: 2
