@@ -2,6 +2,7 @@ import Model from "src/Model";
 import * as Util from 'src/Util';
 import * as Common from 'src/CalcEngineCommon';
 import ShootOptions from "src/ShootOptions";
+import { maxRelicIgnoresPerBattle } from 'src/SaintlyRelics';
 import {
   DamageResult,
   calcDamage,
@@ -11,7 +12,6 @@ import {
 } from 'src/CalcEngineShootInternal'
 
 type ScenarioVisitor = (result: DamageResult, currProb: number) => void;
-const maxRelicIgnoresPerBattle = 2;
 
 export function calcDmgProbs(
   attacker: Model,

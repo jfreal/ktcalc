@@ -883,4 +883,23 @@ describe('SaintlyRelics (fight)', () => {
     state.applyDmg(3, true); // per-action cap already spent => no further ignore
     expect(state.currentWounds).toBe(4);
   });
+  it('caps ignores at two per battle across rounds (reset clears the action flag, not the battle count)', () => {
+    const profile = new Model(2, 2, 1, 4).setProp('wounds', 30).setProp('saintlyRelics', SaintlyRelicsNormal);
+    const always6 = () => 0.9;
+    const state = new FighterState(profile, 0, 0, FightStrategy.MaxDmgToEnemy, 30, false, false, always6);
+
+    state.applyDmg(3, true); // battle ignore #1
+    expect(state.relicIgnoresUsed).toBe(1);
+    expect(state.currentWounds).toBe(30);
+
+    state.reset(0, 0, 30); // new action/round
+    state.applyDmg(3, true); // battle ignore #2
+    expect(state.relicIgnoresUsed).toBe(2);
+    expect(state.currentWounds).toBe(30);
+
+    state.reset(0, 0, 30); // new action/round, but battle cap is spent
+    state.applyDmg(3, true); // no ignore => damage lands
+    expect(state.relicIgnoresUsed).toBe(2);
+    expect(state.currentWounds).toBe(27);
+  });
 });

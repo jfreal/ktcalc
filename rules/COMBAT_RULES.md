@@ -92,6 +92,7 @@ Just before damage is resolved, roll one die for each surviving hit (strike):
 - Even MWx (Devastating) damage can be prevented via FNP
 
 ### Saintly Relics
+
 Whenever an attack dice would inflict damage, roll to ignore all of that dice's damage:
 - **Modes**: `1D6` (normal) or `2D6` (the operative is INSPIRING), set in the Defender's/Fighter's advanced params
 - Roll the relic dice; on **any 6**, ignore all damage from that attack dice

@@ -108,6 +108,7 @@ export interface DamageResult {
   numHits: number; // damage-causing hits / FNP-relevant hit instances; includes cancelled crits when MWx contributed damage
   survivingCritHits: number; // crit hits left after saves (each dealing critDmg); SaintlyRelics targets these
   survivingNormHits: number; // norm hits left after saves (each dealing normDmg); SaintlyRelics targets these
+  durableCritReduction?: number; // 1 if Durable already shaved a damage off one surviving crit, else 0
 }
 
 // One post-SaintlyRelics damage possibility for a single attack/defense scenario.
@@ -199,11 +200,11 @@ export function calcDamage(
   const numHits = critHits + normHits + mwxCancelledCrits;
 
   // TODO: make the above decisions take Durable into account
-  if(defender.has(Ability.Durable) && attacker.critDmg > MinCritDmgAfterDurable && critHits > 0) {
-    damage -= 1;
-  }
+  const durableCritReduction =
+    defender.has(Ability.Durable) && attacker.critDmg > MinCritDmgAfterDurable && critHits > 0 ? 1 : 0;
+  damage -= durableCritReduction;
 
-  return { damage, numHits, survivingCritHits: critHits, survivingNormHits: normHits };
+  return { damage, numHits, survivingCritHits: critHits, survivingNormHits: normHits, durableCritReduction };
 }
 
 // SaintlyRelics: whenever an attack dice would inflict damage, the defender may roll to ignore
@@ -228,7 +229,12 @@ export function calcRelicsOutcomes(
   // ignored crit still deals that residual damage, so it must keep its Feel No Pain roll.
   const groups: { count: number; dieDmg: number; keepsFnpRoll: boolean }[] = [];
   if (result.survivingCritHits > 0 && attacker.critDmg > 0) {
-    groups.push({ count: result.survivingCritHits, dieDmg: attacker.critDmg, keepsFnpRoll: attacker.mwx > 0 });
+    // when only one crit survives it IS the Durable-reduced one, so ignoring it removes critDmg-1;
+    // with several, the defender ignores a full crit (Durable shaved a different one)
+    const critDieDmg = result.survivingCritHits === 1
+      ? attacker.critDmg - (result.durableCritReduction ?? 0)
+      : attacker.critDmg;
+    groups.push({ count: result.survivingCritHits, dieDmg: critDieDmg, keepsFnpRoll: attacker.mwx > 0 });
   }
   if (result.survivingNormHits > 0 && attacker.normDmg > 0) {
     groups.push({ count: result.survivingNormHits, dieDmg: attacker.normDmg, keepsFnpRoll: false });

@@ -597,6 +597,16 @@ describe(calcRelicsOutcomes.name, () => {
     const total = outcomes.reduce((sum, o) => sum + o.prob, 0);
     expect(total).toBeCloseTo(1, requiredPrecision);
   });
+  it('Durable: ignoring the lone reduced crit removes critDmg-1, not critDmg', () => {
+    // critDmg 4, normDmg 2; Durable already shaved the single surviving crit, so damage = 3 + 2 = 5.
+    // Ignoring that crit must leave the normal hit intact at 2 (not 1 from over-subtracting full critDmg).
+    const durAtk = new Model(0, 0, 2, 4);
+    const res: DamageResult =
+      { damage: 5, numHits: 2, survivingCritHits: 1, survivingNormHits: 1, durableCritReduction: 1 };
+    const outcomes = calcRelicsOutcomes(res, durAtk, SaintlyRelicsNormal);
+    expect(outcomes.find(o => o.ignored && o.damage === 2)).toBeTruthy(); // ignored the crit -> norm intact
+    expect(outcomes.find(o => o.damage === 1)).toBeUndefined(); // the buggy over-subtracted value
+  });
 });
 
 describe(calcDmgProbs.name + ', defender saintly relics', () => {

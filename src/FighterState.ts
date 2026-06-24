@@ -4,7 +4,7 @@ import FightChoice from "src/FightChoice";
 import Ability from "./Ability";
 import { MinCritDmgAfterDurable } from "./KtMisc";
 import { RngFunction } from "src/MonteCarloFightDice";
-import { relicDiceCount } from "src/SaintlyRelics";
+import { maxRelicIgnoresPerBattle, relicDiceCount } from "src/SaintlyRelics";
 
 export default class FighterState {
   public profile: Model;
@@ -16,6 +16,7 @@ export default class FighterState {
   public hasCritStruck: boolean;
   public normScratchUsed: boolean; // JaS (Normals): whether this fighter's norm-only scratch is spent
   public relicUsed: boolean; // SaintlyRelics: whether this fighter's once-per-action ignore is spent
+  public relicIgnoresUsed: number; // SaintlyRelics: ignores spent so far this battle (capped per battle)
   public rng: RngFunction | null;
 
   public constructor(
@@ -29,6 +30,7 @@ export default class FighterState {
     rng: RngFunction | null = null,
     normScratchUsed: boolean = false,
     relicUsed: boolean = false,
+    relicIgnoresUsed: number = 0,
   ) {
     this.profile = profile;
     this.crits = crits;
@@ -39,6 +41,7 @@ export default class FighterState {
     this.hasCritStruck = hasCritStruck;
     this.normScratchUsed = normScratchUsed;
     this.relicUsed = relicUsed;
+    this.relicIgnoresUsed = relicIgnoresUsed;
     this.rng = rng;
   }
 
@@ -50,8 +53,9 @@ export default class FighterState {
   // single per-action SaintlyRelics ignore on now (vs saving it for a larger pending strike).
   public applyDmg(dmg: number, relicWorthy: boolean = true) {
     if (relicWorthy && dmg > 0 && this.rng && this.profile.usesSaintlyRelics()
-      && !this.relicUsed && this.rollRelic()) {
+      && !this.relicUsed && this.relicIgnoresUsed < maxRelicIgnoresPerBattle && this.rollRelic()) {
       this.relicUsed = true;
+      this.relicIgnoresUsed++;
       dmg = 0;
     }
     if (this.profile.usesFnp() && this.rng) {
@@ -169,6 +173,7 @@ export default class FighterState {
       this.rng,
       this.normScratchUsed,
       this.relicUsed,
+      this.relicIgnoresUsed,
     );
   }
 
