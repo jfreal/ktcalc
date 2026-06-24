@@ -19,6 +19,11 @@ import FightChoice from 'src/FightChoice';
 import FighterState from 'src/FighterState';
 import Ability from 'src/Ability';
 import * as Util from 'src/Util';
+import {
+  SaintlyRelicsInspiring,
+  SaintlyRelicsNormal,
+  SaintlyRelicsOff,
+} from 'src/SaintlyRelics';
 
 const requiredPrecision = 1; // Monte Carlo tolerance (within 0.05)
 const highSimCount = 200_000;
@@ -841,5 +846,41 @@ describe('JustAScratch + parry monotonicity', () => {
     const dbal = aDeathChance(Ability.DoubleBalanced, FightStrategy.MinDmgToSelf);
     expect(bal).toBeLessThanOrEqual(none);
     expect(dbal).toBeLessThanOrEqual(bal);
+  });
+});
+
+describe('SaintlyRelics (fight)', () => {
+  // measure the relic-holder's expected surviving wounds against a hard-hitting attacker
+  function defenderAvgWounds(relicMode: number): number {
+    const defender = new Model(4, 3, 3, 4).setProp('wounds', 12).setProp('saintlyRelics', relicMode);
+    const attacker = new Model(5, 3, 3, 4).setProp('wounds', 12);
+    const probs = calcRemainingWoundPairProbs(defender, attacker,
+      FightStrategy.MaxDmgToEnemy, FightStrategy.MaxDmgToEnemy, 1, highSimCount, testRng());
+    const [defWounds] = consolidateWoundPairProbs(probs);
+    return Util.weightedAverage(defWounds);
+  }
+
+  it('more relic dice → more surviving wounds (none < normal < inspiring)', () => {
+    const none = defenderAvgWounds(SaintlyRelicsOff);
+    const normal = defenderAvgWounds(SaintlyRelicsNormal);
+    const inspiring = defenderAvgWounds(SaintlyRelicsInspiring);
+    expect(normal).toBeGreaterThan(none);
+    expect(inspiring).toBeGreaterThan(normal);
+  });
+  it('applyDmg saves the ignore for a bigger pending strike, then caps at one per action', () => {
+    const profile = new Model(2, 2, 1, 4).setProp('wounds', 12).setProp('saintlyRelics', SaintlyRelicsNormal);
+    const always6 = () => 0.9; // Math.floor(0.9*6)+1 === 6, so the relic always ignores when rolled
+    const state = new FighterState(profile, 0, 0, FightStrategy.MaxDmgToEnemy, 10, false, false, always6);
+
+    state.applyDmg(3, false); // not the biggest strike => save the relic; full damage lands
+    expect(state.currentWounds).toBe(7);
+    expect(state.relicUsed).toBe(false);
+
+    state.applyDmg(3, true); // biggest strike => spend the ignore
+    expect(state.currentWounds).toBe(7);
+    expect(state.relicUsed).toBe(true);
+
+    state.applyDmg(3, true); // per-action cap already spent => no further ignore
+    expect(state.currentWounds).toBe(4);
   });
 });

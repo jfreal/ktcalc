@@ -4,6 +4,7 @@ import ShootOptions from 'src/ShootOptions';
 import FightOptions from 'src/FightOptions';
 import FightStrategy from 'src/FightStrategy';
 import Ability, { mutuallyExclusiveFightAbilities } from 'src/Ability';
+import { parseRelicMode } from 'src/SaintlyRelics';
 
 interface SituationState {
   attacker: Model;
@@ -63,7 +64,8 @@ function encodeDefender(def: Model): string {
     def.hardyx,
     def.fnp,
     def.reroll,
-    abilities.join('')
+    abilities.join(''),
+    def.saintlyRelics
   ].join(':');
 }
 
@@ -151,6 +153,9 @@ function decodeDefender(param: string): Model {
     if (abilities.includes('ind')) def.abilities.add(Ability.Indomitus);
   }
 
+  // appended after abilities; absent in older URLs and sanitized to off for unrecognized values
+  def.saintlyRelics = parseRelicMode(parts[10]);
+
   return def;
 }
 
@@ -182,7 +187,8 @@ function encodeFighter(f: Model): string {
     f.normsToCrits,
     f.failsToNorms,
     nicheAbility || '',
-    abilities.join('')
+    abilities.join(''),
+    f.saintlyRelics
   ].join(':');
 }
 
@@ -221,6 +227,9 @@ function decodeFighter(param: string): Model {
   if (abilities.includes('duelist')) f.abilities.add(Ability.Duelist);
   if (abilities.includes('jas')) f.abilities.add(Ability.JustAScratch);
   if (abilities.includes('dur')) f.abilities.add(Ability.Durable);
+
+  // appended after abilities; absent in older URLs and sanitized to off for unrecognized values
+  f.saintlyRelics = parseRelicMode(parts[13]);
 
   return f;
 }

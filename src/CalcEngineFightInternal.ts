@@ -237,7 +237,19 @@ export function resolveDieChoice(
       dmg = 0;
       enemy.normScratchUsed = true;
     }
-    enemy.applyDmg(dmg);
+    // SaintlyRelics targets the highest-damage strike: spend the single ignore now only if no
+    // larger strike is still pending from this attacker (otherwise save it). chooser.crits/norms
+    // still include the current strike here, so discount it when measuring what remains.
+    const pendingCrits = chooser.crits - (isNorm ? 0 : 1);
+    const pendingNorms = chooser.norms - (isNorm ? 1 : 0);
+    let maxPendingDmg = 0;
+    if(pendingCrits > 0) {
+      maxPendingDmg = Math.max(maxPendingDmg, chooser.profile.critDmg);
+    }
+    if(pendingNorms > 0) {
+      maxPendingDmg = Math.max(maxPendingDmg, chooser.profile.normDmg);
+    }
+    enemy.applyDmg(dmg, dmg >= maxPendingDmg);
   }
 
   if(choice === FightChoice.CritStrike) {

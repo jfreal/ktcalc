@@ -4,6 +4,7 @@ import FinalDiceProb from 'src/FinalDiceProb';
 import * as Common from 'src/CalcEngineCommon';
 import Ability from "src/Ability";
 import { MinCritDmgAfterDurable } from "./KtMisc";
+import { relicIgnoreProb } from "src/SaintlyRelics";
 
 class DefenderFinalDiceStuff {
   public finalDiceProbs: FinalDiceProb[];
@@ -105,6 +106,16 @@ export function calcPostFnpDamages(
 export interface DamageResult {
   damage: number;
   numHits: number; // damage-causing hits / FNP-relevant hit instances; includes cancelled crits when MWx contributed damage
+  survivingCritHits: number; // crit hits left after saves (each dealing critDmg); SaintlyRelics targets these
+  survivingNormHits: number; // norm hits left after saves (each dealing normDmg); SaintlyRelics targets these
+}
+
+// One post-SaintlyRelics damage possibility for a single attack/defense scenario.
+export interface DamageOutcome {
+  damage: number;
+  numHits: number;
+  prob: number; // conditional probability within the scenario (sums to 1 across outcomes)
+  ignored: boolean; // whether this outcome spent the relic to ignore an attack dice
 }
 
 export function calcDamage(
@@ -192,5 +203,57 @@ export function calcDamage(
     damage -= 1;
   }
 
-  return { damage, numHits };
+  return { damage, numHits, survivingCritHits: critHits, survivingNormHits: normHits };
+}
+
+// SaintlyRelics: whenever an attack dice would inflict damage, the defender may roll to ignore
+// that dice's damage entirely (1 D6 normal, 2 D6 inspiring; ignore on any 6), at most one dice
+// per action. Optimal play targets the highest-damage surviving hit (crits before norms) and,
+// because a failed roll doesn't consume the once-per-action cap, keeps trying on the next
+// damaging dice until one is ignored. This expands a scenario's single damage value into a small
+// distribution over "ignored the biggest hit", "ignored the next-biggest", ..., and "ignored
+// nothing". MWx (mortal) damage is not ignored here, matching Just a Scratch.
+export function calcRelicsOutcomes(
+  result: DamageResult,
+  attacker: Model,
+  mode: number,
+): DamageOutcome[] {
+  // ignoreProb is 0 for off/unknown modes; the general loop below then produces no ignore
+  // outcomes and returns the single unchanged outcome, so no separate off-branch is needed.
+  const ignoreProb = relicIgnoreProb(mode);
+  const missProb = 1 - ignoreProb; // one attempt failing to ignore
+
+  // Damaging-dice groups, biggest per-die damage first (the order a player would target them).
+  // A crit also carries MWx (mortal) damage, which relics does NOT ignore; when present, the
+  // ignored crit still deals that residual damage, so it must keep its Feel No Pain roll.
+  const groups: { count: number; dieDmg: number; keepsFnpRoll: boolean }[] = [];
+  if (result.survivingCritHits > 0 && attacker.critDmg > 0) {
+    groups.push({ count: result.survivingCritHits, dieDmg: attacker.critDmg, keepsFnpRoll: attacker.mwx > 0 });
+  }
+  if (result.survivingNormHits > 0 && attacker.normDmg > 0) {
+    groups.push({ count: result.survivingNormHits, dieDmg: attacker.normDmg, keepsFnpRoll: false });
+  }
+  groups.sort((a, b) => b.dieDmg - a.dieDmg);
+
+  const outcomes: DamageOutcome[] = [];
+  let reachProb = 1; // probability no earlier (bigger) group already used up the once-per-action ignore
+  for (const group of groups) {
+    const stayProb = Math.pow(missProb, group.count); // every roll in this group fails to ignore
+    // ignore lands in this group iff every bigger group missed and at least one of this group's rolls hits
+    const ignoreInGroupProb = reachProb * (1 - stayProb);
+    if (ignoreInGroupProb > 0) {
+      outcomes.push({
+        damage: Math.max(0, result.damage - group.dieDmg),
+        // drop this hit's FNP roll only if its whole damage is gone; a crit's residual MWx keeps it
+        numHits: group.keepsFnpRoll ? result.numHits : Math.max(0, result.numHits - 1),
+        prob: ignoreInGroupProb,
+        ignored: true,
+      });
+    }
+    reachProb *= stayProb;
+  }
+  if (reachProb > 0) {
+    outcomes.push({ damage: result.damage, numHits: result.numHits, prob: reachProb, ignored: false });
+  }
+  return outcomes;
 }

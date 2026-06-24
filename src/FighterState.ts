@@ -4,6 +4,7 @@ import FightChoice from "src/FightChoice";
 import Ability from "./Ability";
 import { MinCritDmgAfterDurable } from "./KtMisc";
 import { RngFunction } from "src/MonteCarloFightDice";
+import { relicDiceCount } from "src/SaintlyRelics";
 
 export default class FighterState {
   public profile: Model;
@@ -14,6 +15,7 @@ export default class FighterState {
   public hasStruck: boolean;
   public hasCritStruck: boolean;
   public normScratchUsed: boolean; // JaS (Normals): whether this fighter's norm-only scratch is spent
+  public relicUsed: boolean; // SaintlyRelics: whether this fighter's once-per-action ignore is spent
   public rng: RngFunction | null;
 
   public constructor(
@@ -26,6 +28,7 @@ export default class FighterState {
     hasCritStruck: boolean = false,
     rng: RngFunction | null = null,
     normScratchUsed: boolean = false,
+    relicUsed: boolean = false,
   ) {
     this.profile = profile;
     this.crits = crits;
@@ -35,6 +38,7 @@ export default class FighterState {
     this.hasStruck = hasStruck;
     this.hasCritStruck = hasCritStruck;
     this.normScratchUsed = normScratchUsed;
+    this.relicUsed = relicUsed;
     this.rng = rng;
   }
 
@@ -42,7 +46,14 @@ export default class FighterState {
     return this.crits + this.norms;
   }
 
-  public applyDmg(dmg: number) {
+  // relicWorthy: whether this strike is the biggest one still coming, so it's worth spending the
+  // single per-action SaintlyRelics ignore on now (vs saving it for a larger pending strike).
+  public applyDmg(dmg: number, relicWorthy: boolean = true) {
+    if (relicWorthy && dmg > 0 && this.rng && this.profile.usesSaintlyRelics()
+      && !this.relicUsed && this.rollRelic()) {
+      this.relicUsed = true;
+      dmg = 0;
+    }
     if (this.profile.usesFnp() && this.rng) {
       dmg = this.rollFnp(dmg);
     }
@@ -55,6 +66,20 @@ export default class FighterState {
     const fnpThreshold = this.profile.fnp;
     const roll = Math.floor(this.rng!() * 6) + 1; // roll 1-6
     return roll >= fnpThreshold ? dmg - 1 : dmg;
+  }
+
+  private rollRelic(): boolean {
+    // roll 1 D6 (normal) or 2 D6 (inspiring); ignore the strike on any 6.
+    // Roll all dice (no early return) so the rng-draw count is fixed regardless of outcome,
+    // keeping the Monte Carlo stream aligned — same discipline as rollFnp's single fixed draw.
+    const numDice = relicDiceCount(this.profile.saintlyRelics);
+    let ignored = false;
+    for (let i = 0; i < numDice; i++) {
+      if (Math.floor(this.rng!() * 6) + 1 === 6) {
+        ignored = true;
+      }
+    }
+    return ignored;
   }
 
   public applyDmgFromStrike(dmg: number, atker: Model, isCrit: boolean) {
@@ -129,6 +154,7 @@ export default class FighterState {
     this.hasStruck = false;
     this.hasCritStruck = false;
     this.normScratchUsed = false;
+    this.relicUsed = false;
   }
 
   public clone(): FighterState {
@@ -142,6 +168,7 @@ export default class FighterState {
       this.hasCritStruck,
       this.rng,
       this.normScratchUsed,
+      this.relicUsed,
     );
   }
 

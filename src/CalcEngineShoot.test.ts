@@ -7,7 +7,14 @@ import { calcDmgProbs } from 'src/CalcEngineShoot';
 import {
   calcDamage,
   calcPostFnpDamages,
+  calcRelicsOutcomes,
+  DamageResult,
 } from 'src/CalcEngineShootInternal';
+import {
+  SaintlyRelicsInspiring,
+  SaintlyRelicsNormal,
+  SaintlyRelicsOff,
+} from 'src/SaintlyRelics';
 import { requiredPrecision } from 'src/CalcEngineCommon.test';
 
 function newTestAttacker(attacks: number = 1, bs: number = 4) : Model {
@@ -545,6 +552,118 @@ describe(calcDmgProbs.name + ', defender fnp', () => {
     expect(dmgs.get(1)).toBeCloseTo(pCrit * ps + pNorm * pf, requiredPrecision);
     expect(dmgs.get(2)).toBeCloseTo(pCrit * pf, requiredPrecision);
     expect(dmgs.size).toBe(3); // includes dmg=0
+  });
+});
+
+describe(calcRelicsOutcomes.name, () => {
+  // attacker: normDmg 11, critDmg 13
+  const atk = new Model(0, 0, 11, 13);
+
+  function result(damage: number, numHits: number, crits: number, norms: number): DamageResult {
+    return { damage, numHits, survivingCritHits: crits, survivingNormHits: norms };
+  }
+
+  it('off => single unchanged outcome', () => {
+    const outcomes = calcRelicsOutcomes(result(13, 1, 1, 0), atk, SaintlyRelicsOff);
+    expect(outcomes).toEqual([{ damage: 13, numHits: 1, prob: 1, ignored: false }]);
+  });
+  it('1 surviving crit, normal (1 D6) => ignore biggest hit on a 6', () => {
+    const pIgnore = 1 / 6;
+    const outcomes = calcRelicsOutcomes(result(13, 1, 1, 0), atk, SaintlyRelicsNormal);
+    // ignored crit => 0 dmg; else full 13
+    expect(outcomes.find(o => o.damage === 0)?.prob).toBeCloseTo(pIgnore, requiredPrecision);
+    expect(outcomes.find(o => o.damage === 13)?.prob).toBeCloseTo(1 - pIgnore, requiredPrecision);
+    expect(outcomes.length).toBe(2);
+  });
+  it('1 surviving crit, inspiring (2 D6) => ignore prob is 11/36', () => {
+    const pIgnore = 11 / 36;
+    const outcomes = calcRelicsOutcomes(result(13, 1, 1, 0), atk, SaintlyRelicsInspiring);
+    expect(outcomes.find(o => o.damage === 0)?.prob).toBeCloseTo(pIgnore, requiredPrecision);
+    expect(outcomes.find(o => o.damage === 13)?.prob).toBeCloseTo(1 - pIgnore, requiredPrecision);
+  });
+  it('1 crit + 1 norm, normal => prefers the crit, falls back to the norm', () => {
+    const q = 5 / 6; // single-attempt miss
+    const outcomes = calcRelicsOutcomes(result(24, 2, 1, 1), atk, SaintlyRelicsNormal);
+    // ignore the crit (13): 1 - q ; numHits drops to 1
+    expect(outcomes.find(o => o.damage === 24 - 13)?.prob).toBeCloseTo(1 - q, requiredPrecision);
+    // crit roll missed, ignore the norm (11): q*(1-q)
+    expect(outcomes.find(o => o.damage === 24 - 11)?.prob).toBeCloseTo(q * (1 - q), requiredPrecision);
+    // nothing ignored: q^2
+    expect(outcomes.find(o => o.damage === 24)?.prob).toBeCloseTo(q * q, requiredPrecision);
+    expect(outcomes.every(o => o.damage === 24 ? o.numHits === 2 : o.numHits === 1)).toBe(true);
+  });
+  it('probabilities sum to 1', () => {
+    const outcomes = calcRelicsOutcomes(result(24, 2, 1, 1), atk, SaintlyRelicsInspiring);
+    const total = outcomes.reduce((sum, o) => sum + o.prob, 0);
+    expect(total).toBeCloseTo(1, requiredPrecision);
+  });
+});
+
+describe(calcDmgProbs.name + ', defender saintly relics', () => {
+  it('normal relics can ignore the lone hit on a 6', () => {
+    // 1 attack die, BS 3+ => crit on 6 (1/6, dmg 2), norm on 3-5 (1/2, dmg 1), fail on 1-2 (1/3)
+    const pCrit = 1 / 6;
+    const pNorm = 1 / 2;
+    const pKeep = 5 / 6; // relic fails to ignore (no 6 on 1 D6)
+    const atk = new Model(1, 3, 1, 2);
+    const def = new Model(0).setProp('saintlyRelics', SaintlyRelicsNormal);
+
+    const dmgs = calcDmgProbs(atk, def);
+    // crit kept => dmg 2; norm kept => dmg 1; anything ignored or a fail => dmg 0
+    expect(dmgs.get(2)).toBeCloseTo(pCrit * pKeep, requiredPrecision);
+    expect(dmgs.get(1)).toBeCloseTo(pNorm * pKeep, requiredPrecision);
+    expect(dmgs.size).toBe(3); // includes dmg 0
+  });
+  it('inspiring relics ignore more often than normal', () => {
+    const atk = new Model(4, 3, 3, 4);
+    const off = new Model(0);
+    const normal = new Model(0).setProp('saintlyRelics', SaintlyRelicsNormal);
+    const inspiring = new Model(0).setProp('saintlyRelics', SaintlyRelicsInspiring);
+
+    const avg = (def: Model) => Util.weightedAverage(calcDmgProbs(atk, def));
+    expect(avg(normal)).toBeLessThan(avg(off));
+    expect(avg(inspiring)).toBeLessThan(avg(normal));
+  });
+  it('inspiring relics ignore the lone hit with probability 11/36', () => {
+    // 1 attack die, BS 3+ => crit on 6 (1/6, dmg 2), norm on 3-5 (1/2, dmg 1); pins the 11/36 magnitude end-to-end
+    const pKeep = 25 / 36; // 1 - 11/36 (relic fails to ignore)
+    const atk = new Model(1, 3, 1, 2);
+    const def = new Model(0).setProp('saintlyRelics', SaintlyRelicsInspiring);
+
+    const dmgs = calcDmgProbs(atk, def);
+    expect(dmgs.get(2)).toBeCloseTo(1 / 6 * pKeep, requiredPrecision); // crit kept
+    expect(dmgs.get(1)).toBeCloseTo(1 / 2 * pKeep, requiredPrecision); // norm kept
+    expect(dmgs.size).toBe(3); // includes dmg 0
+  });
+  it('relics keeps the FNP roll for a crit\'s un-ignorable MWx residual', () => {
+    // always-crit attacker: critDmg 1 + mwx 2 => each crit deals 3 (2 mortal, 1 crit dmg)
+    // ignoring the crit removes only the 1 crit dmg; the 2 mortal remains and must still be FNP-eligible
+    const ps = 1 / 2; // FNP 4+ success
+    const pIgnore = 1 / 6; // normal relic
+    const atk = new Model(1, 3, 1, 1, 2).withAlwaysCrit();
+    const def = new Model(0).setProp('fnp', 4).setProp('saintlyRelics', SaintlyRelicsNormal);
+
+    const dmgs = calcDmgProbs(atk, def);
+    // ignore (1/6): dmg 3-1=2, residual MWx still FNP'd => pass->1, fail->2
+    // keep   (5/6): dmg 3 => pass->2, fail->3
+    expect(dmgs.get(1)).toBeCloseTo(pIgnore * ps, requiredPrecision); // 1/12 — zero if the FNP roll were wrongly dropped
+    expect(dmgs.get(2)).toBeCloseTo(pIgnore * (1 - ps) + (1 - pIgnore) * ps, requiredPrecision); // 1/2
+    expect(dmgs.get(3)).toBeCloseTo((1 - pIgnore) * (1 - ps), requiredPrecision); // 5/12
+    expect(dmgs.size).toBe(3);
+  });
+  it('enforces the two-dice-per-battle cap across rounds', () => {
+    // always-crit attacker, critDmg 2, no MWx; defender 0 dice, normal relics, 3 rounds.
+    // each round ignores (damage 0) on a 6 until 2 ignores are spent => damage = 2*(3 - min(#sixes,2)).
+    const q = 5 / 6; // a round fails to ignore
+    const atk = new Model(1, 3, 2, 2).withAlwaysCrit();
+    const def = new Model(0).setProp('saintlyRelics', SaintlyRelicsNormal);
+
+    const dmgs = calcDmgProbs(atk, def, new ShootOptions(3));
+    expect(dmgs.get(6)).toBeCloseTo(q * q * q, requiredPrecision); // 0 ignores => 125/216
+    expect(dmgs.get(4)).toBeCloseTo(3 * (1 - q) * q * q, requiredPrecision); // 1 ignore => 75/216
+    expect(dmgs.get(2)).toBeCloseTo(1 - q * q * q - 3 * (1 - q) * q * q, requiredPrecision); // 2 ignores => 16/216
+    expect(dmgs.get(0)).toBeUndefined(); // 3 ignores would be needed for 0 dmg — the battle cap forbids it
+    expect(dmgs.size).toBe(3);
   });
 });
 

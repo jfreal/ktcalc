@@ -18,6 +18,7 @@ export default class Model {
   public lethal: number; // fight and shoot-attack; 0 means default of crit on 6+; can be 7 to force never-crit
   public hardyx: number; // shoot-defense, like Lethal
   public fnp: number; // fight and shoot-def; Feel No Pain: roll once per hit, on given number or better, reduce that hit's damage by 1
+  public saintlyRelics: number; // fight and shoot-def; SaintlyRelics mode: 0=off, 1=normal (1 D6), 2=inspiring (2 D6)
   public autoNorms: number; // all
   public autoCrits: number; // all
   public failsToNorms: number; // all
@@ -45,6 +46,7 @@ export default class Model {
     this.hardyx = 0;
     this.wounds = 12;
     this.fnp = 0;
+    this.saintlyRelics = 0;
     this.autoNorms = 0;
     this.autoCrits = 0;
     this.failsToNorms = 0;
@@ -134,6 +136,10 @@ export default class Model {
 
   public usesFnp(): boolean {
     return Die.Valid(this.fnp);
+  }
+
+  public usesSaintlyRelics(): boolean {
+    return this.saintlyRelics > 0;
   }
 
   public relevantSave(): number {
