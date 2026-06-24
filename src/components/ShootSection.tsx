@@ -84,6 +84,7 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
     N.Durable2021,
     N.HardyX,
     N.FeelNoPain,
+    N.SaintlyRelics,
     N.JustAScratch2021,
     N.JustAScratchNorms,
   ].map(note => <li key={note.name}><b>{note.name}</b>: {note.description}</li>);
