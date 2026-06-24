@@ -115,7 +115,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   );
 
   return (
-    <Container style={{width: '310px'}}>
+    <Container style={{width: '310px', maxWidth: '100%'}}>
       <Row>
         <Col>Attacker</Col>
         <Col>{advancedCheckbox}</Col>
