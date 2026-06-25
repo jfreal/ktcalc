@@ -24,6 +24,7 @@ import Ability, {
   rerollAbilities as rerolls,
 } from 'src/Ability';
 import * as N from 'src/Notes';
+import AdvancedMarker from 'src/components/AdvancedMarker';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 
 export interface Props {
@@ -120,7 +121,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   const upgradeBuffCheckbox = (
     <Form.Check
       type="checkbox"
-      label={N.UpgradeBuff.name}
+      label={<>{N.UpgradeBuff.name} <AdvancedMarker /></>}
       title={N.UpgradeBuff.description}
       checked={atk.has(Ability.UpgradeBuff)}
       onChange={() => singleHandler(Ability.UpgradeBuff)(atk.has(Ability.UpgradeBuff) ? 'X' : '✔')}

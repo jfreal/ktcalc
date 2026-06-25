@@ -1,26 +1,14 @@
 import React from 'react';
 import Note from 'src/Notes';
 import * as T from 'src/theme';
+import AdvancedMarker, { advancedMarkerChar } from 'src/components/AdvancedMarker';
 
 // Several calculator controls only appear once the user ticks the per-panel "Advanced" checkbox, so
-// the rules they enable are easy to miss. We mark those rules in the Notes list with a gear icon and
-// explain it in a legend. The set of advanced rules is passed in per calculator (Shoot and Fight
-// hide different controls) and must be kept in sync with the basic/advanced split in the
-// AttackerControls / DefenderControls / FighterControls components.
-
-const advancedMarker = '⚙️';
-const advancedTooltip = 'Hidden until you tick the "Advanced" checkbox in the controls above.';
-
-const AdvancedMarker: React.FC = () => (
-  <span
-    role="img"
-    aria-label="advanced option"
-    title={advancedTooltip}
-    style={{ marginLeft: '4px', cursor: 'help' }}
-  >
-    {advancedMarker}
-  </span>
-);
+// the rules they enable are easy to miss. We mark those rules in the Notes list with a gear icon
+// (the same marker the advanced controls themselves show) and explain it in a legend. The set of
+// advanced rules is passed in per calculator (Shoot and Fight hide different controls) and must be
+// kept in sync with the basic/advanced split in the AttackerControls / DefenderControls /
+// FighterControls components.
 
 export interface NotesListProps {
   notes: Note[];
@@ -36,7 +24,7 @@ const NotesList: React.FC<NotesListProps> = ({ notes, advancedNotes, children })
     <>
       {hasAdvanced &&
         <div style={{ fontSize: '13px', color: T.textMuted, marginBottom: '6px' }}>
-          <span aria-hidden="true">{advancedMarker}</span> = hidden until you tick the{' '}
+          <span aria-hidden="true">{advancedMarkerChar}</span> = hidden until you tick the{' '}
           <b>Advanced</b> checkbox in the controls above.
         </div>
       }
