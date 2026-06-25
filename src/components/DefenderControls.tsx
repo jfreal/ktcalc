@@ -67,6 +67,8 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
     makeIncDecPropsFromLookup(N.SaintlyRelics, def, props.changeHandler, 'saintlyRelics', relicModeToLabel),
     new IncProps(N.Reroll,         def.reroll,               preX(rerolls),    textHandler('reroll')),
   ];
+  // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
+  advancedParams.forEach(p => { p.advanced = true; });
 
   // we actually have 1 column when rendered, and order gets weird if we pretend we have 2
   const usedAdvancedParams = advancedParams.filter(p => incDecPropsHasNondefaultSelectedValue(p));

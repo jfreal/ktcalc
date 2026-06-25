@@ -88,7 +88,7 @@ const AppContent = () => {
         <Container fluid>
           <Row>
             <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px', gap: '8px'}}>
-              Starred (*) items have explanations in hovertext and 'Notes' at bottom.
+              Starred (*) items have explanations in hovertext and 'Notes' at bottom; geared (⚙️) items are advanced — tick 'Advanced' to show them.
               <a
                 href='https://ko-fi.com/jfreal'
                 target='_blank'

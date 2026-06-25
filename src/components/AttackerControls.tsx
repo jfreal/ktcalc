@@ -73,6 +73,8 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.CloseAssault2021, toYN(Ability.FailToNormIfAtLeastTwoSuccesses), xAndCheck, singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)),
     //new IncProps(N.NoCover,      atk.noCover,            noCoverChoices,        textHandler('noCover')),
   ];
+  // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
+  advancedParams.forEach(p => { p.advanced = true; });
 
   const advancedParamsToShow
     = wantShowAdvanced

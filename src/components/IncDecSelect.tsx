@@ -4,6 +4,7 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import * as Util from 'src/Util';
 import Note from 'src/Notes';
 import { Col, Row } from 'react-bootstrap';
+import AdvancedMarker from 'src/components/AdvancedMarker';
 
 export interface IProps {
   id: string;
@@ -12,6 +13,8 @@ export interface IProps {
   values: string[];
   selectedValue: number | string;
   valueChangeHandler: Util.Accepter<string>;
+  // true when this control only appears under the panel's "Advanced" checkbox; shows the gear marker.
+  advanced?: boolean;
 }
 
 export class Props implements IProps {
@@ -20,6 +23,7 @@ export class Props implements IProps {
   public selectedValue: number | string;
   public values: string[];
   public valueChangeHandler: Util.Accepter<string>;
+  public advanced?: boolean;
 
   constructor(
     idOrNote: string | Note,
@@ -63,7 +67,8 @@ const IncDecSelect: React.FC<IProps> = (props: IProps) => {
         title={props.hoverText}
         style={{ fontSize: '11px', display: 'inline', verticalAlign: 'middle' }}
       >
-        {props.label ?? props.id}{props.hoverText ? '*' : ''}
+        {props.label ?? props.id}
+        {props.advanced ? <AdvancedMarker /> : (props.hoverText ? '*' : '')}
       </label>
       <InputGroup className='mb-1' style={{flexWrap: 'nowrap'}}>
         <Button variant='danger' onClick={() => handleIncDec(-1)}>-</Button>
