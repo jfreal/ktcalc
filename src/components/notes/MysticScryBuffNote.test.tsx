@@ -19,7 +19,7 @@ describe('MysticScryBuffNote', () => {
     renderNote();
     expect(screen.getByRole('heading', { level: 2 }).textContent).toContain('Mystic Scry Buff');
     // getByText throws if the text is absent, so this asserts the in-game credit is documented.
-    expect(screen.getByText(/"Mystic Scry" ploy/)).toBeTruthy();
+    expect(screen.getByText(/"Mystic Scry" ability/)).toBeTruthy();
   });
 
   it('documents both Rending cases: seed a crit when you have none, feed a norm when you do', () => {

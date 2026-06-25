@@ -23,7 +23,7 @@ const MysticScryBuffNote: React.FC = () => (
       <strong>Mystic Scry Buff</strong> is the calculator&apos;s name for an attack-dice ability that, in the
       Roll Attack Dice step of a shoot, fight, or retaliation, lets you either <em>retain one of your
       fails as a normal success</em>, <em>or</em> retain one of your normal successes as a critical
-      success. You pick one, each time you attack. In-game it&apos;s the &quot;Mystic Scry&quot; ploy.
+      success. You pick one, each time you attack. In-game it&apos;s the &quot;Mystic Scry&quot; ability.
     </p>
 
     <p>

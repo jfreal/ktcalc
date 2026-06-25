@@ -90,7 +90,7 @@ export const MysticScryBuff = new Note(
   `as a critical success. For each roll the calculator picks whichever option yields more damage, after also ` +
   `resolving Rending — so it correctly seeds a crit for Rending, or adds a norm for Rending to promote, rather ` +
   `than always favoring one. Attack only. Note: defender saves and Piercing (Px) are not weighed in the choice. ` +
-  `In-game: the "Mystic Scry" ploy.`,
+  `In-game: the "Mystic Scry" ability.`,
 );
 export const Indomitus = new Note(
   `Indomitus`,
