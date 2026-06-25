@@ -69,7 +69,6 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.FailsToNorms, atk.failsToNorms,      xspan(1, 9),      numHandler('failsToNorms')),
     new IncProps(N.NormsToCrits, atk.normsToCrits,      xspan(1, 9),      numHandler('normsToCrits')),
     new IncProps(N.PuritySeal, toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal)),
-    new IncProps(N.UpgradeBuff, toYN(Ability.UpgradeBuff), xAndCheck, singleHandler(Ability.UpgradeBuff)),
     new IncProps(N.CloseAssault2021, toYN(Ability.FailToNormIfAtLeastTwoSuccesses), xAndCheck, singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)),
     //new IncProps(N.NoCover,      atk.noCover,            noCoverChoices,        textHandler('noCover')),
   ];
@@ -115,6 +114,19 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     />
   );
 
+  // Advanced ability, so only shown when Advanced is on (or it is already enabled). The title is the
+  // same N.UpgradeBuff helper text that is listed in the Notes panel below the calculator.
+  const showUpgradeBuff = wantShowAdvanced || atk.has(Ability.UpgradeBuff);
+  const upgradeBuffCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={N.UpgradeBuff.name}
+      title={N.UpgradeBuff.description}
+      checked={atk.has(Ability.UpgradeBuff)}
+      onChange={() => singleHandler(Ability.UpgradeBuff)(atk.has(Ability.UpgradeBuff) ? 'X' : '✔')}
+    />
+  );
+
   return (
     <Container style={{width: '310px', maxWidth: '100%'}}>
       <Row>
@@ -138,6 +150,11 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
         <Col>{severeCheckbox}</Col>
         <Col>{punishingCheckbox}</Col>
       </Row>
+      {showUpgradeBuff &&
+        <Row>
+          <Col>{upgradeBuffCheckbox}</Col>
+        </Row>
+      }
     </Container>
   );
 }
