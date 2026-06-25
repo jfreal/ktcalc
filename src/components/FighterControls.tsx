@@ -109,7 +109,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     { note: N.Shock, ability: Ability.Shock },
     { note: N.Punishing, ability: Ability.Punishing },
     { note: N.PuritySeal, ability: Ability.PuritySeal },
-    { note: N.UpgradeBuff, ability: Ability.UpgradeBuff },
+    { note: N.MysticScryBuff, ability: Ability.MysticScryBuff },
     { note: N.Duelist, ability: Ability.Duelist },
     { note: N.JustAScratch2021, ability: Ability.JustAScratch },
     { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },

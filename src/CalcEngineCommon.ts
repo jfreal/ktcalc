@@ -632,12 +632,12 @@ export function applyPostRollModifications(
   crits += actualNormToCritPromotions;
   norms -= actualNormToCritPromotions;
 
-  // UpgradeBuff: retain one fail as a norm, OR one norm as a crit (attacker's choice). The choice is
+  // MysticScryBuff: retain one fail as a norm, OR one norm as a crit (attacker's choice). The choice is
   // damage-dependent and interacts with Rending (a fresh crit can seed a Rending upgrade; conversely
   // an added norm gives Rending more to promote), so rather than a fixed rule we resolve each option
   // through the remaining steps (Rending, then Obscured) and keep whichever yields the most damage.
   // Saves/Px are not modeled here, matching the attack-only, damage-first heuristics used elsewhere.
-  if (abilities.has(Ability.UpgradeBuff)) {
+  if (abilities.has(Ability.MysticScryBuff)) {
     const dmgOf = (c: number, n: number) => c * critDmgPlusMwx + n * normDmg;
     // Candidates in preference order; the strict-greater pick below keeps the first on ties. Order the
     // crit upgrade ahead of the fail upgrade so a damage tie resolves to the crit, which is strictly

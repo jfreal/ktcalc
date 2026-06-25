@@ -115,8 +115,8 @@ describe(Common.calcFinalDiceProb.name, () => {
 
   const justRending = new Set<Ability>([Ability.Rending]);
   const justPunishing = new Set<Ability>([Ability.Punishing]);
-  const justUpgradeBuff = new Set<Ability>([Ability.UpgradeBuff]);
-  const rendingAndUpgradeBuff = new Set<Ability>([Ability.Rending, Ability.UpgradeBuff]);
+  const justMysticScryBuff = new Set<Ability>([Ability.MysticScryBuff]);
+  const rendingAndMysticScryBuff = new Set<Ability>([Ability.Rending, Ability.MysticScryBuff]);
 
   it('basic', () => {
     const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 0, Ability.None);
@@ -231,44 +231,44 @@ describe(Common.calcFinalDiceProb.name, () => {
     expectClose(actual, pc * pn * 2, 2, 1);
   });
 
-  // UpgradeBuff: retain one fail as a norm OR one norm as a crit (attacker's choice).
+  // MysticScryBuff: retain one fail as a norm OR one norm as a crit (attacker's choice).
   // 11th/12th positional args are normDmg and critDmg+mwx; the choice maximizes damage.
-  it('upgradeBuff norm-favored {0c,1n,1f} => {0c,2n} (3/4 dmg: +norm beats +crit)', () => {
-    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 1, Ability.None, 0, 0, 0, 0, justUpgradeBuff, 3, 4);
+  it('mysticScryBuff norm-favored {0c,1n,1f} => {0c,2n} (3/4 dmg: +norm beats +crit)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 1, Ability.None, 0, 0, 0, 0, justMysticScryBuff, 3, 4);
     expectClose(actual, pn * pf * 2, 0, 2);
   });
-  it('upgradeBuff crit-favored {0c,1n,1f} => {1c,0n} (3/8 dmg: +crit beats +norm)', () => {
-    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 1, Ability.None, 0, 0, 0, 0, justUpgradeBuff, 3, 8);
+  it('mysticScryBuff crit-favored {0c,1n,1f} => {1c,0n} (3/8 dmg: +crit beats +norm)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 1, Ability.None, 0, 0, 0, 0, justMysticScryBuff, 3, 8);
     expectClose(actual, pn * pf * 2, 1, 0);
   });
-  it('upgradeBuff damage tie {0c,1n,1f} => {1c,0n} (3/6 dmg: tie breaks to the crit)', () => {
+  it('mysticScryBuff damage tie {0c,1n,1f} => {1c,0n} (3/6 dmg: tie breaks to the crit)', () => {
     // fail->norm {0c,2n} and norm->crit {1c,0n} both score 6; the crit wins (mwx bypasses saves, triggers Px).
-    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 1, Ability.None, 0, 0, 0, 0, justUpgradeBuff, 3, 6);
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 1, Ability.None, 0, 0, 0, 0, justMysticScryBuff, 3, 6);
     expectClose(actual, pn * pf * 2, 1, 0);
   });
-  it('upgradeBuff norm-favored but no fail {1c,1n,0f} => {2c,0n} (only crit upgrade available)', () => {
-    const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 0, Ability.None, 0, 0, 0, 0, justUpgradeBuff, 3, 4);
+  it('mysticScryBuff norm-favored but no fail {1c,1n,0f} => {2c,0n} (only crit upgrade available)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 0, Ability.None, 0, 0, 0, 0, justMysticScryBuff, 3, 4);
     expectClose(actual, pc * pn * 2, 2, 0);
   });
-  it('upgradeBuff crit-favored but no norm {0c,0n,2f} => {0c,1n} (only fail->norm available)', () => {
-    const actual = Common.calcFinalDiceProb(dieProbs, 0, 0, 2, Ability.None, 0, 0, 0, 0, justUpgradeBuff, 3, 8);
+  it('mysticScryBuff crit-favored but no norm {0c,0n,2f} => {0c,1n} (only fail->norm available)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 0, 2, Ability.None, 0, 0, 0, 0, justMysticScryBuff, 3, 8);
     expectClose(actual, pf * pf, 0, 1);
   });
-  it('upgradeBuff nothing to upgrade {1c,0n,0f} => {1c,0n}', () => {
-    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 0, Ability.None, 0, 0, 0, 0, justUpgradeBuff, 3, 4);
+  it('mysticScryBuff nothing to upgrade {1c,0n,0f} => {1c,0n}', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 0, Ability.None, 0, 0, 0, 0, justMysticScryBuff, 3, 4);
     expectClose(actual, pc, 1, 0);
   });
   // Rending synergy: even at 3/4 dmg (where +norm beats +crit in isolation), the choice flips when
   // it changes what Rending can do afterward. These two cases are the worked examples on the
-  // /notes/upgrade-buff explainer page (Case A: seed a crit; Case B: feed Rending a norm).
-  it('upgradeBuff + rending {1c,1n,1f} => {2c,1n} (add a norm so Rending still has one to promote)', () => {
+  // /notes/mystic-scry-buff explainer page (Case A: seed a crit; Case B: feed Rending a norm).
+  it('mysticScryBuff + rending {1c,1n,1f} => {2c,1n} (add a norm so Rending still has one to promote)', () => {
     // fail->norm gives {1c,2n}; Rending promotes one -> {2c,1n}=11. norm->crit gives {2c,0n}=8. Pick fail->norm.
-    const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 1, Ability.None, 0, 0, 0, 0, rendingAndUpgradeBuff, 3, 4);
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 1, Ability.None, 0, 0, 0, 0, rendingAndMysticScryBuff, 3, 4);
     expectClose(actual, pc * pn * pf * 6, 2, 1);
   });
-  it('upgradeBuff + rending {0c,2n,0f} => {2c,0n} (seed the first crit so Rending can fire)', () => {
+  it('mysticScryBuff + rending {0c,2n,0f} => {2c,0n} (seed the first crit so Rending can fire)', () => {
     // norm->crit gives {1c,1n}; Rending then promotes -> {2c,0n}=8. Declining leaves {0c,2n}=6. Pick norm->crit.
-    const actual = Common.calcFinalDiceProb(dieProbs, 0, 2, 0, Ability.None, 0, 0, 0, 0, rendingAndUpgradeBuff, 3, 4);
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 2, 0, Ability.None, 0, 0, 0, 0, rendingAndMysticScryBuff, 3, 4);
     expectClose(actual, pn * pn, 2, 0);
   });
 });

@@ -46,8 +46,8 @@ const Footer: React.FC = () => {
         Why kill chance can rise as BS gets worse with Lethal + Relentless
       </a>
       <br />
-      <a href="/notes/upgrade-buff" target="_blank" rel="noopener noreferrer">
-        Upgrade Buff + Rending: why the best choice depends on what you rolled
+      <a href="/notes/mystic-scry-buff" target="_blank" rel="noopener noreferrer">
+        Mystic Scry Buff + Rending: why the best choice depends on what you rolled
       </a>
     </div>
   );
