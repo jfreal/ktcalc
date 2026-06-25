@@ -36,7 +36,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   const atk = props.attacker;
   const textHandler = makeTextChangeHandler(atk, props.changeHandler);
   const numHandler = makeNumChangeHandler(atk, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced');
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
   //const noCoverChoices = Object.values(NoCoverType);
 
   function singleHandler(ability: Ability) {
@@ -70,7 +70,6 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.FailsToNorms, atk.failsToNorms,      xspan(1, 9),      numHandler('failsToNorms')),
     new IncProps(N.NormsToCrits, atk.normsToCrits,      xspan(1, 9),      numHandler('normsToCrits')),
     new IncProps(N.PuritySeal, toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal)),
-    new IncProps(N.CloseAssault2021, toYN(Ability.FailToNormIfAtLeastTwoSuccesses), xAndCheck, singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)),
     //new IncProps(N.NoCover,      atk.noCover,            noCoverChoices,        textHandler('noCover')),
   ];
   // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
@@ -130,6 +129,17 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     />
   );
 
+  const showCloseAssault = wantShowAdvanced || atk.has(Ability.FailToNormIfAtLeastTwoSuccesses);
+  const closeAssaultCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={<>{N.CloseAssault2021.name} <AdvancedMarker /></>}
+      title={N.CloseAssault2021.description}
+      checked={atk.has(Ability.FailToNormIfAtLeastTwoSuccesses)}
+      onChange={() => singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)(atk.has(Ability.FailToNormIfAtLeastTwoSuccesses) ? 'X' : '✔')}
+    />
+  );
+
   return (
     <Container style={{width: '310px', maxWidth: '100%'}}>
       <Row>
@@ -156,6 +166,11 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
       {showUpgradeBuff &&
         <Row>
           <Col>{upgradeBuffCheckbox}</Col>
+        </Row>
+      }
+      {showCloseAssault &&
+        <Row>
+          <Col>{closeAssaultCheckbox}</Col>
         </Row>
       }
     </Container>

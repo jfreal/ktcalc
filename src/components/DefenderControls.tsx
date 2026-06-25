@@ -36,7 +36,7 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
   const def = props.defender;
   const textHandler = makeTextChangeHandler(props.defender, props.changeHandler);
   const numHandler = makeNumChangeHandler(props.defender, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced');
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
 
   function singleHandler(ability: Ability) {
     return makeSetChangeHandlerForSingle<Model,Ability>(
