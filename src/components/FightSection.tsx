@@ -14,7 +14,8 @@ import FightOptionControls from 'src/components/FightOptionControls';
 import { calcRemainingWounds } from 'src/CalcEngineFight';
 import FightResultsDisplay from 'src/components/FightResultsDisplay';
 import FightOptions from 'src/FightOptions';
-import * as N from 'src/Notes';
+import Note, * as N from 'src/Notes';
+import NotesList from 'src/components/NotesList';
 import { getFightStateFromUrl, useFightUrlState } from 'src/hooks/useUrlState';
 import { useShareContext } from 'src/context/ShareContext';
 
@@ -53,7 +54,7 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
   const fighterAWoundProbs = aFirst ? fighter1WoundProbs : fighter2WoundProbs;
   const fighterBWoundProbs = aFirst ? fighter2WoundProbs : fighter1WoundProbs;
 
-  const noteListItems: JSX.Element[] = [
+  const notes: Note[] = [
     N.Reroll,
     N.Rending,
     N.Severe,
@@ -66,7 +67,20 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
     N.CloseAssault2021,
     N.Waaagh2021,
     N.SaintlyRelics,
-  ].map(note => <li key={note.name}><b>{note.name}</b>: {note.description}</li>);
+  ];
+  // Rules whose control only appears under a fighter's "Advanced" checkbox.
+  // Keep in sync with FighterControls.advancedParams and FighterControls.advancedCheckboxes
+  // (the niche-ability dropdown holds CloseAssault2021 and Waaagh2021).
+  const advancedNotes = new Set<Note>([
+    N.Shock,
+    N.NicheAbility,
+    N.AutoNorms,
+    N.PuritySeal,
+    N.UpgradeBuff,
+    N.CloseAssault2021,
+    N.Waaagh2021,
+    N.SaintlyRelics,
+  ]);
 
   return (
     <Container style={{maxWidth: '1000px', margin: '0 auto'}}>
@@ -113,7 +127,7 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
       <Row>
         <Col className='p-1'>
           <Panel title="Notes" fullWidth>
-            <ul style={{ marginBottom: 0 }}>
+            <NotesList notes={notes} advancedNotes={advancedNotes}>
               <li>
                 All strategies will do certain no-downside actions, with the consequence that
                 "Strike" will still sometimes parry and "Parry" will still sometimes strike.
@@ -125,8 +139,7 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
               <li>
                 Balanced and Relentless will not reroll a normal success even if it would be wise to do so.
               </li>
-              {noteListItems}
-            </ul>
+            </NotesList>
           </Panel>
         </Col>
       </Row>
