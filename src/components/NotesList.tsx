@@ -1,14 +1,13 @@
 import React from 'react';
 import Note from 'src/Notes';
 import * as T from 'src/theme';
-import AdvancedMarker, { advancedMarkerChar } from 'src/components/AdvancedMarker';
+import { advancedMarkerChar } from 'src/components/AdvancedMarker';
 
-// Several calculator controls only appear once the user ticks the per-panel "Advanced" checkbox, so
-// the rules they enable are easy to miss. We mark those rules in the Notes list with a gear icon
-// (the same marker the advanced controls themselves show) and explain it in a legend. The set of
-// advanced rules is passed in per calculator (Shoot and Fight hide different controls) and must be
-// kept in sync with the basic/advanced split in the AttackerControls / DefenderControls /
-// FighterControls components.
+// The Notes panel is split into a "Basic" section and an "Advanced" section. The advanced section
+// collects the rules whose control only appears once the per-panel "Advanced" checkbox is ticked, so
+// they line up with the gear-marked controls. The set of advanced rules is passed in per calculator
+// (Shoot and Fight hide different controls) and must be kept in sync with the basic/advanced split in
+// the AttackerControls / DefenderControls / FighterControls components.
 
 export interface NotesListProps {
   notes: Note[];
@@ -18,26 +17,52 @@ export interface NotesListProps {
   children?: React.ReactNode;
 }
 
+const sectionHeaderStyle: React.CSSProperties = {
+  fontWeight: 'bold',
+  fontSize: '13px',
+  margin: '10px 0 4px',
+};
+
+// Each note renders as a plain block: bold name on top, description on the line below (no bullets).
+function renderNotes(list: Note[]) {
+  return list.map(note => (
+    <div key={note.name} style={{ marginBottom: '8px' }}>
+      <b>{note.name}</b>
+      <div>{note.description}</div>
+    </div>
+  ));
+}
+
 const NotesList: React.FC<NotesListProps> = ({ notes, advancedNotes, children }) => {
-  const hasAdvanced = !!advancedNotes && notes.some(note => advancedNotes.has(note));
+  const advancedList = advancedNotes ? notes.filter(note => advancedNotes.has(note)) : [];
+  const basicList = advancedNotes ? notes.filter(note => !advancedNotes.has(note)) : notes;
+  const hasAdvanced = advancedList.length > 0;
+  const hasBasic = basicList.length > 0 || !!children;
+
+  // No advanced rules: render a single group (unchanged behavior).
+  if (!hasAdvanced) {
+    return (
+      <>
+        {children && <ul style={{ marginBottom: '8px' }}>{children}</ul>}
+        {renderNotes(basicList)}
+      </>
+    );
+  }
+
   return (
     <>
-      {hasAdvanced &&
-        <div style={{ fontSize: '13px', color: T.textMuted, marginBottom: '6px' }}>
-          <span aria-hidden="true">{advancedMarkerChar}</span> = hidden until you tick the{' '}
-          <b>Advanced</b> checkbox in the controls above.
-        </div>
+      {hasBasic &&
+        <>
+          <div style={{ ...sectionHeaderStyle, marginTop: 0 }}>Basic</div>
+          {children && <ul style={{ marginBottom: '8px' }}>{children}</ul>}
+          {renderNotes(basicList)}
+        </>
       }
-      <ul style={{ marginBottom: 0 }}>
-        {children}
-        {notes.map(note => (
-          <li key={note.name}>
-            <b>{note.name}</b>
-            {advancedNotes?.has(note) && <AdvancedMarker />}
-            : {note.description}
-          </li>
-        ))}
-      </ul>
+      <div style={{ ...sectionHeaderStyle, color: T.textMuted }}>
+        <span aria-hidden="true">{advancedMarkerChar}</span> Advanced — only shown when the{' '}
+        <b>Advanced</b> checkbox is ticked
+      </div>
+      {renderNotes(advancedList)}
     </>
   );
 };
