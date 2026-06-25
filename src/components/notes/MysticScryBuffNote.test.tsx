@@ -1,26 +1,25 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import UpgradeBuffNote from 'src/components/notes/UpgradeBuffNote';
+import MysticScryBuffNote from 'src/components/notes/MysticScryBuffNote';
 
-// Smoke + content tests for the /notes/upgrade-buff explainer page. The engine behavior it
+// Smoke + content tests for the /notes/mystic-scry-buff explainer page. The engine behavior it
 // documents (the seed/feed Rending cases) is covered in CalcEngineCommon.test.ts; these tests
 // guard the page itself so the footer link / route does not silently break.
 function renderNote() {
   return render(
     <MemoryRouter>
-      <UpgradeBuffNote />
+      <MysticScryBuffNote />
     </MemoryRouter>,
   );
 }
 
-describe('UpgradeBuffNote', () => {
-  it('renders the heading and names the in-game abilities', () => {
+describe('MysticScryBuffNote', () => {
+  it('renders the heading and names the in-game ability', () => {
     renderNote();
-    expect(screen.getByRole('heading', { level: 2 }).textContent).toContain('Upgrade Buff');
-    // getByText throws if the text is absent, so these assert the in-game names are documented.
-    expect(screen.getByText(/No Kin Left Behind/)).toBeTruthy();
-    expect(screen.getByText(/Mystic Scry/)).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toContain('Mystic Scry Buff');
+    // getByText throws if the text is absent, so this asserts the in-game credit is documented.
+    expect(screen.getByText(/"Mystic Scry" ploy/)).toBeTruthy();
   });
 
   it('documents both Rending cases: seed a crit when you have none, feed a norm when you do', () => {

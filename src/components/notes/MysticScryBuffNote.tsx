@@ -13,18 +13,17 @@ const captionStyle: React.CSSProperties = {
   fontSize: '13px',
 };
 
-const UpgradeBuffNote: React.FC = () => (
+const MysticScryBuffNote: React.FC = () => (
   <Container style={{ maxWidth: '760px', padding: '24px 16px', fontSize: '14px', lineHeight: 1.55 }}>
     <p><Link to="/">&larr; Back to calculator</Link></p>
 
-    <h2>Upgrade Buff + Rending: why the best choice depends on what you already rolled</h2>
+    <h2>Mystic Scry Buff + Rending: why the best choice depends on what you already rolled</h2>
 
     <p>
-      <strong>Upgrade Buff</strong> is the calculator&apos;s name for an attack-dice ability that, in the
+      <strong>Mystic Scry Buff</strong> is the calculator&apos;s name for an attack-dice ability that, in the
       Roll Attack Dice step of a shoot, fight, or retaliation, lets you either <em>retain one of your
       fails as a normal success</em>, <em>or</em> retain one of your normal successes as a critical
-      success. You pick one, each time you attack. In-game it appears as the Hernkyn Yaegir
-      &quot;No Kin Left Behind&quot; rule and the &quot;Mystic Scry&quot; ploy, among others.
+      success. You pick one, each time you attack. In-game it&apos;s the &quot;Mystic Scry&quot; ploy.
     </p>
 
     <p>
@@ -85,7 +84,7 @@ const UpgradeBuffNote: React.FC = () => (
 
     <p>
       <strong>Rending</strong> lets you upgrade one rolled norm to a crit <em>if you already have at
-      least one crit</em>. That conditional is what makes Upgrade Buff interesting: the option you pick
+      least one crit</em>. That conditional is what makes Mystic Scry Buff interesting: the option you pick
       changes what Rending can do <em>afterward</em>, so the right pick flips depending on whether you
       already rolled a crit. Both of the following use the same weapon (norm 3, crit 4, no Devastating),
       where the isolated rule from the table above says &quot;add a hit.&quot;
@@ -144,7 +143,7 @@ const UpgradeBuffNote: React.FC = () => (
     <h3>How the calculator decides</h3>
 
     <p>
-      Rather than a fixed rule, the calculator treats Upgrade Buff as the per-roll choice it actually is.
+      Rather than a fixed rule, the calculator treats Mystic Scry Buff as the per-roll choice it actually is.
       For every possible dice result it:
     </p>
 
@@ -219,4 +218,4 @@ const UpgradeBuffNote: React.FC = () => (
   </Container>
 );
 
-export default UpgradeBuffNote;
+export default MysticScryBuffNote;

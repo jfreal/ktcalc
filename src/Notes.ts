@@ -84,13 +84,13 @@ export const PuritySeal = new Note(
   `Note: KT2024 rule strictly requires two unmodified 1s; this calculator triggers on any 2 failed dice, ` +
   `so the benefit is slightly overstated on rolls where fails include non-1 values (e.g. 2s on a 3+ stat).`,
 );
-export const UpgradeBuff = new Note(
-  `Upgrade Buff`,
+export const MysticScryBuff = new Note(
+  `Mystic Scry Buff`,
   `In the Roll Attack Dice step, retain one of your fails as a normal success, OR one of your normal successes ` +
   `as a critical success. For each roll the calculator picks whichever option yields more damage, after also ` +
   `resolving Rending — so it correctly seeds a crit for Rending, or adds a norm for Rending to promote, rather ` +
   `than always favoring one. Attack only. Note: defender saves and Piercing (Px) are not weighed in the choice. ` +
-  `In-game examples: Hernkyn Yaegir "No Kin Left Behind" and the "Mystic Scry" ploy.`,
+  `In-game: the "Mystic Scry" ploy.`,
 );
 export const Indomitus = new Note(
   `Indomitus`,

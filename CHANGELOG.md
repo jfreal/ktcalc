@@ -1,15 +1,15 @@
 # Changelog
 
-## June 2026 - Upgrade Buff Attack Ability
+## June 2026 - Mystic Scry Buff Attack Ability
 
-- Added **Upgrade Buff** as an advanced attacker/fighter option on both the Shoot and Fight calculators.
-- Rule: in the Roll Attack Dice step, retain one of your fails as a normal success, OR one of your normal successes as a critical success. Attack only. In-game examples: Hernkyn Yaegir "No Kin Left Behind" and the "Mystic Scry" ploy.
+- Added **Mystic Scry Buff** as an advanced attacker/fighter option on both the Shoot and Fight calculators.
+- Rule: in the Roll Attack Dice step, retain one of your fails as a normal success, OR one of your normal successes as a critical success. Attack only. In-game: the "Mystic Scry" ploy.
 - Choice rule: for each roll the calculator resolves both options (fail→norm and norm→crit) through the remaining post-roll steps — notably Rending — and keeps whichever produces the most damage. This captures the Rending interactions a fixed rule gets wrong: seeding the first crit so Rending can fire (`{0c,2n}` → `{2c,0n}`), and adding a norm so Rending still has one to promote (`{1c,1n,1f}` → `{2c,1n}`) rather than spending the buff on a crit Rending can't build on. Falls back to whichever single option a roll makes available.
 - Wired through the shared `applyPostRollModifications` (so both the exact Shoot engine and the Monte Carlo Fight engine honor it) by passing the attacker's `normDmg` and `critDmg + Devastating` so the choice is damage-driven.
 - Limitation: the choice does not weigh defender saves or Piercing (Px), matching the attack-only, damage-first heuristics used elsewhere in the engine.
-- Upgrade Buff is part of shareable URL state for both attackers and fighters; older share links (without the field) decode as off.
-- Listed Upgrade Buff in the in-app Notes panels on both the Shoot and Fight calculators.
-- Added a `/notes/upgrade-buff` explainer page (linked from the footer) walking through the choice math and the Rending interaction — why seeding a crit (when you have none) and feeding Rending a norm (when you already have a crit) are opposite-but-correct picks with the same weapon.
+- Mystic Scry Buff is part of shareable URL state for both attackers and fighters; older share links (without the field) decode as off.
+- Listed Mystic Scry Buff in the in-app Notes panels on both the Shoot and Fight calculators.
+- Added a `/notes/mystic-scry-buff` explainer page (linked from the footer) walking through the choice math and the Rending interaction — why seeding a crit (when you have none) and feeding Rending a norm (when you already have a crit) are opposite-but-correct picks with the same weapon.
 - Added unit tests covering both preferences, the availability fallbacks, and the damage-tie break toward the crit.
 
 ## June 2026 - Saintly Relics Defensive Ability

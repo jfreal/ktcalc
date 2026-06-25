@@ -117,15 +117,15 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   );
 
   // Advanced ability, so only shown when Advanced is on (or it is already enabled). The title is the
-  // same N.UpgradeBuff helper text that is listed in the Notes panel below the calculator.
-  const showUpgradeBuff = wantShowAdvanced || atk.has(Ability.UpgradeBuff);
-  const upgradeBuffCheckbox = (
+  // same N.MysticScryBuff helper text that is listed in the Notes panel below the calculator.
+  const showMysticScryBuff = wantShowAdvanced || atk.has(Ability.MysticScryBuff);
+  const mysticScryBuffCheckbox = (
     <Form.Check
       type="checkbox"
-      label={<>{N.UpgradeBuff.name} <AdvancedMarker /></>}
-      title={N.UpgradeBuff.description}
-      checked={atk.has(Ability.UpgradeBuff)}
-      onChange={() => singleHandler(Ability.UpgradeBuff)(atk.has(Ability.UpgradeBuff) ? 'X' : '✔')}
+      label={<>{N.MysticScryBuff.name} <AdvancedMarker /></>}
+      title={N.MysticScryBuff.description}
+      checked={atk.has(Ability.MysticScryBuff)}
+      onChange={() => singleHandler(Ability.MysticScryBuff)(atk.has(Ability.MysticScryBuff) ? 'X' : '✔')}
     />
   );
 
@@ -163,9 +163,9 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
         <Col>{severeCheckbox}</Col>
         <Col>{punishingCheckbox}</Col>
       </Row>
-      {showUpgradeBuff &&
+      {showMysticScryBuff &&
         <Row>
-          <Col>{upgradeBuffCheckbox}</Col>
+          <Col>{mysticScryBuffCheckbox}</Col>
         </Row>
       }
       {showCloseAssault &&

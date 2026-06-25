@@ -9,7 +9,7 @@ import AppHeader from "src/components/AppHeader";
 import kofiIcon from 'src/images/kofi.svg';
 import FightSection from 'src/components/FightSection';
 import LethalRelentlessNote from 'src/components/notes/LethalRelentlessNote';
-import UpgradeBuffNote from 'src/components/notes/UpgradeBuffNote';
+import MysticScryBuffNote from 'src/components/notes/MysticScryBuffNote';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
 import ShootSection from 'src/components/ShootSection';
 import { ShareProvider, useShareContext } from 'src/context/ShareContext';
@@ -128,10 +128,10 @@ const App = () => (
         }
       />
       <Route
-        path="/notes/upgrade-buff"
+        path="/notes/mystic-scry-buff"
         element={
           <ErrorBoundary fallbackRender={fallbackRender}>
-            <UpgradeBuffNote />
+            <MysticScryBuffNote />
           </ErrorBoundary>
         }
       />
