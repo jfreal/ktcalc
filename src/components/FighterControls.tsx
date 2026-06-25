@@ -29,6 +29,7 @@ import {
   xspan,
 } from 'src/Util';
 import { relicModeToLabel } from 'src/SaintlyRelics';
+import AdvancedMarker from 'src/components/AdvancedMarker';
 import { Props as IncProps, propsToRows } from 'src/components/IncDecSelect';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 
@@ -42,7 +43,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
   const atk = props.attacker;
   const textHandler = makeTextChangeHandler(atk, props.changeHandler);
   const numHandler = makeNumChangeHandler(atk, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced');
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
 
   function subsetHandler(subset: Iterable<Ability>) {
     return makeSetChangeHandler<Model,Ability>(
@@ -63,12 +64,12 @@ const FighterControls: React.FC<Props> = (props: Props) => {
 
   const nicheAbility = extractFromSet(nicheAbilities, Ability.None, atk.abilities)!;
 
-  function abilityCheckbox(note: Note, ability: Ability) {
+  function abilityCheckbox(note: Note, ability: Ability, advanced: boolean) {
     return (
       <Form.Check
         key={note.name}
         type="checkbox"
-        label={note.name}
+        label={advanced ? <>{note.name} <AdvancedMarker /></> : note.name}
         title={note.description}
         checked={atk.has(ability)}
         onChange={() => singleHandler(ability)(atk.has(ability) ? 'X' : '✔')}
@@ -101,11 +102,14 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.FeelNoPain,       atk.fnp + '+',              xspan(6, 2, '+'), numHandler('fnp')),
     makeIncDecPropsFromLookup(N.SaintlyRelics, atk, props.changeHandler, 'saintlyRelics', relicModeToLabel),
   ];
+  // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
+  advancedParams.forEach(p => { p.advanced = true; });
 
   const advancedCheckboxes: { note: Note, ability: Ability }[] = [
     { note: N.Shock, ability: Ability.Shock },
     { note: N.Punishing, ability: Ability.Punishing },
     { note: N.PuritySeal, ability: Ability.PuritySeal },
+    { note: N.UpgradeBuff, ability: Ability.UpgradeBuff },
     { note: N.Duelist, ability: Ability.Duelist },
     { note: N.JustAScratch2021, ability: Ability.JustAScratch },
     { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
@@ -128,7 +132,10 @@ const FighterControls: React.FC<Props> = (props: Props) => {
   const elemsCol0 = propsToRows(paramsCol0);
   const elemsCol1 = propsToRows(paramsCol1);
 
-  const allCheckboxes = [...basicCheckboxes, ...advancedCheckboxesToShow];
+  const allCheckboxes = [
+    ...basicCheckboxes.map(c => ({ ...c, advanced: false })),
+    ...advancedCheckboxesToShow.map(c => ({ ...c, advanced: true })),
+  ];
 
   return (
     <Container style={{width: '310px'}}>
@@ -149,10 +156,10 @@ const FighterControls: React.FC<Props> = (props: Props) => {
       </Row>
       <Row>
         <Col>
-          {allCheckboxes.filter((_, i) => i % 2 === 0).map(c => abilityCheckbox(c.note, c.ability))}
+          {allCheckboxes.filter((_, i) => i % 2 === 0).map(c => abilityCheckbox(c.note, c.ability, c.advanced))}
         </Col>
         <Col>
-          {allCheckboxes.filter((_, i) => i % 2 === 1).map(c => abilityCheckbox(c.note, c.ability))}
+          {allCheckboxes.filter((_, i) => i % 2 === 1).map(c => abilityCheckbox(c.note, c.ability, c.advanced))}
         </Col>
       </Row>
     </Container>

@@ -24,6 +24,7 @@ import Ability, {
   rerollAbilities as rerolls,
 } from 'src/Ability';
 import * as N from 'src/Notes';
+import AdvancedMarker from 'src/components/AdvancedMarker';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 
 export interface Props {
@@ -35,7 +36,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   const atk = props.attacker;
   const textHandler = makeTextChangeHandler(atk, props.changeHandler);
   const numHandler = makeNumChangeHandler(atk, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced');
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
   //const noCoverChoices = Object.values(NoCoverType);
 
   function singleHandler(ability: Ability) {
@@ -69,9 +70,10 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.FailsToNorms, atk.failsToNorms,      xspan(1, 9),      numHandler('failsToNorms')),
     new IncProps(N.NormsToCrits, atk.normsToCrits,      xspan(1, 9),      numHandler('normsToCrits')),
     new IncProps(N.PuritySeal, toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal)),
-    new IncProps(N.CloseAssault2021, toYN(Ability.FailToNormIfAtLeastTwoSuccesses), xAndCheck, singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)),
     //new IncProps(N.NoCover,      atk.noCover,            noCoverChoices,        textHandler('noCover')),
   ];
+  // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
+  advancedParams.forEach(p => { p.advanced = true; });
 
   const advancedParamsToShow
     = wantShowAdvanced
@@ -114,6 +116,30 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     />
   );
 
+  // Advanced ability, so only shown when Advanced is on (or it is already enabled). The title is the
+  // same N.UpgradeBuff helper text that is listed in the Notes panel below the calculator.
+  const showUpgradeBuff = wantShowAdvanced || atk.has(Ability.UpgradeBuff);
+  const upgradeBuffCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={<>{N.UpgradeBuff.name} <AdvancedMarker /></>}
+      title={N.UpgradeBuff.description}
+      checked={atk.has(Ability.UpgradeBuff)}
+      onChange={() => singleHandler(Ability.UpgradeBuff)(atk.has(Ability.UpgradeBuff) ? 'X' : '✔')}
+    />
+  );
+
+  const showCloseAssault = wantShowAdvanced || atk.has(Ability.FailToNormIfAtLeastTwoSuccesses);
+  const closeAssaultCheckbox = (
+    <Form.Check
+      type="checkbox"
+      label={<>{N.CloseAssault2021.name} <AdvancedMarker /></>}
+      title={N.CloseAssault2021.description}
+      checked={atk.has(Ability.FailToNormIfAtLeastTwoSuccesses)}
+      onChange={() => singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)(atk.has(Ability.FailToNormIfAtLeastTwoSuccesses) ? 'X' : '✔')}
+    />
+  );
+
   return (
     <Container style={{width: '310px', maxWidth: '100%'}}>
       <Row>
@@ -137,6 +163,16 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
         <Col>{severeCheckbox}</Col>
         <Col>{punishingCheckbox}</Col>
       </Row>
+      {showUpgradeBuff &&
+        <Row>
+          <Col>{upgradeBuffCheckbox}</Col>
+        </Row>
+      }
+      {showCloseAssault &&
+        <Row>
+          <Col>{closeAssaultCheckbox}</Col>
+        </Row>
+      }
     </Container>
   );
 }

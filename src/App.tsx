@@ -9,6 +9,7 @@ import AppHeader from "src/components/AppHeader";
 import kofiIcon from 'src/images/kofi.svg';
 import FightSection from 'src/components/FightSection';
 import LethalRelentlessNote from 'src/components/notes/LethalRelentlessNote';
+import UpgradeBuffNote from 'src/components/notes/UpgradeBuffNote';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
 import ShootSection from 'src/components/ShootSection';
 import { ShareProvider, useShareContext } from 'src/context/ShareContext';
@@ -86,8 +87,12 @@ const AppContent = () => {
       <AppHeader navCallback={setCurrentView} currentView={currentView} rightContent={<ShareButtons />} />
         <Container fluid>
           <Row>
-            <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px', gap: '8px'}}>
-              Starred (*) items have explanations in hovertext and 'Notes' at bottom.
+            <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px'}}>
+              Starred (*) items have explanations in hovertext and 'Notes' at bottom; geared (⚙️) items are advanced — tick 'Advanced' to show them.
+            </Col>
+          </Row>
+          <Row>
+            <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px'}}>
               <a
                 href='https://ko-fi.com/jfreal'
                 target='_blank'
@@ -119,6 +124,14 @@ const App = () => (
         element={
           <ErrorBoundary fallbackRender={fallbackRender}>
             <LethalRelentlessNote />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path="/notes/upgrade-buff"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <UpgradeBuffNote />
           </ErrorBoundary>
         }
       />

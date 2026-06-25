@@ -45,6 +45,10 @@ const Footer: React.FC = () => {
       <a href="/notes/lethal-relentless" target="_blank" rel="noopener noreferrer">
         Why kill chance can rise as BS gets worse with Lethal + Relentless
       </a>
+      <br />
+      <a href="/notes/upgrade-buff" target="_blank" rel="noopener noreferrer">
+        Upgrade Buff + Rending: why the best choice depends on what you rolled
+      </a>
     </div>
   );
 };

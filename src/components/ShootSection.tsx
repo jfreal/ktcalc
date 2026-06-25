@@ -11,7 +11,8 @@ import Panel from 'src/components/Panel';
 import * as T from 'src/theme';
 
 import { clone } from 'lodash';
-import * as N from 'src/Notes';
+import Note, * as N from 'src/Notes';
+import NotesList from 'src/components/NotesList';
 import { ShootSituation } from './ShootSituation';
 import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
@@ -68,7 +69,7 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
     setShootOptions2(clone(shootOptions1));
   };
 
-  const noteListItems: JSX.Element[] = [
+  const notes: Note[] = [
     N.AvgDamageUnbounded,
     N.Reroll,
     N.Rending,
@@ -80,14 +81,27 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
     N.CoverCritSaves,
     N.NormsToCrits,
     N.PuritySeal,
+    N.UpgradeBuff,
     N.CloseAssault2021,
-    N.Durable2021,
     N.HardyX,
     N.FeelNoPain,
     N.SaintlyRelics,
     N.JustAScratch2021,
     N.JustAScratchNorms,
-  ].map(note => <li key={note.name}><b>{note.name}</b>: {note.description}</li>);
+  ];
+  // Rules whose control only appears under the attacker's or defender's "Advanced" checkbox.
+  // Keep in sync with AttackerControls.advancedParams and DefenderControls.advancedParams.
+  const advancedNotes = new Set<Note>([
+    N.AutoCrits,
+    N.CoverCritSaves,
+    N.NormsToCrits,
+    N.PuritySeal,
+    N.UpgradeBuff,
+    N.CloseAssault2021,
+    N.HardyX,
+    N.FeelNoPain,
+    N.SaintlyRelics,
+  ]);
 
   return (
     <Container fluid style={{maxWidth: '1320px', margin: '0 auto'}}>
@@ -143,9 +157,7 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
       <Row>
         <Col className='p-1'>
           <Panel title="Notes" fullWidth>
-            <ul style={{ marginBottom: 0 }}>
-              {noteListItems}
-            </ul>
+            <NotesList notes={notes} advancedNotes={advancedNotes} />
           </Panel>
         </Col>
       </Row>
