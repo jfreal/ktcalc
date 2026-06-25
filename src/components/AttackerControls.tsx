@@ -69,6 +69,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.FailsToNorms, atk.failsToNorms,      xspan(1, 9),      numHandler('failsToNorms')),
     new IncProps(N.NormsToCrits, atk.normsToCrits,      xspan(1, 9),      numHandler('normsToCrits')),
     new IncProps(N.PuritySeal, toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal)),
+    new IncProps(N.UpgradeBuff, toYN(Ability.UpgradeBuff), xAndCheck, singleHandler(Ability.UpgradeBuff)),
     new IncProps(N.CloseAssault2021, toYN(Ability.FailToNormIfAtLeastTwoSuccesses), xAndCheck, singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)),
     //new IncProps(N.NoCover,      atk.noCover,            noCoverChoices,        textHandler('noCover')),
   ];

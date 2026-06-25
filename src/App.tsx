@@ -9,6 +9,7 @@ import AppHeader from "src/components/AppHeader";
 import kofiIcon from 'src/images/kofi.svg';
 import FightSection from 'src/components/FightSection';
 import LethalRelentlessNote from 'src/components/notes/LethalRelentlessNote';
+import UpgradeBuffNote from 'src/components/notes/UpgradeBuffNote';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
 import ShootSection from 'src/components/ShootSection';
 import { ShareProvider, useShareContext } from 'src/context/ShareContext';
@@ -119,6 +120,14 @@ const App = () => (
         element={
           <ErrorBoundary fallbackRender={fallbackRender}>
             <LethalRelentlessNote />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path="/notes/upgrade-buff"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <UpgradeBuffNote />
           </ErrorBoundary>
         }
       />

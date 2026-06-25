@@ -25,6 +25,7 @@ function encodeAttacker(atk: Model): string {
   if (atk.has(Ability.Severe)) abilities.push('sev');
   if (atk.has(Ability.Punishing)) abilities.push('pun');
   if (atk.has(Ability.PuritySeal)) abilities.push('purity');
+  if (atk.has(Ability.UpgradeBuff)) abilities.push('upbuff');
   if (atk.has(Ability.FailToNormIfAtLeastTwoSuccesses)) abilities.push('close');
 
   return [
@@ -110,6 +111,7 @@ function decodeAttacker(param: string): Model {
     if (abilities.includes('sev')) atk.abilities.add(Ability.Severe);
     if (abilities.includes('pun')) atk.abilities.add(Ability.Punishing);
     if (abilities.includes('purity')) atk.abilities.add(Ability.PuritySeal);
+    if (abilities.includes('upbuff')) atk.abilities.add(Ability.UpgradeBuff);
     if (abilities.includes('close')) atk.abilities.add(Ability.FailToNormIfAtLeastTwoSuccesses);
   } else {
     // Old 11-field format (backward compat)
@@ -167,6 +169,7 @@ function encodeFighter(f: Model): string {
   if (f.has(Ability.Brutal)) abilities.push('bru');
   if (f.has(Ability.Punishing)) abilities.push('pun');
   if (f.has(Ability.PuritySeal)) abilities.push('purity');
+  if (f.has(Ability.UpgradeBuff)) abilities.push('upbuff');
   if (f.has(Ability.Duelist)) abilities.push('duelist');
   if (f.has(Ability.JustAScratch)) abilities.push('jas');
   if (f.has(Ability.Durable)) abilities.push('dur');
@@ -224,6 +227,7 @@ function decodeFighter(param: string): Model {
   if (abilities.includes('bru')) f.abilities.add(Ability.Brutal);
   if (abilities.includes('pun')) f.abilities.add(Ability.Punishing);
   if (abilities.includes('purity')) f.abilities.add(Ability.PuritySeal);
+  if (abilities.includes('upbuff')) f.abilities.add(Ability.UpgradeBuff);
   if (abilities.includes('duelist')) f.abilities.add(Ability.Duelist);
   if (abilities.includes('jas')) f.abilities.add(Ability.JustAScratch);
   if (abilities.includes('dur')) f.abilities.add(Ability.Durable);

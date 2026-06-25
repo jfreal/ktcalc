@@ -80,6 +80,7 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
     N.CoverCritSaves,
     N.NormsToCrits,
     N.PuritySeal,
+    N.UpgradeBuff,
     N.CloseAssault2021,
     N.Durable2021,
     N.HardyX,

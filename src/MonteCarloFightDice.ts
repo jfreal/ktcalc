@@ -65,6 +65,8 @@ export function simulateFighterDice(
     autoCrits, autoNorms,
     model.failsToNorms, model.normsToCrits,
     abilities,
+    model.normDmg,
+    model.critDmg + model.mwx,
   );
 }
 

@@ -62,6 +62,7 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
     N.NicheAbility,
     N.AutoNorms,
     N.PuritySeal,
+    N.UpgradeBuff,
     N.CloseAssault2021,
     N.Waaagh2021,
     N.SaintlyRelics,

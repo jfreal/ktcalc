@@ -28,6 +28,8 @@ export function calcFinalDiceProbsForAttacker(
     attacker.failsToNorms,
     attacker.normsToCrits,
     abilities,
+    attacker.normDmg,
+    attacker.critDmg + attacker.mwx,
   );
 }
 
@@ -40,6 +42,8 @@ export function calcFinalDiceProbs(
   failsToNorms: number = 0,
   normsToCrits: number = 0,
   abilities: Set<Ability> = new Set<Ability>(),
+  normDmg: number = 0,
+  critDmgPlusMwx: number = 0,
 ): FinalDiceProb[]
 {
   let finalDiceProbs: FinalDiceProb[] = [];
@@ -64,6 +68,8 @@ export function calcFinalDiceProbs(
         failsToNorms,
         normsToCrits,
         abilities,
+        normDmg,
+        critDmgPlusMwx,
       );
 
       if (finalDiceProb.prob > 0) {
@@ -86,6 +92,8 @@ export function calcFinalDiceProb(
   failsToNorms: number = 0,
   normsToCrits: number = 0,
   abilities: Set<Ability> = new Set<Ability>(),
+  normDmg: number = 0,
+  critDmgPlusMwx: number = 0,
 ): FinalDiceProb
 {
   let prob = 0
@@ -152,6 +160,8 @@ export function calcFinalDiceProb(
     additionalCrits, additionalNorms,
     failsToNorms, normsToCrits,
     abilities,
+    normDmg,
+    critDmgPlusMwx,
   );
 
   return new FinalDiceProb(prob, modified.crits, modified.norms);
@@ -569,6 +579,8 @@ export function applyPostRollModifications(
   failsToNorms: number,
   normsToCrits: number,
   abilities: Set<Ability>,
+  normDmg: number = 0,
+  critDmgPlusMwx: number = 0,
 ): { crits: number; norms: number } {
   crits += additionalCrits;
   const accurateNorms = additionalNorms;
@@ -620,6 +632,48 @@ export function applyPostRollModifications(
   crits += actualNormToCritPromotions;
   norms -= actualNormToCritPromotions;
 
+  // UpgradeBuff: retain one fail as a norm, OR one norm as a crit (attacker's choice). The choice is
+  // damage-dependent and interacts with Rending (a fresh crit can seed a Rending upgrade; conversely
+  // an added norm gives Rending more to promote), so rather than a fixed rule we resolve each option
+  // through the remaining steps (Rending, then Obscured) and keep whichever yields the most damage.
+  // Saves/Px are not modeled here, matching the attack-only, damage-first heuristics used elsewhere.
+  if (abilities.has(Ability.UpgradeBuff)) {
+    const dmgOf = (c: number, n: number) => c * critDmgPlusMwx + n * normDmg;
+    // Candidates in preference order; the strict-greater pick below keeps the first on ties. Order the
+    // crit upgrade ahead of the fail upgrade so a damage tie resolves to the crit, which is strictly
+    // better against any real defender (its Devastating/mwx portion bypasses saves, it triggers Piercing,
+    // and it eats fewer Feel No Pain rolls). A beneficial upgrade still beats declining.
+    const candidates: Array<{ crits: number; norms: number }> = [];
+    if (norms > 0) candidates.push({ crits: crits + 1, norms: norms - 1 }); // retain a norm as a crit
+    if (fails > 0) candidates.push({ crits, norms: norms + 1 });   // retain a fail as a norm
+    candidates.push({ crits, norms });                             // decline (the buff is optional)
+
+    let best: { crits: number; norms: number } | null = null;
+    let bestDmg = -Infinity;
+    for (const cand of candidates) {
+      const finished = finishRendingAndObscured(cand.crits, cand.norms, accurateNorms, severeTriggered, abilities);
+      const dmg = dmgOf(finished.crits, finished.norms);
+      if (dmg > bestDmg) {
+        bestDmg = dmg;
+        best = finished;
+      }
+    }
+    return best!;
+  }
+
+  return finishRendingAndObscured(crits, norms, accurateNorms, severeTriggered, abilities);
+}
+
+// The damage-affecting tail shared by every roll: Rending promotes a rolled norm to a crit when a
+// crit is present (but not after Severe, and never an Accurate-retained norm), then ObscuredTarget
+// (if the defender has it) collapses crits into norms and discards one success.
+function finishRendingAndObscured(
+  crits: number,
+  norms: number,
+  accurateNorms: number,
+  severeTriggered: boolean,
+  abilities: Set<Ability>,
+): { crits: number; norms: number } {
   // Rending doesn't work if Severe triggered (per KT2024 rules)
   // Rending also cannot upgrade normals retained from Accurate (only rolled normals)
   if (abilities.has(Ability.Rending) && !severeTriggered) {
