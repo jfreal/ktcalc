@@ -1,5 +1,8 @@
 .vs/
 
+# Claude Code local tooling/config (e.g. preview launch.json)
+.claude/
+
 # Logs
 logs
 *.log
