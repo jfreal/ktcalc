@@ -98,7 +98,7 @@ On each turn, `calcDieChoice` decides in this order. The first rule that applies
 4. **Awesome parry** → if you can parry the enemy's **last** success and still kill the enemy
    with what remains, **parry** (`calcParryForLastEnemySuccessThenKillEnemy`).
 5. **By strategy**:
-   - **Strike** → always strike (crit-first).
+   - **Strike** → always strike; the die order is chosen by `preferredStrikeChoice` (see below).
    - **Parry** → `wiseParry`: crit-parry an enemy crit if possible; else norm-parry an enemy
      normal; else crit-parry an enemy normal; else (only norms left vs enemy crits/Brutal) strike.
    - **Max Dmg To Enemy** / **Min Dmg To Self** → simulate **strike-all** vs **parry-all** from

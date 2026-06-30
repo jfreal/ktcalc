@@ -204,9 +204,18 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
   }
 
   // if can shock enemy (crit strike that also cancels an enemy NORM success),
-  // and enemy doesn't have any crit successes, then there is no downside
-  // to doing a shocking crit strike now
+  // and enemy doesn't have any crit successes, then a shocking crit strike is usually right.
+  // BUT when we also hold a norm and are trying to maximize damage, striking the norm first can
+  // be better: the enemy's normal parry can't touch our crit, so leading with the norm pushes it
+  // past the parry while the crit (and its shock) still lands on a later turn. Defer to
+  // preferredStrikeChoice in that mixed-dice case; otherwise take the crit strike now.
   if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0 && enemy.crits === 0) {
+    if(chooser.norms > 0
+      && (chooser.strategy === FightStrategy.Strike
+        || chooser.strategy === FightStrategy.MaxDmgToEnemy
+        || chooser.strategy === FightStrategy.MinDmgToSelf)) {
+      return preferredStrikeChoice(chooser, enemy);
+    }
     return FightChoice.CritStrike;
   }
 

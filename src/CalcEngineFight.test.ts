@@ -8,6 +8,7 @@ import {
   calcRemainingWoundPairProbs,
   consolidateWoundPairProbs,
   handleDuelist,
+  preferredStrikeChoice,
   resolveDieChoice,
   resolveFight,
   toWoundPairKey,
@@ -262,6 +263,27 @@ describe(calcDieChoice.name + ', norm-first to deny a normal parry', () => {
     const def = newFighterState(0, 2, 99, FightStrategy.Parry);
     resolveFight(atk, def);
     expect(def.currentWounds).toBe(99 - (atk.profile.critDmg + atk.profile.normDmg));
+  });
+  it('Shock with a mixed hand still routes through the norm-first chooser vs a parrying enemy', () => {
+    // The Shock short-circuit must not force crit-first here: striking the norm first still lets
+    // the crit (and its shock) land later, while denying the enemy's normal parry. crit-first
+    // would leave the lone norm to be parried.
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Shock]));
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
+  it('Shock with only crits (no norm to reorder) still takes the shocking crit strike', () => {
+    const chooser = newFighterState(2, 0, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Shock]));
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('MinDmgToSelf scorer: order is self-damage-neutral here, so it keeps crit-first', () => {
+    // preferredStrikeChoice's MinDmgToSelf branch compares the chooser's own surviving wounds.
+    // Striking order doesn't change how many enemy dice strike back, so the two orders tie and
+    // crit-first (front-loading the bigger die) is kept. This pins the self-preservation branch.
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MinDmgToSelf);
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
+    expect(preferredStrikeChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
   });
 });
 
