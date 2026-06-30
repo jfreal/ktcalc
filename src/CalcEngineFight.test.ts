@@ -7,6 +7,7 @@ import {
   calcParryForLastEnemySuccessThenKillEnemy,
   calcRemainingWoundPairProbs,
   consolidateWoundPairProbs,
+  handleDuelist,
   resolveDieChoice,
   resolveFight,
   toWoundPairKey,
@@ -261,6 +262,36 @@ describe(calcDieChoice.name + ', norm-first to deny a normal parry', () => {
     const def = newFighterState(0, 2, 99, FightStrategy.Parry);
     resolveFight(atk, def);
     expect(def.currentWounds).toBe(99 - (atk.profile.critDmg + atk.profile.normDmg));
+  });
+});
+
+describe(handleDuelist.name + ' fires only once per fight', () => {
+  // Duelist's free parry is once per fight. resolveFight runs handleDuelist at its start, and the
+  // lookahead simulations in calcDieChoice / preferredStrikeChoice call resolveFight again on
+  // mid-fight clones — without a "spent" flag that would grant the parry a second time.
+  it('a second handleDuelist call is a no-op', () => {
+    const duelist = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(0, 2, 99);
+
+    handleDuelist(duelist, enemy);
+    expect(duelist.hasDuelistParried).toBe(true);
+    expect(enemy.norms).toBe(1); // one norm parried away
+    expect(duelist.norms).toBe(0); // spent the norm to parry
+
+    // Re-entrant call (as a cloned lookahead would do) must not parry again.
+    handleDuelist(duelist, enemy);
+    expect(enemy.norms).toBe(1); // unchanged — no second parry
+    expect(duelist.crits).toBe(1); // crit not consumed by a phantom second parry
+  });
+  it('clone() carries the spent flag so simulations do not re-grant the parry', () => {
+    const duelist = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(0, 2, 99);
+    handleDuelist(duelist, enemy);
+
+    const clonedDuelist = duelist.clone();
+    expect(clonedDuelist.hasDuelistParried).toBe(true);
+    handleDuelist(clonedDuelist, enemy.clone());
+    expect(clonedDuelist.crits).toBe(1); // still no second parry
   });
 });
 

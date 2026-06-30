@@ -477,12 +477,18 @@ export function handleDuelist(
 ): void
 {
   if (
-    !guy1State.profile.abilities.has(Ability.Duelist)
+    guy1State.hasDuelistParried
+    || !guy1State.profile.abilities.has(Ability.Duelist)
     || guy1State.successes() === 0
     || guy2State.successes() === 0
   ) {
     return;
   }
+
+  // Duelist's free parry happens once per fight. Mark it spent now so re-entrant resolveFight
+  // calls (e.g. the lookahead simulations in calcDieChoice / preferredStrikeChoice, which clone
+  // mid-fight state) don't grant it a second time and corrupt the estimate.
+  guy1State.hasDuelistParried = true;
 
   if(guy2State.profile.has(Ability.Brutal)) {
     if(guy1State.crits) {
