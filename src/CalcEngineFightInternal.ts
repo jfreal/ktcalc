@@ -141,6 +141,53 @@ export function resolveFight(
   }
 }
 
+export function preferredStrikeChoice(chooser: FighterState, enemy: FighterState): FightChoice {
+  // Default: strike crit-first. This front-loads our biggest die, which matters when we might
+  // not survive to spend every success — better to land the crit than die holding it.
+  const critFirst = chooser.nextStrike();
+
+  // The only time striking norm-first can help is when we hold BOTH crits and norms AND the
+  // enemy has NO crits: a normal parry can cancel only a normal (it can't touch a crit), so
+  // striking our normal first forces it through before the enemy can parry it, while our crit
+  // stays unparryable. Outside this shape, crit-first is always at least as good.
+  if(!(chooser.crits > 0 && chooser.norms > 0 && enemy.crits === 0)) {
+    return critFirst;
+  }
+
+  // Whether norm-first actually wins depends on what the enemy does: a PARRYING enemy makes
+  // norm-first better (parry denied), but a STRIKING enemy in a death-race makes crit-first
+  // better (we may die before spending the crit). So decide by simulating the rest of the
+  // fight both ways against the enemy's ACTUAL strategy and keeping the better order.
+  //
+  // rng is cleared on the clones so the estimate is deterministic and doesn't consume Monte
+  // Carlo draws — same discipline as calcParryForLastEnemySuccessThenKillEnemy. Each branch
+  // spends a die before recursing, so total successes strictly decrease and this terminates.
+  const simulateFirstStrike = (first: FightChoice): [FighterState, FighterState] => {
+    const ch = chooser.clone();
+    const en = enemy.clone();
+    ch.rng = null;
+    en.rng = null;
+    resolveDieChoice(first, ch, en);
+    resolveFight(en, ch); // enemy acts next
+    return [ch, en];
+  };
+
+  const [critChooser, critEnemy] = simulateFirstStrike(FightChoice.CritStrike);
+  const [normChooser, normEnemy] = simulateFirstStrike(FightChoice.NormStrike);
+
+  let normFirstBetter: boolean;
+  if(chooser.strategy === FightStrategy.MinDmgToSelf) {
+    normFirstBetter = normChooser.currentWounds > critChooser.currentWounds;
+  }
+  // Strike / MaxDmgToEnemy: leaving the enemy on fewer wounds is better
+  else {
+    normFirstBetter = normEnemy.currentWounds < critEnemy.currentWounds;
+  }
+
+  // Prefer crit-first on ties so behavior only changes when norm-first is strictly better.
+  return normFirstBetter ? FightChoice.NormStrike : critFirst;
+}
+
 export function calcDieChoice(chooser: FighterState, enemy: FighterState): FightChoice {
   // note: this function assumes chooser has remaining successes
 
@@ -171,7 +218,7 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
   }
 
   if(chooser.strategy === FightStrategy.Strike) {
-    return chooser.nextStrike();
+    return preferredStrikeChoice(chooser, enemy);
   }
   else if(chooser.strategy === FightStrategy.Parry) {
     return wiseParry(chooser, enemy);
@@ -185,7 +232,7 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
 
     const chooserWhoStruck = chooser.clone();
     const chooserWhoParried = chooser.clone();
-    const strikeChoice = chooser.nextStrike();
+    const strikeChoice = preferredStrikeChoice(chooser, enemy);
     const parryChoice = wiseParry(chooser, enemy);
 
     resolveDieChoice(strikeChoice, chooserWhoStruck, enemyWeStruck);

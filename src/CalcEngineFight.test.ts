@@ -227,6 +227,43 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
   });
 });
 
+describe(calcDieChoice.name + ', norm-first to deny a normal parry', () => {
+  // A normal parry can cancel only a normal (it can't touch a crit). So when we hold both a
+  // crit and a norm and the enemy has no crits, striking the NORM first forces it through
+  // before the enemy can parry it, while our crit stays unparryable.
+  it('strikes norm-first vs a parrying enemy with norms-only (denies the parry)', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy);
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
+  it('Strike strategy also strikes norm-first when the enemy will parry a norm', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.Strike);
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
+  it('stays crit-first when the enemy holds a crit (a crit parry can cancel our crit)', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy);
+    const enemy = newFighterState(1, 1, 99, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('stays crit-first in a death-race vs a striking enemy (front-load the bigger die)', () => {
+    // We die after one enemy strike, so we only get one strike in — land the crit (2), not the
+    // norm (1). The enemy is striking (not parrying), so there's no parry to deny. crit-first
+    // leaves the enemy lower even though it has no crits.
+    const chooser = newFighterState(1, 1, 1, FightStrategy.Strike);
+    const enemy = newFighterState(0, 2, 5, FightStrategy.Strike);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('end-to-end: norm-first pushes both dice past a parrying defender', () => {
+    // newFighterState uses normDmg=1, critDmg=2. Optimal is 3 (both land); crit-first would
+    // leave the lone norm to be parried for only 2.
+    const atk = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy);
+    const def = newFighterState(0, 2, 99, FightStrategy.Parry);
+    resolveFight(atk, def);
+    expect(def.currentWounds).toBe(99 - (atk.profile.critDmg + atk.profile.normDmg));
+  });
+});
+
 describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, dueller', () => {
   const origChooserCrits = 10;
   const origChooserNorms = 20;

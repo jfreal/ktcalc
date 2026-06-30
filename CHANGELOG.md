@@ -1,5 +1,13 @@
 # Changelog
 
+## June 2026 - Fight: strike norm-first to deny a normal parry
+
+- The Fight engine now considers striking a **normal before a crit** when the chooser holds both and the enemy has **no crits**. A normal parry can cancel only a normal (it can't touch a crit), so striking the normal first forces it through before the enemy can parry it, while the crit stays unparryable — pushing more damage past a parrying defender.
+- The order is chosen by `preferredStrikeChoice`, which **simulates both lines** against the enemy's actual strategy and keeps the better one. This avoids over-applying the trick: in a death-race against a *striking* enemy, front-loading the bigger die (crit-first) still wins, so crit-first stays the default and is kept on ties.
+- Because the decision runs through the real resolution path, first-strike effects (Hammerhand, Just a Scratch, Durable, Murderous Entrance) are accounted for automatically.
+- Documented the full melee resolution (strike/parry alternation, what a parry can cancel, the decision logic, and hand-verifiable scenarios) in `rules/FIGHT_RULES.md`.
+- Added regression tests under *"calcDieChoice, norm-first to deny a normal parry"*.
+
 ## June 2026 - Mystic Scry Buff Attack Ability
 
 - Added **Mystic Scry Buff** as an advanced attacker/fighter option on both the Shoot and Fight calculators.
