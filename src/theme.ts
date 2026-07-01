@@ -22,6 +22,7 @@ export const mutedBg = '#d1d5db';
 export const textInk = '#1f2329';     // primary text
 export const textMuted = '#4b5563';   // secondary text (~7:1)
 export const textFaint = '#565c66';   // de-emphasized but still AA (~5.9:1); for zeroed cells
+export const error = '#b00020';       // error/failure states (e.g. a doc that failed to load)
 
 // Comparison-cell fills (better / worse / equal) + zebra-darker variants.
 export const better = '#e8f5e9';

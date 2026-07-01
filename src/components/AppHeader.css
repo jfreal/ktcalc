@@ -57,6 +57,19 @@
   align-items: center;
 }
 
+.AppHeader-help {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+.AppHeader-help:hover {
+  color: #e8731a;
+}
+
 .AppHeader button {
   border: none;
   background-color: black;
