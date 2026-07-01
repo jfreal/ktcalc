@@ -161,12 +161,14 @@ export function preferredStrikeChoice(chooser: FighterState, enemy: FighterState
   //
   // rng is cleared on the clones so the estimate is deterministic and doesn't consume Monte
   // Carlo draws — same discipline as calcParryForLastEnemySuccessThenKillEnemy. (Advancing the
-  // shared rng here would corrupt the real resolution's draws.) A side effect is that Feel No
-  // Pain and Saintly Relics aren't modeled in this estimate, but the norm-first-vs-crit-first
-  // direction is robust to them: in the parry shape norm-first lands crit+norm while crit-first
-  // lands only the crit, and both prevention effects scale/zero the largest strike in either
-  // order, so the comparison doesn't flip. Each branch spends a die before recursing, so total
-  // successes strictly decrease and this terminates.
+  // shared rng here would corrupt the real resolution's draws.) The trade-off is that rng-driven
+  // damage prevention (Feel No Pain, Saintly Relics) isn't modeled in this estimate, so the
+  // comparison is APPROXIMATE for fighters using those. In the common parry shape the direction
+  // still holds (norm-first lands crit+norm vs crit-first's crit alone), but it isn't guaranteed
+  // in general — Saintly Relics is order-sensitive (relicWorthy targets the biggest pending
+  // strike), so with unlucky/lucky ignores the truly optimal order could differ. This is a
+  // heuristic tie-breaker, not an exact solver. Each branch spends a die before recursing, so
+  // total successes strictly decrease and this terminates.
   const simulateFirstStrike = (first: FightChoice): [FighterState, FighterState] => {
     const ch = chooser.clone();
     const en = enemy.clone();

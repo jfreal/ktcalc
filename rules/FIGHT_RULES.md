@@ -156,9 +156,14 @@ parrying defender.
 
 - **Attacker** `{1 crit, 1 norm}` vs **Defender** `{2 norms}`, but defender strategy is **Max Dmg To Enemy**.
 
-A Max-Dmg defender never parries (parrying deals it no damage), so it just strikes both
-norms. Both attacker dice land regardless of order. Crit-first vs norm-first give the **same**
-total. Order only matters against a defender that *would* parry (Parry / Min Dmg To Self).
+In *this* scenario the Max-Dmg defender gains nothing by parrying — it survives either way and
+a parry deals no damage to the attacker — so it just strikes both norms. Both attacker dice land
+regardless of order, so crit-first vs norm-first give the **same** total. Order only matters
+when the defender *would* parry away one of the attacker's normals.
+
+(Note: **Max Dmg To Enemy** does not parry *never* — it parries when that raises its own total
+damage, e.g. to survive and land more strikes; see the `calcDieChoice` decision logic. It just
+has no reason to here.)
 
 ---
 
