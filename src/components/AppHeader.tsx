@@ -1,6 +1,6 @@
 import React from "react";
 import { Container } from 'react-bootstrap';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import "src/components/AppHeader.css"
 import { CalculatorViewChoice, getViewFromUrlText, viewToUrlText } from 'src/CalculatorViewChoice';
@@ -19,8 +19,7 @@ type AppHeaderProps = {
 
 // NOTE: the 'type' and 'name' on the buttons are for ac11y reasons
 const AppHeader = (props: AppHeaderProps) => {
-  const navigate = useNavigate();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
 
   // A view is only "active" on the calculator route; other pages highlight nothing.
   const activeView = props.onCalculator ? getViewFromUrlText(params.get('view')) : null;
@@ -36,7 +35,14 @@ const AppHeader = (props: AppHeaderProps) => {
         type="button"
         name={buttonName}
         disabled={activeView === view}
-        onClick={() => navigate(`/?view=${viewToUrlText.get(view)}`)}
+        onClick={() => {
+          // Merge into the existing params rather than replacing the query
+          // string outright, so switching views doesn't clobber shared
+          // calculator state (a1/d1/fa/fb/etc.) already in the URL.
+          const next = new URLSearchParams(params);
+          next.set('view', viewToUrlText.get(view) as string);
+          setParams(next);
+        }}
         >
         <img title={buttonName} src={img} alt={imgAlt} width="40" height="40" />
       </button>);
@@ -71,11 +77,12 @@ const AppHeader = (props: AppHeaderProps) => {
         <Link
           to="/help"
           className="AppHeader-help"
-          title="How KT Calc works"
+          title="How KT Calc works (opens in a new tab)"
           target="_blank"
           rel="noopener noreferrer"
         >
           How it works
+          <span className="sr-only"> (opens in a new tab)</span>
         </Link>
         </div>
       </div>
