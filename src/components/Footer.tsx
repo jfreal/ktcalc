@@ -49,6 +49,10 @@ const Footer: React.FC = () => {
       <a href="/notes/mystic-scry-buff" target="_blank" rel="noopener noreferrer">
         Mystic Scry Buff + Rending: why the best choice depends on what you rolled
       </a>
+      <br />
+      <a href="https://github.com/jfreal/ktcalc/blob/main/rules/COMBAT_RULES.md" target="_blank" rel="noopener noreferrer">
+        How the Fight calculator resolves combat
+      </a>
     </div>
   );
 };
