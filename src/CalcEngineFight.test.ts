@@ -277,6 +277,13 @@ describe(calcDieChoice.name + ', norm-first to deny a normal parry', () => {
     const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
   });
+  it('a lethal crit strikes crit-first even in the norm-first shape (land the killing blow)', () => {
+    // Norm-first shape (mixed hand, parrying norms-only enemy) — but the crit kills this turn, so
+    // the lethal-strike rule must win and land the crit now rather than deferring the kill.
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy);
+    const enemy = newFighterState(0, 2, chooser.profile.critDmg, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
   it('exhausted defender with Just a Scratch: strike norm-first so the crit lands second', () => {
     // Enemy has no successes (can't parry) but JaS zeroes our FIRST strike. crit-first wastes the
     // crit; norm-first feeds JaS the smaller norm and lands the crit. Order matters even with no
