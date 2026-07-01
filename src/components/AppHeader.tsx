@@ -77,9 +77,12 @@ const AppHeader = (props: AppHeaderProps) => {
         <Link
           to="/help"
           className="AppHeader-help"
-          title="How KT Calc works"
+          title="How KT Calc works (opens in a new tab)"
+          target="_blank"
+          rel="noopener noreferrer"
         >
           How it works
+          <span className="sr-only"> (opens in a new tab)</span>
         </Link>
         </div>
       </div>
