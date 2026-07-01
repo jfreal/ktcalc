@@ -193,12 +193,27 @@ export function preferredStrikeChoice(chooser: FighterState, enemy: FighterState
   return normFirstBetter ? FightChoice.NormStrike : critFirst;
 }
 
+// Pick which die to strike when the decision is "strike". For the damage-maximizing strategies,
+// defer to preferredStrikeChoice (which may strike norm-first to deny a normal parry, or to feed
+// an enemy's first-strike negation like Just a Scratch its smaller die so the crit lands). Other
+// strategies (e.g. Parry, when forced to strike) just strike crit-first.
+function strategyStrike(chooser: FighterState, enemy: FighterState): FightChoice {
+  if(chooser.strategy === FightStrategy.Strike
+    || chooser.strategy === FightStrategy.MaxDmgToEnemy
+    || chooser.strategy === FightStrategy.MinDmgToSelf) {
+    return preferredStrikeChoice(chooser, enemy);
+  }
+  return chooser.nextStrike();
+}
+
 export function calcDieChoice(chooser: FighterState, enemy: FighterState): FightChoice {
   // note: this function assumes chooser has remaining successes
 
-  // if enemy has no successes, parry would cancel nothing — must strike
+  // if enemy has no successes, parry would cancel nothing — must strike. Order still matters
+  // for first-strike negation (e.g. Just a Scratch zeroes our first strike), so route through
+  // strategyStrike rather than hard-coding crit-first.
   if(enemy.crits + enemy.norms === 0) {
-    return chooser.nextStrike();
+    return strategyStrike(chooser, enemy);
   }
 
   // ALWAYS strike if you can kill enemy with a single strike;
@@ -215,13 +230,7 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
   // past the parry while the crit (and its shock) still lands on a later turn. Defer to
   // preferredStrikeChoice in that mixed-dice case; otherwise take the crit strike now.
   if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0 && enemy.crits === 0) {
-    if(chooser.norms > 0
-      && (chooser.strategy === FightStrategy.Strike
-        || chooser.strategy === FightStrategy.MaxDmgToEnemy
-        || chooser.strategy === FightStrategy.MinDmgToSelf)) {
-      return preferredStrikeChoice(chooser, enemy);
-    }
-    return FightChoice.CritStrike;
+    return strategyStrike(chooser, enemy);
   }
 
   // if can parry last enemy success and still kill, then that is awesome

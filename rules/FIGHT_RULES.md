@@ -92,9 +92,11 @@ On each turn, `calcDieChoice` decides in this order. The first rule that applies
 2. **Lethal strike** → **strike** if this strike's damage would kill the enemy outright.
    Also forced to strike if the enemy weapon is **Brutal** and you have no crits (your
    normals can't parry it, so they may as well strike).
-3. **Free Shock crit** → if you have **Shock**, haven't crit-struck yet, have a crit, and the
-   enemy has **no crits**, **crit-strike** now. Shock cancels an enemy normal as a side effect,
-   so there's no downside.
+3. **Shock strike** → if you have **Shock**, haven't crit-struck yet, have a crit, and the
+   enemy has **no crits**, you must **strike** now (Shock cancels an enemy normal as a side
+   effect). The die order follows the strategy rule below: for a mixed crit+norm hand under
+   Strike / Max Dmg / Min Dmg, `preferredStrikeChoice` may still strike norm-first; otherwise
+   the shocking crit lands immediately.
 4. **Awesome parry** → if you can parry the enemy's **last** success and still kill the enemy
    with what remains, **parry** (`calcParryForLastEnemySuccessThenKillEnemy`).
 5. **By strategy**:
@@ -105,9 +107,11 @@ On each turn, `calcDieChoice` decides in this order. The first rule that applies
      this point (clone both fighters, resolve to the end each way) and pick whichever leaves the
      enemy lower (Max Dmg) or yourself higher (Min Dmg).
 
-Whenever a rule above resolves to "strike" under the **Strike**, **Max Dmg**, or **Min Dmg**
+Whenever a rule above resolves to **strike** under the **Strike**, **Max Dmg**, or **Min Dmg**
 strategies, the actual die is chosen by `preferredStrikeChoice` (crit-first by default,
-norm-first to deny a normal parry — see [Strike order](#strike-order-crit-first-except-to-deny-a-normal-parry)).
+norm-first to deny a normal parry or to feed an enemy's first-strike negation — see
+[Strike order](#strike-order-crit-first-except-to-deny-a-normal-parry)). The one exception is the
+**lethal-strike** rule (#2), which always strikes crit-first to land the killing blow.
 
 ---
 

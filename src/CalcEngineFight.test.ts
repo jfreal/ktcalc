@@ -277,6 +277,14 @@ describe(calcDieChoice.name + ', norm-first to deny a normal parry', () => {
     const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
   });
+  it('exhausted defender with Just a Scratch: strike norm-first so the crit lands second', () => {
+    // Enemy has no successes (can't parry) but JaS zeroes our FIRST strike. crit-first wastes the
+    // crit; norm-first feeds JaS the smaller norm and lands the crit. Order matters even with no
+    // enemy successes, so this forced-strike exit must route through preferredStrikeChoice.
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy);
+    const enemy = newFighterState(0, 0, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.JustAScratch]));
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
   it('MinDmgToSelf scorer: order is self-damage-neutral here, so it keeps crit-first', () => {
     // preferredStrikeChoice's MinDmgToSelf branch compares the chooser's own surviving wounds.
     // Striking order doesn't change how many enemy dice strike back, so the two orders tie and
