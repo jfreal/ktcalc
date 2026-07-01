@@ -141,12 +141,81 @@ export function resolveFight(
   }
 }
 
+export function preferredStrikeChoice(chooser: FighterState, enemy: FighterState): FightChoice {
+  // Default: strike crit-first. This front-loads our biggest die, which matters when we might
+  // not survive to spend every success — better to land the crit than die holding it.
+  const critFirst = chooser.nextStrike();
+
+  // The only time striking norm-first can help is when we hold BOTH crits and norms AND the
+  // enemy has NO crits: a normal parry can cancel only a normal (it can't touch a crit), so
+  // striking our normal first forces it through before the enemy can parry it, while our crit
+  // stays unparryable. Outside this shape, crit-first is always at least as good.
+  if(!(chooser.crits > 0 && chooser.norms > 0 && enemy.crits === 0)) {
+    return critFirst;
+  }
+
+  // Whether norm-first actually wins depends on what the enemy does: a PARRYING enemy makes
+  // norm-first better (parry denied), but a STRIKING enemy in a death-race makes crit-first
+  // better (we may die before spending the crit). So decide by simulating the rest of the
+  // fight both ways against the enemy's ACTUAL strategy and keeping the better order.
+  //
+  // rng is cleared on the clones so the estimate is deterministic and doesn't consume Monte
+  // Carlo draws — same discipline as calcParryForLastEnemySuccessThenKillEnemy. (Advancing the
+  // shared rng here would corrupt the real resolution's draws.) The trade-off is that rng-driven
+  // damage prevention (Feel No Pain, Saintly Relics) isn't modeled in this estimate, so the
+  // comparison is APPROXIMATE for fighters using those. In the common parry shape the direction
+  // still holds (norm-first lands crit+norm vs crit-first's crit alone), but it isn't guaranteed
+  // in general — Saintly Relics is order-sensitive (relicWorthy targets the biggest pending
+  // strike), so with unlucky/lucky ignores the truly optimal order could differ. This is a
+  // heuristic tie-breaker, not an exact solver. Each branch spends a die before recursing, so
+  // total successes strictly decrease and this terminates.
+  const simulateFirstStrike = (first: FightChoice): [FighterState, FighterState] => {
+    const ch = chooser.clone();
+    const en = enemy.clone();
+    ch.rng = null;
+    en.rng = null;
+    resolveDieChoice(first, ch, en);
+    resolveFight(en, ch); // enemy acts next
+    return [ch, en];
+  };
+
+  const [critChooser, critEnemy] = simulateFirstStrike(FightChoice.CritStrike);
+  const [normChooser, normEnemy] = simulateFirstStrike(FightChoice.NormStrike);
+
+  let normFirstBetter: boolean;
+  if(chooser.strategy === FightStrategy.MinDmgToSelf) {
+    normFirstBetter = normChooser.currentWounds > critChooser.currentWounds;
+  }
+  // Strike / MaxDmgToEnemy: leaving the enemy on fewer wounds is better
+  else {
+    normFirstBetter = normEnemy.currentWounds < critEnemy.currentWounds;
+  }
+
+  // Prefer crit-first on ties so behavior only changes when norm-first is strictly better.
+  return normFirstBetter ? FightChoice.NormStrike : critFirst;
+}
+
+// Pick which die to strike when the decision is "strike". For the damage-maximizing strategies,
+// defer to preferredStrikeChoice (which may strike norm-first to deny a normal parry, or to feed
+// an enemy's first-strike negation like Just a Scratch its smaller die so the crit lands). Other
+// strategies (e.g. Parry, when forced to strike) just strike crit-first.
+function strategyStrike(chooser: FighterState, enemy: FighterState): FightChoice {
+  if(chooser.strategy === FightStrategy.Strike
+    || chooser.strategy === FightStrategy.MaxDmgToEnemy
+    || chooser.strategy === FightStrategy.MinDmgToSelf) {
+    return preferredStrikeChoice(chooser, enemy);
+  }
+  return chooser.nextStrike();
+}
+
 export function calcDieChoice(chooser: FighterState, enemy: FighterState): FightChoice {
   // note: this function assumes chooser has remaining successes
 
-  // if enemy has no successes, parry would cancel nothing — must strike
+  // if enemy has no successes, parry would cancel nothing — must strike. Order still matters
+  // for first-strike negation (e.g. Just a Scratch zeroes our first strike), so route through
+  // strategyStrike rather than hard-coding crit-first.
   if(enemy.crits + enemy.norms === 0) {
-    return chooser.nextStrike();
+    return strategyStrike(chooser, enemy);
   }
 
   // ALWAYS strike if you can kill enemy with a single strike;
@@ -157,10 +226,13 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
   }
 
   // if can shock enemy (crit strike that also cancels an enemy NORM success),
-  // and enemy doesn't have any crit successes, then there is no downside
-  // to doing a shocking crit strike now
+  // and enemy doesn't have any crit successes, then a shocking crit strike is usually right.
+  // BUT when we also hold a norm and are trying to maximize damage, striking the norm first can
+  // be better: the enemy's normal parry can't touch our crit, so leading with the norm pushes it
+  // past the parry while the crit (and its shock) still lands on a later turn. Defer to
+  // preferredStrikeChoice in that mixed-dice case; otherwise take the crit strike now.
   if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0 && enemy.crits === 0) {
-    return FightChoice.CritStrike;
+    return strategyStrike(chooser, enemy);
   }
 
   // if can parry last enemy success and still kill, then that is awesome
@@ -171,7 +243,7 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
   }
 
   if(chooser.strategy === FightStrategy.Strike) {
-    return chooser.nextStrike();
+    return preferredStrikeChoice(chooser, enemy);
   }
   else if(chooser.strategy === FightStrategy.Parry) {
     return wiseParry(chooser, enemy);
@@ -185,7 +257,7 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
 
     const chooserWhoStruck = chooser.clone();
     const chooserWhoParried = chooser.clone();
-    const strikeChoice = chooser.nextStrike();
+    const strikeChoice = preferredStrikeChoice(chooser, enemy);
     const parryChoice = wiseParry(chooser, enemy);
 
     resolveDieChoice(strikeChoice, chooserWhoStruck, enemyWeStruck);
@@ -430,12 +502,18 @@ export function handleDuelist(
 ): void
 {
   if (
-    !guy1State.profile.abilities.has(Ability.Duelist)
+    guy1State.hasDuelistParried
+    || !guy1State.profile.abilities.has(Ability.Duelist)
     || guy1State.successes() === 0
     || guy2State.successes() === 0
   ) {
     return;
   }
+
+  // Duelist's free parry happens once per fight. Mark it spent now so re-entrant resolveFight
+  // calls (e.g. the lookahead simulations in calcDieChoice / preferredStrikeChoice, which clone
+  // mid-fight state) don't grant it a second time and corrupt the estimate.
+  guy1State.hasDuelistParried = true;
 
   if(guy2State.profile.has(Ability.Brutal)) {
     if(guy1State.crits) {

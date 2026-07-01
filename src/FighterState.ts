@@ -17,6 +17,7 @@ export default class FighterState {
   public normScratchUsed: boolean; // JaS (Normals): whether this fighter's norm-only scratch is spent
   public relicUsed: boolean; // SaintlyRelics: whether this fighter's once-per-action ignore is spent
   public relicIgnoresUsed: number; // SaintlyRelics: ignores spent so far this battle (capped per battle)
+  public hasDuelistParried: boolean; // Duelist: whether this fighter's once-per-fight free parry is spent
   public rng: RngFunction | null;
 
   public constructor(
@@ -31,6 +32,7 @@ export default class FighterState {
     normScratchUsed: boolean = false,
     relicUsed: boolean = false,
     relicIgnoresUsed: number = 0,
+    hasDuelistParried: boolean = false,
   ) {
     this.profile = profile;
     this.crits = crits;
@@ -42,6 +44,7 @@ export default class FighterState {
     this.normScratchUsed = normScratchUsed;
     this.relicUsed = relicUsed;
     this.relicIgnoresUsed = relicIgnoresUsed;
+    this.hasDuelistParried = hasDuelistParried;
     this.rng = rng;
   }
 
@@ -159,6 +162,7 @@ export default class FighterState {
     this.hasCritStruck = false;
     this.normScratchUsed = false;
     this.relicUsed = false;
+    this.hasDuelistParried = false;
   }
 
   public clone(): FighterState {
@@ -174,6 +178,7 @@ export default class FighterState {
       this.normScratchUsed,
       this.relicUsed,
       this.relicIgnoresUsed,
+      this.hasDuelistParried,
     );
   }
 

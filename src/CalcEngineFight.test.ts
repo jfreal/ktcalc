@@ -7,6 +7,8 @@ import {
   calcParryForLastEnemySuccessThenKillEnemy,
   calcRemainingWoundPairProbs,
   consolidateWoundPairProbs,
+  handleDuelist,
+  preferredStrikeChoice,
   resolveDieChoice,
   resolveFight,
   toWoundPairKey,
@@ -224,6 +226,109 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
     const chooser = newFighterState(1, 1, 99, FightStrategy.MinDmgToSelf, new Set<Ability>([Ability.Shock]));
     const enemy = newFighterState(1, 1, 99, FightStrategy.Strike);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+  });
+});
+
+describe(calcDieChoice.name + ', norm-first to deny a normal parry', () => {
+  // A normal parry can cancel only a normal (it can't touch a crit). So when we hold both a
+  // crit and a norm and the enemy has no crits, striking the NORM first forces it through
+  // before the enemy can parry it, while our crit stays unparryable.
+  it('strikes norm-first vs a parrying enemy with norms-only (denies the parry)', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy);
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
+  it('Strike strategy also strikes norm-first when the enemy will parry a norm', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.Strike);
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
+  it('stays crit-first when the enemy holds a crit (a crit parry can cancel our crit)', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy);
+    const enemy = newFighterState(1, 1, 99, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('stays crit-first in a death-race vs a striking enemy (front-load the bigger die)', () => {
+    // We die after one enemy strike, so we only get one strike in — land the crit (2), not the
+    // norm (1). The enemy is striking (not parrying), so there's no parry to deny. crit-first
+    // leaves the enemy lower even though it has no crits.
+    const chooser = newFighterState(1, 1, 1, FightStrategy.Strike);
+    const enemy = newFighterState(0, 2, 5, FightStrategy.Strike);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('end-to-end: norm-first pushes both dice past a parrying defender', () => {
+    // newFighterState uses normDmg=1, critDmg=2. Optimal is 3 (both land); crit-first would
+    // leave the lone norm to be parried for only 2.
+    const atk = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy);
+    const def = newFighterState(0, 2, 99, FightStrategy.Parry);
+    resolveFight(atk, def);
+    expect(def.currentWounds).toBe(99 - (atk.profile.critDmg + atk.profile.normDmg));
+  });
+  it('Shock with a mixed hand still routes through the norm-first chooser vs a parrying enemy', () => {
+    // The Shock short-circuit must not force crit-first here: striking the norm first still lets
+    // the crit (and its shock) land later, while denying the enemy's normal parry. crit-first
+    // would leave the lone norm to be parried.
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Shock]));
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
+  it('Shock with only crits (no norm to reorder) still takes the shocking crit strike', () => {
+    const chooser = newFighterState(2, 0, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Shock]));
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('a lethal crit strikes crit-first even in the norm-first shape (land the killing blow)', () => {
+    // Norm-first shape (mixed hand, parrying norms-only enemy) — but the crit kills this turn, so
+    // the lethal-strike rule must win and land the crit now rather than deferring the kill.
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy);
+    const enemy = newFighterState(0, 2, chooser.profile.critDmg, FightStrategy.Parry);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('exhausted defender with Just a Scratch: strike norm-first so the crit lands second', () => {
+    // Enemy has no successes (can't parry) but JaS zeroes our FIRST strike. crit-first wastes the
+    // crit; norm-first feeds JaS the smaller norm and lands the crit. Order matters even with no
+    // enemy successes, so this forced-strike exit must route through preferredStrikeChoice.
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy);
+    const enemy = newFighterState(0, 0, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.JustAScratch]));
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
+  it('MinDmgToSelf scorer: order is self-damage-neutral here, so it keeps crit-first', () => {
+    // preferredStrikeChoice's MinDmgToSelf branch compares the chooser's own surviving wounds.
+    // Striking order doesn't change how many enemy dice strike back, so the two orders tie and
+    // crit-first (front-loading the bigger die) is kept. This pins the self-preservation branch.
+    const chooser = newFighterState(1, 1, 99, FightStrategy.MinDmgToSelf);
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Parry);
+    expect(preferredStrikeChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+});
+
+describe(handleDuelist.name + ' fires only once per fight', () => {
+  // Duelist's free parry is once per fight. resolveFight runs handleDuelist at its start, and the
+  // lookahead simulations in calcDieChoice / preferredStrikeChoice call resolveFight again on
+  // mid-fight clones — without a "spent" flag that would grant the parry a second time.
+  it('a second handleDuelist call is a no-op', () => {
+    const duelist = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(0, 2, 99);
+
+    handleDuelist(duelist, enemy);
+    expect(duelist.hasDuelistParried).toBe(true);
+    expect(enemy.norms).toBe(1); // one norm parried away
+    expect(duelist.norms).toBe(0); // spent the norm to parry
+
+    // Re-entrant call (as a cloned lookahead would do) must not parry again.
+    handleDuelist(duelist, enemy);
+    expect(enemy.norms).toBe(1); // unchanged — no second parry
+    expect(duelist.crits).toBe(1); // crit not consumed by a phantom second parry
+  });
+  it('clone() carries the spent flag so simulations do not re-grant the parry', () => {
+    const duelist = newFighterState(1, 1, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(0, 2, 99);
+    handleDuelist(duelist, enemy);
+
+    const clonedDuelist = duelist.clone();
+    expect(clonedDuelist.hasDuelistParried).toBe(true);
+    handleDuelist(clonedDuelist, enemy.clone());
+    expect(clonedDuelist.crits).toBe(1); // still no second parry
   });
 });
 
