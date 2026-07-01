@@ -23,8 +23,6 @@
     "start": "react-scripts start",
     "prebuild": "npm run copy-rules",
     "build": "react-scripts build",
-    "prebuild:react": "npm run copy-rules",
-    "build:react": "react-scripts build",
     "test": "react-scripts test",
     "testq": "react-scripts test --watchAll=false --watch=false",
     "eject": "react-scripts eject",

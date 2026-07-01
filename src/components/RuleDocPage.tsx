@@ -5,6 +5,18 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import 'src/components/RuleDocPage.css';
+import * as T from 'src/theme';
+
+// Plain CSS can't import theme.ts, so the handful of theme colors this
+// stylesheet needs are threaded in as custom properties instead of being
+// hardcoded a second time in RuleDocPage.css.
+const themeVars: React.CSSProperties = {
+  ['--rule-doc-zebra-odd' as any]: T.zebraOdd,
+  ['--rule-doc-accent' as any]: T.accent,
+  ['--rule-doc-text-muted' as any]: T.textMuted,
+  ['--rule-doc-border-faint' as any]: T.borderFaint,
+  ['--rule-doc-error' as any]: T.error,
+};
 
 interface RuleDocPageProps {
   // Markdown file name in public/rules/ (generated from rules/ by copy-rules.js).
@@ -38,7 +50,7 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
   }, [file]);
 
   return (
-    <Container className="RuleDoc">
+    <Container className="RuleDoc" style={themeVars}>
       <p>
         <Link to="/help">&larr; Back to How it works</Link>
       </p>

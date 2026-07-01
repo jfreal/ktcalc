@@ -13,7 +13,7 @@
 }
 
 .RuleDoc-error {
-  color: #b00020;
+  color: var(--rule-doc-error);
 }
 
 .RuleDoc-body h1 {
@@ -52,7 +52,7 @@
 }
 
 .RuleDoc-body th {
-  background-color: #eef1f5;
+  background-color: var(--rule-doc-zebra-odd);
 }
 
 .RuleDoc-body code {
@@ -75,14 +75,14 @@
 }
 
 .RuleDoc-body blockquote {
-  border-left: 3px solid #e8731a;
+  border-left: 3px solid var(--rule-doc-accent);
   margin: 12px 0;
   padding: 4px 0 4px 14px;
-  color: #4b5563;
+  color: var(--rule-doc-text-muted);
 }
 
 .RuleDoc-body hr {
   border: none;
-  border-top: 1px solid #dddddd;
+  border-top: 1px solid var(--rule-doc-border-faint);
   margin: 24px 0;
 }

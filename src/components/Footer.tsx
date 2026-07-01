@@ -5,7 +5,7 @@ import * as T from 'src/theme';
 
 const Footer: React.FC = () => {
   return (
-    <div style={{ fontSize: '12px', color: T.textMuted, textAlign: 'center', padding: '16px 0', borderTop: `1px solid ${T.borderFaint}`, marginTop: '16px' }}>
+    <div style={{ fontSize: '12px', color: T.textMuted, textAlign: 'center', padding: '16px 0', borderTop: `1px solid ${T.borderFaint}`, marginTop: '16px', maxWidth: '900px', marginLeft: 'auto', marginRight: 'auto' }}>
       <a href="https://github.com/jfreal/ktcalc" target="_blank" rel="noopener noreferrer">
         Open source on GitHub
       </a> — Pull requests welcome!
@@ -43,7 +43,7 @@ const Footer: React.FC = () => {
           </div>
         </Panel>
       </div>
-      <Link to="/help" style={{ fontWeight: 600 }}>
+      <Link to="/help" target="_blank" rel="noopener noreferrer" style={{ fontWeight: 600 }}>
         How KT Calc works &rarr;
       </Link>
       <div style={{ marginTop: '2px' }}>

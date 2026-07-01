@@ -1,9 +1,9 @@
 import React from "react";
 import { Container } from 'react-bootstrap';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import "src/components/AppHeader.css"
-import { CalculatorViewChoice } from 'src/CalculatorViewChoice';
+import { CalculatorViewChoice, getViewFromUrlText, viewToUrlText } from 'src/CalculatorViewChoice';
 import ktFightIcon from 'src/images/KtFightIcon.svg';
 import ktShootIcon from 'src/images/KtShootIcon.svg';
 import logoSmall from 'src/images/logo-small.png';
@@ -11,32 +11,19 @@ import logoSmall from 'src/images/logo-small.png';
 
 type AppHeaderProps = {
   rightContent?: React.ReactNode;
-}
-
-// The ?view= text the calculator route understands for each view.
-const viewToText = new Map<CalculatorViewChoice, string>([
-  [CalculatorViewChoice.KtShoot, 'shoot'],
-  [CalculatorViewChoice.KtFight, 'fight'],
-  [CalculatorViewChoice.KtShootMassAnalysis, 'mass'],
-]);
-
-// Collapse any ?view= spelling (enum value or short alias) to its short text.
-function normalizeViewText(raw: string): string {
-  const s = raw.toLowerCase();
-  if (s.includes('fight')) return 'fight';
-  if (s.includes('mass')) return 'mass';
-  return 'shoot';
+  // Whether the calculator ('/') route is the one currently showing. Passed
+  // down from Layout (which already knows the route) rather than re-derived
+  // here, so there is one place that decides "are we on the calculator".
+  onCalculator: boolean;
 }
 
 // NOTE: the 'type' and 'name' on the buttons are for ac11y reasons
 const AppHeader = (props: AppHeaderProps) => {
-  const location = useLocation();
   const navigate = useNavigate();
   const [params] = useSearchParams();
 
   // A view is only "active" on the calculator route; other pages highlight nothing.
-  const onCalculator = location.pathname === '/';
-  const activeText = onCalculator ? normalizeViewText(params.get('view') ?? 'shoot') : '';
+  const activeView = props.onCalculator ? getViewFromUrlText(params.get('view')) : null;
 
   function makeButton(
     view: CalculatorViewChoice,
@@ -44,13 +31,12 @@ const AppHeader = (props: AppHeaderProps) => {
     img: any,
     imgAlt: string,
   ) : React.HTMLProps<HTMLButtonElement> {
-    const text = viewToText.get(view) as string;
     return (
       <button
         type="button"
         name={buttonName}
-        disabled={activeText === text}
-        onClick={() => navigate(`/?view=${text}`)}
+        disabled={activeView === view}
+        onClick={() => navigate(`/?view=${viewToUrlText.get(view)}`)}
         >
         <img title={buttonName} src={img} alt={imgAlt} width="40" height="40" />
       </button>);
@@ -86,6 +72,8 @@ const AppHeader = (props: AppHeaderProps) => {
           to="/help"
           className="AppHeader-help"
           title="How KT Calc works"
+          target="_blank"
+          rel="noopener noreferrer"
         >
           How it works
         </Link>

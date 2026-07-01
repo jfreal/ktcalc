@@ -21,15 +21,19 @@ if (!fs.existsSync(srcDir)) {
 
 fs.mkdirSync(outDir, { recursive: true });
 
+// A missing individual doc only breaks that one /rules/* page (a 404 the page
+// already renders an error for) — it should not fail npm start/build for
+// everyone. Warn and skip rather than exiting, so one bad rename doesn't take
+// down the whole dev server or CI build.
 let copied = 0;
 for (const file of DOCS) {
   const from = path.join(srcDir, file);
   if (!fs.existsSync(from)) {
-    console.error(`copy-rules: expected rules doc not found: ${from}`);
-    process.exit(1);
+    console.warn(`copy-rules: expected rules doc not found, skipping: ${from}`);
+    continue;
   }
   fs.copyFileSync(from, path.join(outDir, file));
   copied += 1;
 }
 
-console.log(`copy-rules: copied ${copied} file(s) to public/rules/`);
+console.log(`copy-rules: copied ${copied}/${DOCS.length} file(s) to public/rules/`);

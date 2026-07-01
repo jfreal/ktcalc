@@ -31,7 +31,7 @@ const Layout: React.FC = () => {
 
   return (
     <>
-      <AppHeader rightContent={onCalculator ? <ShareButtons /> : undefined} />
+      <AppHeader onCalculator={onCalculator} rightContent={onCalculator ? <ShareButtons /> : undefined} />
       <Outlet />
       <Footer />
     </>
