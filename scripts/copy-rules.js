@@ -1,19 +1,35 @@
-// Copies the canonical rules Markdown (rules/*.md) into public/rules/ so the
-// running app can fetch and render them in-app. rules/ stays the single source
-// of truth; public/rules/ is generated (gitignored) and refreshed on every
-// start/build via the prestart/prebuild npm hooks.
+// Copies the rules Markdown rendered in-app (rules/<file>) into public/rules/ so
+// the running app can fetch them. rules/ stays the single source of truth;
+// public/rules/ is generated (gitignored) and refreshed on every start/build via
+// the prestart/prebuild(:react) npm hooks.
+//
+// Only the docs actually surfaced in-app are published — an explicit allowlist so
+// internal notes (e.g. rules/README.md) are never accidentally exposed.
 const fs = require('fs');
 const path = require('path');
+
+const DOCS = ['COMBAT_RULES.md', 'FIGHT_RULES.md', 'WEAPON_RULES.md'];
 
 const repoRoot = path.resolve(__dirname, '..');
 const srcDir = path.join(repoRoot, 'rules');
 const outDir = path.join(repoRoot, 'public', 'rules');
 
-fs.mkdirSync(outDir, { recursive: true });
-
-const mdFiles = fs.readdirSync(srcDir).filter((f) => f.endsWith('.md'));
-for (const file of mdFiles) {
-  fs.copyFileSync(path.join(srcDir, file), path.join(outDir, file));
+if (!fs.existsSync(srcDir)) {
+  console.error(`copy-rules: source directory not found: ${srcDir}`);
+  process.exit(1);
 }
 
-console.log(`copy-rules: copied ${mdFiles.length} file(s) to public/rules/`);
+fs.mkdirSync(outDir, { recursive: true });
+
+let copied = 0;
+for (const file of DOCS) {
+  const from = path.join(srcDir, file);
+  if (!fs.existsSync(from)) {
+    console.error(`copy-rules: expected rules doc not found: ${from}`);
+    process.exit(1);
+  }
+  fs.copyFileSync(from, path.join(outDir, file));
+  copied += 1;
+}
+
+console.log(`copy-rules: copied ${copied} file(s) to public/rules/`);

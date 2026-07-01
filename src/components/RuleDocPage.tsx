@@ -20,33 +20,32 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
 
   useEffect(() => {
-    let cancelled = false;
+    // Reset to loading so a file change never leaves stale content on screen.
+    setState({ status: 'loading' });
+    const controller = new AbortController();
     const url = `${process.env.PUBLIC_URL || ''}/rules/${file}`;
-    fetch(url)
+    fetch(url, { signal: controller.signal })
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.text();
       })
-      .then((text) => {
-        if (!cancelled) setState({ status: 'ok', text });
-      })
+      .then((text) => setState({ status: 'ok', text }))
       .catch((e) => {
-        if (!cancelled) setState({ status: 'error', message: String(e) });
+        if (e.name === 'AbortError') return; // superseded/unmounted — ignore
+        setState({ status: 'error', message: String(e) });
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [file]);
 
   return (
-    <Container style={{ maxWidth: '820px', padding: '24px 16px', fontSize: '14px', lineHeight: 1.55 }}>
+    <Container className="RuleDoc">
       <p>
         <Link to="/help">&larr; Back to How it works</Link>
       </p>
 
-      {state.status === 'loading' && <p>Loading&hellip;</p>}
+      {state.status === 'loading' && <p className="RuleDoc-status">Loading&hellip;</p>}
       {state.status === 'error' && (
-        <p style={{ color: '#b00020' }}>Could not load this document ({state.message}).</p>
+        <p className="RuleDoc-status RuleDoc-error">Could not load this document ({state.message}).</p>
       )}
       {state.status === 'ok' && (
         <div className="RuleDoc-body">
@@ -54,7 +53,7 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
         </div>
       )}
 
-      <p style={{ marginTop: '24px' }}>
+      <p className="RuleDoc-backBottom">
         <Link to="/help">&larr; Back to How it works</Link>
       </p>
     </Container>
