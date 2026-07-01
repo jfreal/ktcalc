@@ -11,12 +11,17 @@
     "react-bootstrap": "^2.0.0-rc.0",
     "react-dom": "^17.0.2",
     "react-error-boundary": "^4.0.12",
+    "react-markdown": "^8.0.7",
     "react-router-dom": "^6.3.0",
     "react-scripts": "^5.0.0",
-    "recharts": "^2.15.4"
+    "recharts": "^2.15.4",
+    "remark-gfm": "^3.0.1"
   },
   "scripts": {
+    "copy-rules": "node scripts/copy-rules.js",
+    "prestart": "npm run copy-rules",
     "start": "react-scripts start",
+    "prebuild": "npm run copy-rules",
     "build": "npm run build:react",
     "build:react": "react-scripts build",
     "test": "react-scripts test",

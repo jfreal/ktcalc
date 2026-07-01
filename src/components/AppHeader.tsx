@@ -1,5 +1,6 @@
 import React from "react";
 import { Container } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 import "src/components/AppHeader.css"
 import { CalculatorViewChoice } from 'src/CalculatorViewChoice';
@@ -59,6 +60,13 @@ const AppHeader = (props: AppHeaderProps) => {
           ktShootMassAnalysisIcon,
           'Multiple people targeted.',
         )*/}
+        <Link
+          to="/help"
+          className="AppHeader-help"
+          title="How KT Calc works"
+        >
+          How it works
+        </Link>
         </div>
       </div>
       {props.rightContent && <div className='AppHeader-right'>{props.rightContent}</div>}

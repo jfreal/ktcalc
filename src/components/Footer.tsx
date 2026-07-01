@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Panel from 'src/components/Panel';
 import * as T from 'src/theme';
 
@@ -42,17 +43,12 @@ const Footer: React.FC = () => {
           </div>
         </Panel>
       </div>
-      <a href="/notes/lethal-relentless" target="_blank" rel="noopener noreferrer">
-        Why kill chance can rise as BS gets worse with Lethal + Relentless
-      </a>
-      <br />
-      <a href="/notes/mystic-scry-buff" target="_blank" rel="noopener noreferrer">
-        Mystic Scry Buff + Rending: why the best choice depends on what you rolled
-      </a>
-      <br />
-      <a href="https://github.com/jfreal/ktcalc/blob/main/rules/COMBAT_RULES.md" target="_blank" rel="noopener noreferrer">
-        How the Fight calculator resolves combat
-      </a>
+      <Link to="/help" style={{ fontWeight: 600 }}>
+        How KT Calc works &rarr;
+      </Link>
+      <div style={{ marginTop: '2px' }}>
+        Deep-dive notes and the Kill Team rules the calculator is built on.
+      </div>
     </div>
   );
 };

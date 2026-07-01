@@ -8,6 +8,8 @@ import { centerHoriz, } from 'src/Util';
 import AppHeader from "src/components/AppHeader";
 import kofiIcon from 'src/images/kofi.svg';
 import FightSection from 'src/components/FightSection';
+import HelpPage from 'src/components/HelpPage';
+import RuleDocPage from 'src/components/RuleDocPage';
 import LethalRelentlessNote from 'src/components/notes/LethalRelentlessNote';
 import MysticScryBuffNote from 'src/components/notes/MysticScryBuffNote';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
@@ -132,6 +134,38 @@ const App = () => (
         element={
           <ErrorBoundary fallbackRender={fallbackRender}>
             <MysticScryBuffNote />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path="/help"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <HelpPage />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path="/rules/combat"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <RuleDocPage file="COMBAT_RULES.md" />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path="/rules/fight"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <RuleDocPage file="FIGHT_RULES.md" />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path="/rules/weapon"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <RuleDocPage file="WEAPON_RULES.md" />
           </ErrorBoundary>
         }
       />
