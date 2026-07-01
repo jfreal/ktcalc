@@ -43,15 +43,8 @@ const Footer: React.FC = () => {
           </div>
         </Panel>
       </div>
-      <Link
-        to="/help"
-        target="_blank"
-        rel="noopener noreferrer"
-        title="How KT Calc works (opens in a new tab)"
-        style={{ fontWeight: 600 }}
-      >
+      <Link to="/help" style={{ fontWeight: 600 }}>
         How KT Calc works &rarr;
-        <span className="sr-only"> (opens in a new tab)</span>
       </Link>
       <div style={{ marginTop: '2px' }}>
         Deep-dive notes and the Kill Team rules the calculator is built on.
