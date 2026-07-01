@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react';
-import { Button, Col, Container, Row } from 'react-bootstrap';
+import { Col, Container, Row } from 'react-bootstrap';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Route, Routes, useSearchParams } from 'react-router-dom';
 
 import { CalculatorViewChoice } from 'src/CalculatorViewChoice';
 import { centerHoriz, } from 'src/Util';
-import AppHeader from "src/components/AppHeader";
 import kofiIcon from 'src/images/kofi.svg';
 import FightSection from 'src/components/FightSection';
 import HelpPage from 'src/components/HelpPage';
+import Layout from 'src/components/Layout';
 import RuleDocPage from 'src/components/RuleDocPage';
 import LethalRelentlessNote from 'src/components/notes/LethalRelentlessNote';
 import MysticScryBuffNote from 'src/components/notes/MysticScryBuffNote';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
 import ShootSection from 'src/components/ShootSection';
-import { ShareProvider, useShareContext } from 'src/context/ShareContext';
+import { ShareProvider } from 'src/context/ShareContext';
 
 const _viewToAdditionalTexts: Map<CalculatorViewChoice, string[]> = new Map([
   [CalculatorViewChoice.KtShoot, ['shoot']],
@@ -40,21 +40,6 @@ function fallbackRender({ error, resetErrorBoundary }: { error: Error, resetErro
     </div>
   );
 }
-
-const ShareButtons: React.FC = () => {
-  const { getShareUrl, addParamsToUrl } = useShareContext();
-  
-  const copyShareUrl = () => {
-    navigator.clipboard.writeText(getShareUrl());
-  };
-  
-  return (
-    <>
-      <Button variant="outline-light" size="sm" onClick={addParamsToUrl}>Add Share Params</Button>
-      <Button variant="outline-light" size="sm" onClick={copyShareUrl}>📋 Copy Share Link</Button>
-    </>
-  );
-};
 
 const AppContent = () => {
   const [currentView, setCurrentView] = useState<CalculatorViewChoice>(CalculatorViewChoice.KtShoot);
@@ -85,8 +70,6 @@ const AppContent = () => {
   }
 
   return (
-    <>
-      <AppHeader navCallback={setCurrentView} currentView={currentView} rightContent={<ShareButtons />} />
         <Container fluid>
           <Row>
             <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px'}}>
@@ -114,13 +97,13 @@ const AppContent = () => {
             </Col>
           </Row>
         </Container>
-    </>
   );
 };
 
 const App = () => (
   <ShareProvider>
     <Routes>
+      <Route element={<Layout />}>
       <Route
         path="/notes/lethal-relentless"
         element={
@@ -170,6 +153,7 @@ const App = () => (
         }
       />
       <Route path="*" element={<AppContent />} />
+      </Route>
     </Routes>
   </ShareProvider>
 );

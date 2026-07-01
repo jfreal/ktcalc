@@ -5,8 +5,6 @@ import {
   Container,
   Row,
 } from 'react-bootstrap';
-
-import Footer from 'src/components/Footer';
 import Panel from 'src/components/Panel';
 import * as T from 'src/theme';
 
@@ -161,7 +159,6 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
           </Panel>
         </Col>
       </Row>
-      <Footer />
     </Container>
   );
 };

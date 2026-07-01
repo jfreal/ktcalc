@@ -1,6 +1,6 @@
 import React from "react";
 import { Container } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import "src/components/AppHeader.css"
 import { CalculatorViewChoice } from 'src/CalculatorViewChoice';
@@ -10,25 +10,47 @@ import logoSmall from 'src/images/logo-small.png';
 //import ktShootMassAnalysisIcon from 'src/images/ShootMultipleTargetsIcon.svg';
 
 type AppHeaderProps = {
-  currentView: CalculatorViewChoice;
-  navCallback: (navType: CalculatorViewChoice) => void;
   rightContent?: React.ReactNode;
+}
+
+// The ?view= text the calculator route understands for each view.
+const viewToText = new Map<CalculatorViewChoice, string>([
+  [CalculatorViewChoice.KtShoot, 'shoot'],
+  [CalculatorViewChoice.KtFight, 'fight'],
+  [CalculatorViewChoice.KtShootMassAnalysis, 'mass'],
+]);
+
+// Collapse any ?view= spelling (enum value or short alias) to its short text.
+function normalizeViewText(raw: string): string {
+  const s = raw.toLowerCase();
+  if (s.includes('fight')) return 'fight';
+  if (s.includes('mass')) return 'mass';
+  return 'shoot';
 }
 
 // NOTE: the 'type' and 'name' on the buttons are for ac11y reasons
 const AppHeader = (props: AppHeaderProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+
+  // A view is only "active" on the calculator route; other pages highlight nothing.
+  const onCalculator = location.pathname === '/';
+  const activeText = onCalculator ? normalizeViewText(params.get('view') ?? 'shoot') : '';
+
   function makeButton(
     view: CalculatorViewChoice,
     buttonName: string,
     img: any,
     imgAlt: string,
   ) : React.HTMLProps<HTMLButtonElement> {
+    const text = viewToText.get(view) as string;
     return (
       <button
         type="button"
         name={buttonName}
-        disabled={props.currentView === view}
-        onClick={() => props.navCallback(view)}
+        disabled={activeText === text}
+        onClick={() => navigate(`/?view=${text}`)}
         >
         <img title={buttonName} src={img} alt={imgAlt} width="40" height="40" />
       </button>);
@@ -37,10 +59,10 @@ const AppHeader = (props: AppHeaderProps) => {
   return <nav className='AppHeader'>
     <Container className='AppHeader-container'>
       <div className='AppHeader-left'>
-        <a href="/" className='AppHeader-brand'>
+        <Link to="/" className='AppHeader-brand'>
           <img src={logoSmall} alt='KT Calc logo' height='45' />
           <span className='AppHeader-title'>KT Calc</span>
-        </a>
+        </Link>
         <div className='AppHeader-nav'>
         {makeButton(
           CalculatorViewChoice.KtShoot,

@@ -4,8 +4,6 @@ import {
   Container,
   Row,
 } from 'react-bootstrap';
-
-import Footer from 'src/components/Footer';
 import Panel from 'src/components/Panel';
 import * as Util from "src/Util";
 import FighterControls from 'src/components/FighterControls';
@@ -143,7 +141,6 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
           </Panel>
         </Col>
       </Row>
-      <Footer />
     </Container>
   );
 };
