@@ -2,18 +2,50 @@ import { Col, Container, Row } from 'react-bootstrap';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Route, Routes, useSearchParams } from 'react-router-dom';
 
-import { CalculatorViewChoice, getViewFromUrlText } from 'src/CalculatorViewChoice';
+import { CalculatorViewChoice, getViewFromUrlText, viewToUrlText } from 'src/CalculatorViewChoice';
 import { centerHoriz, } from 'src/Util';
+import * as T from 'src/theme';
 import kofiIcon from 'src/images/kofi.svg';
 import FightSection from 'src/components/FightSection';
 import HelpPage from 'src/components/HelpPage';
 import Layout from 'src/components/Layout';
 import RuleDocPage from 'src/components/RuleDocPage';
+import Seo from 'src/components/Seo';
 import LethalRelentlessNote from 'src/components/notes/LethalRelentlessNote';
 import MysticScryBuffNote from 'src/components/notes/MysticScryBuffNote';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
 import ShootSection from 'src/components/ShootSection';
 import { ShareProvider } from 'src/context/ShareContext';
+
+// Per-view <head> + on-page heading/intro copy. Keyed off the same ?view= value
+// the calculator switches on, so the title, description, canonical, H1, and
+// intro can never disagree about which tool is showing.
+const VIEW_SEO: Record<CalculatorViewChoice, { title: string; description: string; h1: string; intro: string }> = {
+  [CalculatorViewChoice.KtShoot]: {
+    title: 'Kill Team 2024 Shooting Calculator — Ranged Attack Odds | ktcalc',
+    description:
+      'Calculate Kill Team 2024 shooting odds. Enter BS, attacks, and weapon rules to get the chance of hits, crits, damage, and kills against any defensive profile.',
+    h1: 'Kill Team 2024 Shooting Calculator',
+    intro:
+      'Work out the odds of a KT24 ranged attack: set your ballistic skill, attacks, weapon rules, and cover, then read the chance of damage and kills against the target profile.',
+  },
+  [CalculatorViewChoice.KtFight]: {
+    title: 'Kill Team 2024 Fight Calculator — Melee Combat Odds | ktcalc',
+    description:
+      'Calculate Kill Team 2024 fighting odds. Model the alternating strike-and-parry melee sequence between two fighters and see who is likely to win the combat.',
+    h1: 'Kill Team 2024 Fight Calculator',
+    intro:
+      'Model a KT24 melee: set both fighters’ weapon stats and rules to see the strike-and-parry sequence resolve and the probability of each outcome.',
+  },
+  [CalculatorViewChoice.KtShootMassAnalysis]: {
+    title: 'Kill Team 2024 Mass Analysis — Compare Weapons vs Profiles | ktcalc',
+    description:
+      'Compare one Kill Team 2024 attacker across many defensive profiles at once. A matrix of expected damage and kill odds for fast weapon-vs-profile matchup analysis.',
+    h1: 'Kill Team 2024 Mass Matchup Analysis',
+    intro:
+      'Compare a single KT24 attacker against a whole matrix of defensive profiles at once, so you can see at a glance which targets a weapon handles well.',
+  },
+};
 
 function fallbackRender({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) {
   return (
@@ -30,6 +62,11 @@ const AppContent = () => {
   // Derived fresh on every render — never cached in state — so this can never
   // disagree with AppHeader's own read of the same ?view= param.
   const currentView = getViewFromUrlText(urlParams.get('view'));
+  const viewSeo = VIEW_SEO[currentView];
+  const canonicalPath =
+    currentView === CalculatorViewChoice.KtShoot
+      ? '/'
+      : `/?view=${viewToUrlText.get(currentView)}`;
 
   function sectionDiv(
     view: CalculatorViewChoice,
@@ -46,6 +83,15 @@ const AppContent = () => {
 
   return (
         <Container fluid>
+          <Seo title={viewSeo.title} description={viewSeo.description} path={canonicalPath} />
+          <Row>
+            <Col className={centerHoriz + ' p-0'} style={{ padding: '4px 0 0' }}>
+              <h1 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 2px' }}>{viewSeo.h1}</h1>
+              <p style={{ fontSize: '12px', maxWidth: '660px', margin: '0 auto', color: T.textMuted }}>
+                {viewSeo.intro}
+              </p>
+            </Col>
+          </Row>
           <Row>
             <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px'}}>
               Starred (*) items have explanations in hovertext and 'Notes' at bottom; geared (⚙️) items are advanced — tick 'Advanced' to show them.

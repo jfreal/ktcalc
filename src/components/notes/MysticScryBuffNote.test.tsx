@@ -17,7 +17,7 @@ function renderNote() {
 describe('MysticScryBuffNote', () => {
   it('renders the heading and names the in-game ability', () => {
     renderNote();
-    expect(screen.getByRole('heading', { level: 2 }).textContent).toContain('Mystic Scry Buff');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Mystic Scry Buff');
     // getByText throws if the text is absent, so this asserts the in-game credit is documented.
     expect(screen.getByText(/"Mystic Scry" ability/)).toBeTruthy();
   });

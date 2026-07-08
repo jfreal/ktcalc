@@ -5,7 +5,31 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import 'src/components/RuleDocPage.css';
+import Seo from 'src/components/Seo';
 import * as T from 'src/theme';
+
+// SEO copy per rules doc, keyed by the same file name the route passes in, so the
+// <head> for each /rules/* page matches the document it renders.
+const DOC_SEO: Record<string, { title: string; description: string; path: string }> = {
+  'COMBAT_RULES.md': {
+    title: 'Kill Team 2024 Combat & Save Rules | ktcalc',
+    description:
+      'How ktcalc resolves Kill Team 2024 saves: defense dice, cover, Feel No Pain, Piercing, and Saintly Relics — the combat rules the shoot calculator is validated against.',
+    path: '/rules/combat',
+  },
+  'FIGHT_RULES.md': {
+    title: 'Kill Team 2024 Fight Rules — Melee Resolution | ktcalc',
+    description:
+      'How ktcalc models Kill Team 2024 melee: the alternating strike/parry sequence, what a parry cancels, the engine’s strike-vs-parry logic, and hand-verifiable scenarios.',
+    path: '/rules/fight',
+  },
+  'WEAPON_RULES.md': {
+    title: 'Kill Team 2024 Weapon Rules Reference | ktcalc',
+    description:
+      'Reference for every Kill Team 2024 weapon rule ktcalc supports — Accurate, Balanced, Brutal, Ceaseless, Devastating, Lethal, Piercing, Relentless, Rending and more.',
+    path: '/rules/weapon',
+  },
+};
 
 // Plain CSS can't import theme.ts, so the handful of theme colors this
 // stylesheet needs are threaded in as custom properties instead of being
@@ -49,8 +73,11 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
     return () => controller.abort();
   }, [file]);
 
+  const seo = DOC_SEO[file];
+
   return (
     <Container className="RuleDoc" style={themeVars}>
+      {seo && <Seo title={seo.title} description={seo.description} path={seo.path} />}
       <p>
         <Link to="/help">&larr; Back to How it works</Link>
       </p>

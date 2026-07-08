@@ -6,9 +6,9 @@ for what a parry can cancel, and the decision logic the engine uses to choose be
 striking and parrying. Worked scenarios at the end can be verified step by step.
 
 The behavior described here lives in:
-- [`src/CalcEngineFightInternal.ts`](../src/CalcEngineFightInternal.ts) — turn loop and decision logic
-- [`src/FighterState.ts`](../src/FighterState.ts) — per-fighter state, strike order, damage
-- [`src/FightStrategy.ts`](../src/FightStrategy.ts) — the four strategies
+- [`src/CalcEngineFightInternal.ts`](https://github.com/jfreal/ktcalc/blob/main/src/CalcEngineFightInternal.ts) — turn loop and decision logic
+- [`src/FighterState.ts`](https://github.com/jfreal/ktcalc/blob/main/src/FighterState.ts) — per-fighter state, strike order, damage
+- [`src/FightStrategy.ts`](https://github.com/jfreal/ktcalc/blob/main/src/FightStrategy.ts) — the four strategies
 
 > The fight engine is **Monte Carlo**: each fighter's attack dice are rolled many times and
 > the resolution below is run per simulation. The rules in this doc describe a single

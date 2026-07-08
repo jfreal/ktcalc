@@ -3,6 +3,7 @@ import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import Panel from 'src/components/Panel';
+import Seo from 'src/components/Seo';
 import * as T from 'src/theme';
 
 interface DocLink {
@@ -62,9 +63,14 @@ const DocItem: React.FC<{ doc: DocLink }> = ({ doc }) => (
 
 const HelpPage: React.FC = () => (
   <Container style={{ maxWidth: '760px', padding: '24px 16px', fontSize: '14px', lineHeight: 1.55 }}>
+    <Seo
+      title="How the Kill Team 2024 Calculator Works | ktcalc"
+      description="How ktcalc models Kill Team 2024 shooting and fighting: deep-dive notes on surprising results and the KT24 rules the engine is built and validated against."
+      path="/help"
+    />
     <p><Link to="/">&larr; Back to calculator</Link></p>
 
-    <h2>How KT Calc works</h2>
+    <h1>How KT Calc works</h1>
 
     <p>
       KT Calc is open about its math. These pages explain the logic behind the numbers — the

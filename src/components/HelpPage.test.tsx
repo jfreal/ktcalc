@@ -17,7 +17,7 @@ function renderHelp() {
 describe('HelpPage', () => {
   it('renders the hub heading', () => {
     renderHelp();
-    expect(screen.getByRole('heading', { level: 2 }).textContent).toContain('How KT Calc works');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('How KT Calc works');
   });
 
   it('links to all five in-app docs', () => {

@@ -7,6 +7,13 @@
       "runtimeArgs": ["start"],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "ktcalc-build",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "-s", "build", "-l", "5057"],
+      "port": 5057,
+      "autoPort": true
     }
   ]
 }
