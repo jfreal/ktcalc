@@ -23,6 +23,7 @@
     "start": "react-scripts start",
     "prebuild": "npm run copy-rules",
     "build": "react-scripts build",
+    "postbuild": "react-snap",
     "build:react": "npm run build",
     "test": "react-scripts test",
     "testq": "react-scripts test --watchAll=false --watch=false",
@@ -34,6 +35,22 @@
     "extends": "react-app",
     "rules": {},
     "overrides": []
+  },
+  "reactSnap": {
+    "source": "build",
+    "include": [
+      "/",
+      "/help",
+      "/rules/combat",
+      "/rules/fight",
+      "/rules/weapon",
+      "/notes/lethal-relentless",
+      "/notes/mystic-scry-buff"
+    ],
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox"
+    ]
   },
   "browserslist": {
     "production": [
@@ -55,6 +72,7 @@
     "@types/react": "17.0.3",
     "@types/react-dom": "17.0.3",
     "eslint-plugin-react-hooks": "^4.3.0",
+    "react-snap": "^1.23.0",
     "typescript": "^4.9.5"
   }
 }

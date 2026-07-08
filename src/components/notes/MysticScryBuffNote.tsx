@@ -2,6 +2,8 @@ import React from 'react';
 import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
+import Seo from 'src/components/Seo';
+
 const tdRight: React.CSSProperties = { textAlign: 'right', padding: '2px 10px' };
 const tdLeft: React.CSSProperties = { textAlign: 'left', padding: '2px 10px' };
 const th: React.CSSProperties = { textAlign: 'left', padding: '4px 10px', borderBottom: '1px solid #ccc' };
@@ -15,9 +17,14 @@ const captionStyle: React.CSSProperties = {
 
 const MysticScryBuffNote: React.FC = () => (
   <Container style={{ maxWidth: '760px', padding: '24px 16px', fontSize: '14px', lineHeight: 1.55 }}>
+    <Seo
+      title="Mystic Scry Buff + Rending: Which Retain Choice Wins | ktcalc"
+      description="The Kill Team 2024 'retain a fail as a norm, or a norm as a crit' decision isn't fixed. When each choice wins with Rending, and how ktcalc models it."
+      path="/notes/mystic-scry-buff/"
+    />
     <p><Link to="/">&larr; Back to calculator</Link></p>
 
-    <h2>Mystic Scry Buff + Rending: why the best choice depends on what you already rolled</h2>
+    <h1>Mystic Scry Buff + Rending: why the best choice depends on what you already rolled</h1>
 
     <p>
       <strong>Mystic Scry Buff</strong> is the calculator&apos;s name for an attack-dice ability that, in the

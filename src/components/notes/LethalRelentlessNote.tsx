@@ -2,6 +2,8 @@ import React from 'react';
 import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
+import Seo from 'src/components/Seo';
+
 const tdRight: React.CSSProperties = { textAlign: 'right', padding: '2px 10px' };
 const tdLeft: React.CSSProperties = { textAlign: 'left', padding: '2px 10px' };
 const th: React.CSSProperties = { textAlign: 'left', padding: '4px 10px', borderBottom: '1px solid #ccc' };
@@ -15,9 +17,14 @@ const captionStyle: React.CSSProperties = {
 
 const LethalRelentlessNote: React.FC = () => (
   <Container style={{ maxWidth: '760px', padding: '24px 16px', fontSize: '14px', lineHeight: 1.55 }}>
+    <Seo
+      title="Lethal + Relentless: Why Kill Chance Can Rise as BS Worsens | ktcalc"
+      description="A worked Kill Team 2024 example where reported kill chance is higher at BS 5+ than BS 2+ — not a bug. How Lethal and Relentless interact with tail probability."
+      path="/notes/lethal-relentless/"
+    />
     <p><Link to="/">&larr; Back to calculator</Link></p>
 
-    <h2>Lethal + Relentless: why kill chance can rise as BS gets worse</h2>
+    <h1>Lethal + Relentless: why kill chance can rise as BS gets worse</h1>
 
     <p>
       It is possible to set up a Kill Team shooting scenario where the calculator reports a
