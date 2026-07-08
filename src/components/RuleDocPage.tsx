@@ -73,11 +73,18 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
     return () => controller.abort();
   }, [file]);
 
-  const seo = DOC_SEO[file];
+  // Fall back to a generic rules-reference head for any unknown file so a new or
+  // mistyped doc never leaves the previous route's title/canonical/meta in place
+  // on client-side navigation.
+  const seo = DOC_SEO[file] ?? {
+    title: 'Kill Team 2024 Rules Reference | ktcalc',
+    description: 'Kill Team 2024 rules reference for the ktcalc shooting and fighting calculator.',
+    path: '/help/',
+  };
 
   return (
     <Container className="RuleDoc" style={themeVars}>
-      {seo && <Seo title={seo.title} description={seo.description} path={seo.path} />}
+      <Seo title={seo.title} description={seo.description} path={seo.path} />
       <p>
         <Link to="/help">&larr; Back to How it works</Link>
       </p>

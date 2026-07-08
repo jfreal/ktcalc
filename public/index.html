@@ -17,8 +17,9 @@
     <meta name="theme-color" content="#000000" />
 
     <!-- Site-constant meta only. Per-page title, description, canonical, and the
-         og/twitter *text* tags are owned by react-helmet-async (src/components/Seo.tsx)
-         and prerendered per route by react-snap — keeping them out of this template
+         og/twitter *text* tags are owned by the dependency-free Seo component
+         (src/components/Seo.tsx), which upserts them into <head> in an effect, and
+         are prerendered per route by react-snap — keeping them out of this template
          avoids duplicate/conflicting tags in the generated pages. The tags below are
          identical on every page, so they live here once. <title> is a fallback for
          any route that renders before hydration. -->
