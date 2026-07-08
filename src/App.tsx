@@ -85,11 +85,13 @@ const AppContent = () => {
         <Container fluid>
           <Seo title={viewSeo.title} description={viewSeo.description} path={canonicalPath} />
           <Row>
-            <Col className={centerHoriz + ' p-0'} style={{ padding: '4px 0 0' }}>
-              <h1 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 2px' }}>{viewSeo.h1}</h1>
-              <p style={{ fontSize: '12px', maxWidth: '660px', margin: '0 auto', color: T.textMuted }}>
-                {viewSeo.intro}
-              </p>
+            <Col className={centerHoriz + ' p-0'} style={{ paddingTop: '6px' }}>
+              <div style={{ textAlign: 'center', maxWidth: '680px' }}>
+                <h1 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 2px' }}>{viewSeo.h1}</h1>
+                <p style={{ fontSize: '12px', margin: 0, color: T.textMuted }}>
+                  {viewSeo.intro}
+                </p>
+              </div>
             </Col>
           </Row>
           <Row>
