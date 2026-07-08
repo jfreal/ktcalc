@@ -66,7 +66,7 @@ const HelpPage: React.FC = () => (
     <Seo
       title="How the Kill Team 2024 Calculator Works | ktcalc"
       description="How ktcalc models Kill Team 2024 shooting and fighting: deep-dive notes on surprising results and the KT24 rules the engine is built and validated against."
-      path="/help"
+      path="/help/"
     />
     <p><Link to="/">&larr; Back to calculator</Link></p>
 

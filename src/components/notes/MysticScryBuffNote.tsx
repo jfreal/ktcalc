@@ -20,7 +20,7 @@ const MysticScryBuffNote: React.FC = () => (
     <Seo
       title="Mystic Scry Buff + Rending: Which Retain Choice Wins | ktcalc"
       description="The Kill Team 2024 'retain a fail as a norm, or a norm as a crit' decision isn't fixed. When each choice wins with Rending, and how ktcalc models it."
-      path="/notes/mystic-scry-buff"
+      path="/notes/mystic-scry-buff/"
     />
     <p><Link to="/">&larr; Back to calculator</Link></p>
 

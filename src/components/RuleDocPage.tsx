@@ -15,19 +15,19 @@ const DOC_SEO: Record<string, { title: string; description: string; path: string
     title: 'Kill Team 2024 Combat & Save Rules | ktcalc',
     description:
       'How ktcalc resolves Kill Team 2024 saves: defense dice, cover, Feel No Pain, Piercing, and Saintly Relics — the combat rules the shoot calculator is validated against.',
-    path: '/rules/combat',
+    path: '/rules/combat/',
   },
   'FIGHT_RULES.md': {
     title: 'Kill Team 2024 Fight Rules — Melee Resolution | ktcalc',
     description:
       'How ktcalc models Kill Team 2024 melee: the alternating strike/parry sequence, what a parry cancels, the engine’s strike-vs-parry logic, and hand-verifiable scenarios.',
-    path: '/rules/fight',
+    path: '/rules/fight/',
   },
   'WEAPON_RULES.md': {
     title: 'Kill Team 2024 Weapon Rules Reference | ktcalc',
     description:
       'Reference for every Kill Team 2024 weapon rule ktcalc supports — Accurate, Balanced, Brutal, Ceaseless, Devastating, Lethal, Piercing, Relentless, Rending and more.',
-    path: '/rules/weapon',
+    path: '/rules/weapon/',
   },
 };
 

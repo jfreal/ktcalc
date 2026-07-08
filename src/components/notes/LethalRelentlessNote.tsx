@@ -20,7 +20,7 @@ const LethalRelentlessNote: React.FC = () => (
     <Seo
       title="Lethal + Relentless: Why Kill Chance Can Rise as BS Worsens | ktcalc"
       description="A worked Kill Team 2024 example where reported kill chance is higher at BS 5+ than BS 2+ — not a bug. How Lethal and Relentless interact with tail probability."
-      path="/notes/lethal-relentless"
+      path="/notes/lethal-relentless/"
     />
     <p><Link to="/">&larr; Back to calculator</Link></p>
 

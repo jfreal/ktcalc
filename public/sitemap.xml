@@ -6,32 +6,32 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://ktcalc.com/help</loc>
+    <loc>https://ktcalc.com/help/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ktcalc.com/rules/combat</loc>
+    <loc>https://ktcalc.com/rules/combat/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ktcalc.com/rules/fight</loc>
+    <loc>https://ktcalc.com/rules/fight/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ktcalc.com/rules/weapon</loc>
+    <loc>https://ktcalc.com/rules/weapon/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ktcalc.com/notes/lethal-relentless</loc>
+    <loc>https://ktcalc.com/notes/lethal-relentless/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://ktcalc.com/notes/mystic-scry-buff</loc>
+    <loc>https://ktcalc.com/notes/mystic-scry-buff/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
