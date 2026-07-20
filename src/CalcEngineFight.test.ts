@@ -784,7 +784,7 @@ describe(calcRemainingWounds.name + ' basic', () => {
     const guy1 = new Model(1, 6, dn, dc).setProp('wounds', w);
     const guy2 = clone(guy1);
 
-    const woundPairProbs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const woundPairProbs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, 12345);
     const [guy1Wounds, guy2Wounds] = consolidateWoundPairProbs(woundPairProbs);
     expect(guy1Wounds.get(w)).toBeCloseTo(pf, requiredPrecision);
     expect(guy1Wounds.get(w - dc)).toBeCloseTo(pc, requiredPrecision);
@@ -795,7 +795,7 @@ describe(calcRemainingWounds.name + ' basic', () => {
     const guy1 = new Model(1, 6, dn, dc).setProp('wounds', dc);
     const guy2 = clone(guy1);
 
-    const woundPairProbs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const woundPairProbs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, 12345);
     const [guy1Wounds, guy2Wounds] = consolidateWoundPairProbs(woundPairProbs);
     expect(guy1Wounds.get(0)).toBeCloseTo(pf * pc, requiredPrecision);
     expect(guy1Wounds.get(dc)).toBeCloseTo(pc + pf * pf, requiredPrecision);
@@ -808,7 +808,7 @@ describe(calcRemainingWounds.name + ' basic', () => {
     const guy1 = new Model(0, 7, 1, 1).setProp('wounds', 100);
     const guy2 = new Model(1, 6, 1, 2).setProp('wounds', 100).setProp('lethal', 4);
 
-    const probs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const probs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, 12345);
     const [guy1Wounds] = consolidateWoundPairProbs(probs);
     // guy2 hits guy1 only on nat 6 (1/6); damage = critDmg = 2
     const pHit = 1 / 6;
@@ -828,7 +828,7 @@ describe(calcRemainingWounds.name + ' multiple rounds', () => {
     const guy1 = new Model(1, 6, dn, dc).setProp('wounds', w);
     const guy2 = clone(guy1);
 
-    const woundPairProbs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 2, highSimCount, testRng());
+    const woundPairProbs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 2, highSimCount, 12345);
     const [guy1Wounds, guy2Wounds] = consolidateWoundPairProbs(woundPairProbs);
     const h0 = w; // hits taken = 0
     const h1 = w - dc; // hits taken = 1
@@ -850,7 +850,7 @@ describe(calcRemainingWounds.name + ' multiple rounds', () => {
     const guy1 = new Model(1, 6, dn, dc).setProp('wounds', dc);
     const guy2 = clone(guy1);
 
-    const woundPairProbs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 2, highSimCount, testRng());
+    const woundPairProbs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 2, highSimCount, 12345);
     expect(woundPairProbs.get(toWoundPairKey(dc, dc))).toBeCloseTo(Math.pow(pf, 4), requiredPrecision);
     expect(woundPairProbs.get(toWoundPairKey(0, dc))).toBeCloseTo(Math.pow(pf, 3) * pc + pf * pc, requiredPrecision);
     expect(woundPairProbs.get(toWoundPairKey(dc, 0))).toBeCloseTo(pf * pf * pc + pc, requiredPrecision);
@@ -864,8 +864,8 @@ describe('Feel No Pain in fights', () => {
     const guy2NoFnp = new Model(4, 3, 3, 4).setProp('wounds', wounds);
     const guy2Fnp = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 5);
 
-    const probsNoFnp = calcRemainingWoundPairProbs(guy1, guy2NoFnp, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
-    const probsFnp = calcRemainingWoundPairProbs(guy1, guy2Fnp, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const probsNoFnp = calcRemainingWoundPairProbs(guy1, guy2NoFnp, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, 12345);
+    const probsFnp = calcRemainingWoundPairProbs(guy1, guy2Fnp, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, 12345);
     const [guy1WoundsNoFnp] = consolidateWoundPairProbs(probsNoFnp);
     const [guy1WoundsFnp] = consolidateWoundPairProbs(probsFnp);
 
@@ -891,8 +891,8 @@ describe('Feel No Pain in fights', () => {
     const guy2Fnp4 = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 4);
     const guy2Fnp6 = new Model(4, 3, 3, 4).setProp('wounds', wounds).setProp('fnp', 6);
 
-    const probsFnp4 = calcRemainingWoundPairProbs(guy1a, guy2Fnp4, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
-    const probsFnp6 = calcRemainingWoundPairProbs(guy1b, guy2Fnp6, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, testRng());
+    const probsFnp4 = calcRemainingWoundPairProbs(guy1a, guy2Fnp4, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, 12345);
+    const probsFnp6 = calcRemainingWoundPairProbs(guy1b, guy2Fnp6, FightStrategy.Strike, FightStrategy.Strike, 1, highSimCount, 12345);
     const [, guy2WoundsFnp4] = consolidateWoundPairProbs(probsFnp4);
     const [, guy2WoundsFnp6] = consolidateWoundPairProbs(probsFnp6);
 
@@ -923,6 +923,34 @@ describe('Feel No Pain in fights', () => {
   });
 });
 
+describe('crit-damage monotonicity (Common Random Numbers)', () => {
+  // regression: with a single shared cross-simulation RNG stream, raising a fighter's
+  // OWN crit damage reshuffled the whole Monte Carlo sample and could make that
+  // fighter's own death chance drift UPWARD (pure sampling noise). Per-simulation,
+  // per-purpose CRN streams make the comparison reflect only the real effect, which
+  // is monotone: dealing more damage never increases your own risk here.
+  function bDeathChance(bCritDmg: number): number {
+    // FighterA: 21W, 5 attacks WS4+ Lethal5+, 4/critDmg5, Rending, Max-damage
+    const a = new Model(5, 4, 4, 5).setProp('wounds', 21).setProp('lethal', 5)
+      .setAbility(Ability.Rending);
+    // FighterB: 14W, 5 attacks WS3+, 5/bCritDmg, FNP4+, Severe, Min-damage-to-self
+    const b = new Model(5, 3, 5, bCritDmg).setProp('wounds', 14).setProp('fnp', 4)
+      .setAbility(Ability.Severe);
+    const probs = calcRemainingWoundPairProbs(a, b,
+      FightStrategy.MaxDmgToEnemy, FightStrategy.MinDmgToSelf, 1, highSimCount, 12345);
+    const [, bWounds] = consolidateWoundPairProbs(probs);
+    return bWounds.get(0) || 0;
+  }
+
+  it('raising B\'s own crit damage does not raise B\'s own death chance', () => {
+    const cd5 = bDeathChance(5);
+    const cd7 = bDeathChance(7);
+    const cd8 = bDeathChance(8);
+    expect(cd7).toBeLessThanOrEqual(cd5 + 1e-4);
+    expect(cd8).toBeLessThanOrEqual(cd7 + 1e-4);
+  });
+});
+
 describe('JustAScratch + parry monotonicity', () => {
   // regression: previously, more rerolls for JAS-defender increased death chance
   // because awesomeParry fired when enemy had 0 successes (chooser wasted crits parrying nothing)
@@ -932,7 +960,7 @@ describe('JustAScratch + parry monotonicity', () => {
     if (rerollA) A.reroll = rerollA;
     const B = new Model(4, 4, 3, 4).setProp('wounds', 8);
     const probs = calcRemainingWoundPairProbs(B, A,
-      FightStrategy.MaxDmgToEnemy, strat, 1, highSimCount, testRng());
+      FightStrategy.MaxDmgToEnemy, strat, 1, highSimCount, 12345);
     const [, aWounds] = consolidateWoundPairProbs(probs);
     return aWounds.get(0) || 0;
   }
@@ -960,7 +988,7 @@ describe('SaintlyRelics (fight)', () => {
     const defender = new Model(4, 3, 3, 4).setProp('wounds', 12).setProp('saintlyRelics', relicMode);
     const attacker = new Model(5, 3, 3, 4).setProp('wounds', 12);
     const probs = calcRemainingWoundPairProbs(defender, attacker,
-      FightStrategy.MaxDmgToEnemy, FightStrategy.MaxDmgToEnemy, 1, highSimCount, testRng());
+      FightStrategy.MaxDmgToEnemy, FightStrategy.MaxDmgToEnemy, 1, highSimCount, 12345);
     const [defWounds] = consolidateWoundPairProbs(probs);
     return Util.weightedAverage(defWounds);
   }

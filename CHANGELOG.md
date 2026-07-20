@@ -1,5 +1,11 @@
 # Changelog
 
+## July 2026 - Fight: stable results via Common Random Numbers
+
+- Fixed a Monte Carlo artifact where changing one fighter's stat could nudge **unrelated** result numbers the "wrong" way — e.g. raising a fighter's own critical damage slightly *increasing* that fighter's own death chance. This was sampling noise, not a rules bug: the Fight engine ran on a single RNG stream shared across both fighters and all 15,000 simulations, so any input change that shifted how many random draws a simulation consumed (Feel No Pain and Saintly Relics roll per damaging strike, and strike/parry decisions depend on the profiles) desynchronized the dice of every later simulation, reshuffling the whole sample.
+- The engine now uses **Common Random Numbers**: each simulation (and each round within it) draws from independent, per-purpose streams (guy1 dice, guy2 dice, guy1 defense rolls, guy2 defense rolls), seeded from `(seed, simIndex, round, stream)`. Because streams are re-seeded per `(simulation, round)`, a change in one round's draw count no longer bleeds into later rounds or simulations; and because each stream is seeded independently of the *other* fighter, two scenarios that differ in a single stat reuse identical dice everywhere the change doesn't reach. Comparisons now reflect the real effect instead of resampling noise — in particular, the reported scenario (raising FighterB's own critical damage) no longer shows FighterB's own death chance drifting upward.
+- `calcRemainingWoundPairProbs` now takes a numeric `seed` instead of a prebuilt RNG function. Added a regression test asserting crit-damage monotonicity for the reported scenario.
+
 ## June 2026 - Fight: strike norm-first to deny a normal parry
 
 - The Fight engine now considers striking a **normal before a crit** when the chooser holds both and the enemy has **no crits**. A normal parry can cancel only a normal (it can't touch a crit), so striking the normal first forces it through before the enemy can parry it, while the crit stays unparryable — pushing more damage past a parrying defender.
