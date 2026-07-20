@@ -17,11 +17,17 @@ const enum RngStream {
   Guy2Defense = 3, // guy2's Feel No Pain / Saintly Relics rolls (damage guy2 takes)
 }
 
-// Mix (seed, simIndex, stream) into a well-distributed 32-bit seed. An integer
-// avalanche (Murmur-style) so adjacent (sim, stream) pairs yield decorrelated
-// streams rather than the near-identical sequences raw sequential seeds produce.
-function mixSeed(seed: number, sim: number, stream: RngStream): number {
-  let h = (seed | 0) ^ Math.imul(sim + 1, 0x9E3779B1) ^ Math.imul(stream + 1, 0x85EBCA77);
+// Mix (seed, simIndex, round, stream) into a well-distributed 32-bit seed. An
+// integer avalanche (Murmur-style) so adjacent (sim, round, stream) tuples yield
+// decorrelated streams rather than the near-identical sequences raw sequential
+// seeds produce. round participates so each round of a multi-round fight draws
+// from streams independent of earlier rounds' draw counts (same discipline as the
+// per-simulation independence, applied within a simulation).
+function mixSeed(seed: number, sim: number, round: number, stream: RngStream): number {
+  let h = (seed | 0)
+    ^ Math.imul(sim + 1, 0x9E3779B1)
+    ^ Math.imul(round + 1, 0x27D4EB2F)
+    ^ Math.imul(stream + 1, 0x85EBCA77);
   h = Math.imul(h ^ (h >>> 16), 0x21F0AAAD);
   h = Math.imul(h ^ (h >>> 15), 0x735A2D97);
   h ^= h >>> 15;
@@ -86,26 +92,27 @@ export function calcRemainingWoundPairProbs(
     let guy1Wounds = guy1OrigWounds;
     let guy2Wounds = guy2OrigWounds;
 
-    // Common Random Numbers: give each simulation its own independent streams, one
-    // per purpose, seeded from (seed, sim, stream) instead of threading a single
-    // shared stream through the whole run. This is what stops the "change one stat,
-    // every unrelated number jitters" artifact: because streams are re-seeded per
-    // simulation, a change that alters how many rng draws a simulation consumes can
-    // no longer shift the dice of every later simulation. And because each stream is
-    // seeded independently of the OTHER fighter, two scenarios that differ in a
-    // single stat reuse identical dice everywhere the change doesn't reach, so their
-    // comparison reflects the real effect rather than resampling noise.
-    const guy1DiceRng = mulberry32(mixSeed(seed, sim, RngStream.Guy1Dice));
-    const guy2DiceRng = mulberry32(mixSeed(seed, sim, RngStream.Guy2Dice));
-    guy1State.rng = mulberry32(mixSeed(seed, sim, RngStream.Guy1Defense));
-    guy2State.rng = mulberry32(mixSeed(seed, sim, RngStream.Guy2Defense));
-
     // SaintlyRelics two-per-battle cap resets each battle (simulation), not each round/action
     guy1State.relicIgnoresUsed = 0;
     guy2State.relicIgnoresUsed = 0;
 
     for (let round = 0; round < numRounds; round++) {
       if (guy1Wounds <= 0 || guy2Wounds <= 0) break;
+
+      // Common Random Numbers: give each (simulation, round) its own independent
+      // streams, one per purpose, seeded from (seed, sim, round, stream) instead of
+      // threading a single shared stream through the whole run. This is what stops
+      // the "change one stat, every unrelated number jitters" artifact: because
+      // streams are re-seeded per (sim, round), a change that alters how many rng
+      // draws a round consumes can no longer shift the dice of any later round or
+      // simulation. And because each stream is seeded independently of the OTHER
+      // fighter, two scenarios that differ in a single stat reuse identical dice
+      // everywhere the change doesn't reach, so the comparison reflects the real
+      // effect rather than resampling noise.
+      const guy1DiceRng = mulberry32(mixSeed(seed, sim, round, RngStream.Guy1Dice));
+      const guy2DiceRng = mulberry32(mixSeed(seed, sim, round, RngStream.Guy2Dice));
+      guy1State.rng = mulberry32(mixSeed(seed, sim, round, RngStream.Guy1Defense));
+      guy2State.rng = mulberry32(mixSeed(seed, sim, round, RngStream.Guy2Defense));
 
       // Temporarily set wounds to avoid cloning Model objects
       guy1.wounds = guy1Wounds;
