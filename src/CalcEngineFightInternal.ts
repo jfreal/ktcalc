@@ -4,9 +4,29 @@ import FightStrategy from 'src/FightStrategy';
 import FighterState from "src/FighterState";
 import FightChoice from "src/FightChoice";
 import Ability from "src/Ability";
-import { simulateFighterDice, RngFunction, mulberry32 } from "src/MonteCarloFightDice";
+import { simulateFighterDice, mulberry32 } from "src/MonteCarloFightDice";
 
 const DEFAULT_SEED = 0x4B54_4341; // "KTCA" - deterministic default for stable results
+
+// Distinct per-simulation RNG streams so a change to one input can't shift the
+// draw alignment of unrelated streams. See mixSeed / the sim loop below.
+const enum RngStream {
+  Guy1Dice = 0,   // guy1's attack dice + rerolls
+  Guy2Dice = 1,   // guy2's attack dice + rerolls
+  Guy1Defense = 2, // guy1's Feel No Pain / Saintly Relics rolls (damage guy1 takes)
+  Guy2Defense = 3, // guy2's Feel No Pain / Saintly Relics rolls (damage guy2 takes)
+}
+
+// Mix (seed, simIndex, stream) into a well-distributed 32-bit seed. An integer
+// avalanche (Murmur-style) so adjacent (sim, stream) pairs yield decorrelated
+// streams rather than the near-identical sequences raw sequential seeds produce.
+function mixSeed(seed: number, sim: number, stream: RngStream): number {
+  let h = (seed | 0) ^ Math.imul(sim + 1, 0x9E3779B1) ^ Math.imul(stream + 1, 0x85EBCA77);
+  h = Math.imul(h ^ (h >>> 16), 0x21F0AAAD);
+  h = Math.imul(h ^ (h >>> 15), 0x735A2D97);
+  h ^= h >>> 15;
+  return h | 0;
+}
 
 // Numeric composite key: wounds values are small (typically < 100),
 // so packing into a single number avoids string allocation/parsing.
@@ -44,7 +64,7 @@ export function calcRemainingWoundPairProbs(
   guy2Strategy: FightStrategy = FightStrategy.MaxDmgToEnemy,
   numRounds: number = 1,
   numSimulations: number = 15_000,
-  rng: RngFunction = mulberry32(DEFAULT_SEED),
+  seed: number = DEFAULT_SEED,
 ): Map<string, number> // remaining wound-pairs (as stringified array) to probs
 {
   if (!Number.isInteger(numSimulations) || numSimulations <= 0) {
@@ -54,9 +74,10 @@ export function calcRemainingWoundPairProbs(
   // Use numeric keys internally to avoid string allocation in hot loop
   const woundPairCounts = new Map<number, number>();
 
-  // Pre-allocate FighterState objects and reuse across simulations
-  const guy1State = new FighterState(guy1, 0, 0, guy1Strategy, -1, false, false, rng);
-  const guy2State = new FighterState(guy2, 0, 0, guy2Strategy, -1, false, false, rng);
+  // Pre-allocate FighterState objects and reuse across simulations. Their rng is
+  // (re)assigned per simulation below to the fighter's own defense stream.
+  const guy1State = new FighterState(guy1, 0, 0, guy1Strategy, -1, false, false, null);
+  const guy2State = new FighterState(guy2, 0, 0, guy2Strategy, -1, false, false, null);
 
   const guy1OrigWounds = guy1.wounds;
   const guy2OrigWounds = guy2.wounds;
@@ -64,6 +85,20 @@ export function calcRemainingWoundPairProbs(
   for (let sim = 0; sim < numSimulations; sim++) {
     let guy1Wounds = guy1OrigWounds;
     let guy2Wounds = guy2OrigWounds;
+
+    // Common Random Numbers: give each simulation its own independent streams, one
+    // per purpose, seeded from (seed, sim, stream) instead of threading a single
+    // shared stream through the whole run. This is what stops the "change one stat,
+    // every unrelated number jitters" artifact: because streams are re-seeded per
+    // simulation, a change that alters how many rng draws a simulation consumes can
+    // no longer shift the dice of every later simulation. And because each stream is
+    // seeded independently of the OTHER fighter, two scenarios that differ in a
+    // single stat reuse identical dice everywhere the change doesn't reach, so their
+    // comparison reflects the real effect rather than resampling noise.
+    const guy1DiceRng = mulberry32(mixSeed(seed, sim, RngStream.Guy1Dice));
+    const guy2DiceRng = mulberry32(mixSeed(seed, sim, RngStream.Guy2Dice));
+    guy1State.rng = mulberry32(mixSeed(seed, sim, RngStream.Guy1Defense));
+    guy2State.rng = mulberry32(mixSeed(seed, sim, RngStream.Guy2Defense));
 
     // SaintlyRelics two-per-battle cap resets each battle (simulation), not each round/action
     guy1State.relicIgnoresUsed = 0;
@@ -76,10 +111,11 @@ export function calcRemainingWoundPairProbs(
       guy1.wounds = guy1Wounds;
       guy2.wounds = guy2Wounds;
 
-      const guy1Dice = simulateFighterDice(guy1, guy2, rng);
-      const guy2Dice = simulateFighterDice(guy2, guy1, rng);
+      const guy1Dice = simulateFighterDice(guy1, guy2, guy1DiceRng);
+      const guy2Dice = simulateFighterDice(guy2, guy1, guy2DiceRng);
 
-      // Reset pre-allocated state objects instead of creating new ones
+      // Reset pre-allocated state objects instead of creating new ones. reset()
+      // clears per-action flags but preserves each fighter's defense rng stream.
       guy1State.reset(guy1Dice.crits, guy1Dice.norms, guy1Wounds);
       guy2State.reset(guy2Dice.crits, guy2Dice.norms, guy2Wounds);
 
