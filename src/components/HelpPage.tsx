@@ -52,6 +52,13 @@ const rulesDocs: DocLink[] = [
       'and the ones that can still change it (Severe, Waaagh), and explains what the calculator does with each.',
   },
   {
+    title: 'When not to take cover saves',
+    href: '/rules/cover-saves',
+    blurb:
+      'Cover is optional, and occasionally worth declining: with norm\u2192crit save promotions against a mostly-critical '
+      + 'attack, rolling the dice beats a locked normal save. Measured numbers, plus why the calculator always takes cover.',
+  },
+  {
     title: 'Weapon rules — all weapon rule effects',
     href: '/rules/weapon',
     blurb:

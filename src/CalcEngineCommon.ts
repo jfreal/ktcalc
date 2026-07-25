@@ -104,8 +104,9 @@ function buildFinalDiceProbs(
 // Ranking needs damage numbers, so this only applies where they are known — attack dice. Defence
 // dice pass none, so cover saves are still always taken; ranking those properly needs the incoming
 // hit profile (a norm save is worth half a crit save only against crits), which this step can't
-// see. Declining cover is a corner case anyway: a guaranteed norm save beats rolling for one at any
-// save of 3+ or worse.
+// see. It is a narrow corner: measured against a normal attacker, cover wins at every save value and
+// every promotion count, and declining only pulls ahead once the defender holds norm->crit save
+// promotions AND most incoming hits are crits. See rules/COVER_SAVES.md.
 function bestAutoNormPlan(
   singleDieProbs: DieProbs,
   numDice: number,

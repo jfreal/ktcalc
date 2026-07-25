@@ -29,6 +29,12 @@ const DOC_SEO: Record<string, { title: string; description: string; path: string
       'Reference for every Kill Team 2024 weapon rule ktcalc supports — Accurate, Balanced, Brutal, Ceaseless, Devastating, Lethal, Piercing, Relentless, Rending and more.',
     path: '/rules/weapon/',
   },
+  'COVER_SAVES.md': {
+    title: 'When Not to Take Cover Saves in Kill Team 2024 | ktcalc',
+    description:
+      'Cover saves are optional. Measured guidance on the rare matchups where declining cover is correct \u2014 save promotions against a mostly-critical attack \u2014 and why ktcalc always takes them.',
+    path: '/rules/cover-saves/',
+  },
   'RETAINED_VS_MODIFIED_DICE.md': {
     title: 'Retained vs Modified Dice in Kill Team 2024 | ktcalc',
     description:

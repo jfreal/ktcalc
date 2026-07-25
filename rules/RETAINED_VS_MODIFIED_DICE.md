@@ -182,9 +182,10 @@ calculator rolls. It keeps the maximum whenever that is at least as good, which 
 
 **Cover saves are always taken.** Cover is optional in the same way Accurate is, but ranking the
 choice properly needs the incoming hit profile — a normal save is worth half a critical save only
-against critical hits — which the dice step cannot see. Declining cover is a corner case regardless:
-a guaranteed normal save beats rolling for one at any save of 3+ or worse. If you want to check a
-specific matchup, set Cover Saves to 0 by hand and compare.
+against critical hits — which the dice step cannot see. It is a narrow corner: measured against a
+normal attacker, cover wins at every save value and every promotion count, and declining only pulls
+ahead once you hold norm→crit save promotions *and* most of the incoming hits are critical.
+[When Not to Take Cover Saves](/rules/cover-saves) has the numbers and the workaround.
 
 **Optional rules are ranked on pre-save damage.** When the calculator decides Punishing, Accurate or
 Mystic Scry, it scores the options by the damage the dice would deal, without weighing the
