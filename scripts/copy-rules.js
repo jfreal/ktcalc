@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const DOCS = ['COMBAT_RULES.md', 'FIGHT_RULES.md', 'WEAPON_RULES.md'];
+const DOCS = ['COMBAT_RULES.md', 'FIGHT_RULES.md', 'WEAPON_RULES.md', 'RETAINED_VS_MODIFIED_DICE.md'];
 
 const repoRoot = path.resolve(__dirname, '..');
 const srcDir = path.join(repoRoot, 'rules');

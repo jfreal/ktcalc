@@ -7,6 +7,7 @@ This directory contains reference documentation for Kill Team 2024 game rules.
 - **WEAPON_RULES.md** - Complete reference for all weapon rules (Accurate, Balanced, Brutal, Ceaseless, Devastating, Heavy, Lethal, Piercing, Punishing, Relentless, Rending, Saturate, Severe, Shock)
 - **COMBAT_RULES.md** - Defense mechanics and the shooting save sequence (defense dice, saves, cover, FNP, Saintly Relics)
 - **FIGHT_RULES.md** - Melee fight resolution: strike/parry alternation, what a parry can cancel, the engine's strike-vs-parry decision logic, and hand-verifiable scenarios
+- **RETAINED_VS_MODIFIED_DICE.md** - The "a dice can only be retained once" rule: which effects lock a dice (cover, Accurate, Punishing), which can still change one (Severe, Waaagh), which are blocked (Rending, NormsToCrits, Mystic Scry), and the engine's known limitations here
 
 ## Purpose
 

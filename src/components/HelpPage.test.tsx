@@ -20,12 +20,17 @@ describe('HelpPage', () => {
     expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('How KT Calc works');
   });
 
-  it('links to all five in-app docs', () => {
+  it('links to all six in-app docs', () => {
     renderHelp();
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
-    ['/notes/lethal-relentless', '/notes/mystic-scry-buff', '/rules/combat', '/rules/fight', '/rules/weapon'].forEach(
-      (href) => expect(hrefs).toContain(href),
-    );
+    [
+      '/notes/lethal-relentless',
+      '/notes/mystic-scry-buff',
+      '/rules/combat',
+      '/rules/fight',
+      '/rules/weapon',
+      '/rules/retained-vs-modified',
+    ].forEach((href) => expect(hrefs).toContain(href));
   });
 
   it('keeps the docs in-app (no external/GitHub links)', () => {

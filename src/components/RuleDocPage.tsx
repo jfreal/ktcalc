@@ -29,6 +29,12 @@ const DOC_SEO: Record<string, { title: string; description: string; path: string
       'Reference for every Kill Team 2024 weapon rule ktcalc supports — Accurate, Balanced, Brutal, Ceaseless, Devastating, Lethal, Piercing, Relentless, Rending and more.',
     path: '/rules/weapon/',
   },
+  'RETAINED_VS_MODIFIED_DICE.md': {
+    title: 'Retained vs Modified Dice in Kill Team 2024 | ktcalc',
+    description:
+      'A dice can only be retained once. Why Rending cannot promote a cover save but Severe can, which Kill Team 2024 rules lock a dice, and how ktcalc models the difference.',
+    path: '/rules/retained-vs-modified/',
+  },
 };
 
 // Plain CSS can't import theme.ts, so the handful of theme colors this

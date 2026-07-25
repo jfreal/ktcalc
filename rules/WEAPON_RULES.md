@@ -79,6 +79,7 @@ If you retain any critical successes, you can retain **one of your normal succes
 *rolled* normal success — never one that was already retained without a roll (Accurate on attack,
 cover on defence) or retained out of the fail pile by Punishing. Severe is worded as a *change*, so
 it is not restricted this way. The same restriction applies to the calculator's NormsToCrits input.
+See [Retained vs Modified Dice](/rules/retained-vs-modified) for the full breakdown.
 
 ---
 

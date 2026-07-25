@@ -35,6 +35,9 @@ stay available for the retain-style promotions that follow.
 The same limit applies on the attack side to **Accurate** dice and to a **Punishing** fail
 retention: both are already-retained dice, so Rending and NormsToCrits can't promote them.
 
+See [Retained vs Modified Dice](/rules/retained-vs-modified) for the full breakdown of which rules
+lock a dice, which can still change one, and the worked examples.
+
 ---
 
 ## Changes from Kill Team 2021
