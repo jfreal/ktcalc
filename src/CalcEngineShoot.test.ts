@@ -752,20 +752,40 @@ describe(calcDmgProbs.name + ', defender cover saves', () => {
     expect(dmgs.get(atk.normDmg)).toBeCloseTo(1, requiredPrecision);
     expect(dmgs.size).toBe(1);
   });
-  it('save promotions, 1 always-crit-hit vs 1 cover norm save + 1 promotion (always cancel)', () => {
+  // A dice can only be retained once. A cover save is retained (as a normal success) without ever
+  // being rolled, so a rule that lets you "retain a normal success as a critical success instead"
+  // has nothing left to do with it - only saves that came off the dice can be promoted.
+  it('save promotions, 1 always-crit-hit vs 1 cover norm save + 1 promotion (cover save cannot be promoted)', () => {
     const atk = newTestAttacker(1).withAlwaysCrit();
     const def = new Model(1, 6).setProp('autoNorms', 1).setProp('normsToCrits', 1);
+
+    const dmgs = calcDmgProbs(atk, def);
+    expect(dmgs.get(atk.critDmg)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.size).toBe(1);
+  });
+  it('save promotions, 2 always-crit-hit vs 1 cover norm save + 1 promotion (cover save cannot be promoted)', () => {
+    const atk = newTestAttacker(2).withAlwaysCrit();
+    const def = new Model(1, 6).setProp('autoNorms', 1).setProp('normsToCrits', 1);
+
+    const dmgs = calcDmgProbs(atk, def);
+    expect(dmgs.get(2 * atk.critDmg)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.size).toBe(1);
+  });
+  it('save promotions, 1 always-crit-hit vs 1 rolled always-norm save + 1 promotion (rolled save promotes, cancels)', () => {
+    const atk = newTestAttacker(1).withAlwaysCrit();
+    const def = new Model(1, 6).withAlwaysNorm().setProp('normsToCrits', 1);
 
     const dmgs = calcDmgProbs(atk, def);
     expect(dmgs.get(0)).toBeCloseTo(1, requiredPrecision);
     expect(dmgs.size).toBe(1);
   });
-  it('save promotions, 2 always-crit-hit vs 1 cover norm save + 2 promotions (always cancel 1 of the 2)', () => {
-    const atk = newTestAttacker(2).withAlwaysCrit();
-    const def = new Model(1, 6).setProp('autoNorms', 1).setProp('normsToCrits', 1);
+  it('save promotions, 1 always-crit-hit vs 1 cover + 1 rolled always-norm save + 1 promotion (promotes the rolled one)', () => {
+    const atk = newTestAttacker(1).withAlwaysCrit();
+    const def = new Model(2, 6).withAlwaysNorm().setProp('autoNorms', 1).setProp('normsToCrits', 1);
 
     const dmgs = calcDmgProbs(atk, def);
-    expect(dmgs.get(atk.critDmg)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.get(0)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.size).toBe(1);
   });
 });
 

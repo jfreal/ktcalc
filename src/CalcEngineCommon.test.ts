@@ -271,6 +271,41 @@ describe(Common.calcFinalDiceProb.name, () => {
     const actual = Common.calcFinalDiceProb(dieProbs, 0, 2, 0, Ability.None, 0, 0, 0, 0, rendingAndMysticScryBuff, 3, 4);
     expectClose(actual, pn * pn, 2, 0);
   });
+
+  // A dice can only be retained once, so "retain a normal success as a critical success instead"
+  // rules (the normsToCrits input, Rending) can't touch a norm that was already retained: cover
+  // saves / Accurate (never rolled) or a Punishing fail retention. Rules worded as *changing* a
+  // success (Severe, Waaagh) still can, and spend a retained norm first so the rollable ones stay
+  // available for the retain-style promotions that follow.
+  const justSevere = new Set<Ability>([Ability.Severe]);
+  const punishingAndRending = new Set<Ability>([Ability.Punishing, Ability.Rending]);
+
+  it('normsToCrits with accurate/cover: {0c,0n rolled,1n retained} => {0c,1n} (retained norm cannot be promoted)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 0, 0, Ability.None, 0, 1, 0, 1);
+    expectClose(actual, 1, 0, 1);
+  });
+  it('normsToCrits with accurate/cover: {0c,1n rolled,1n retained} => {1c,1n} (only the rolled norm promotes)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 1, 0, 1);
+    expectClose(actual, pn, 1, 1);
+  });
+  it('normsToCrits with 2 promotions and 1 rolled + 1 retained norm => {1c,1n} (promotions cannot stack onto the retained norm)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 1, 0, 2);
+    expectClose(actual, pn, 1, 1);
+  });
+  it('normsToCrits with punishing {1c,0n,1f} => {1c,1n} (the Punishing norm is already retained)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 1, justPunishing);
+    expectClose(actual, pc * pf * 2, 1, 1);
+  });
+  it('punishing + rending {1c,0n,1f} => {1c,1n} (Rending cannot re-retain the Punishing norm)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, punishingAndRending);
+    expectClose(actual, pc * pf * 2, 1, 1);
+  });
+  it('severe + normsToCrits: {0c,1n rolled,1n retained} => {2c,0n} (Severe changes the retained norm)', () => {
+    // Severe may change any normal success, so it takes the retained one; that leaves the rolled
+    // norm for the normsToCrits retention. Taking the rolled norm instead would end at {1c,1n}.
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 1, 0, 1, justSevere);
+    expectClose(actual, pn, 2, 0);
+  });
 });
 
 /*

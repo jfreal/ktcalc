@@ -1,5 +1,14 @@
 # Changelog
 
+## July 2026 - A dice can only be retained once (cover saves vs NormsToCrits)
+
+- Fixed: **NormsToCrits** could promote a **cover save** to a critical save. A cover save is retained as a normal success without ever being rolled, and a dice can only be retained *once*, so a rule worded "retain one of your normal successes as a critical success instead" can't touch it — the die is already locked in as a normal. Reported as coming up often with Aeldari Exodite defence rules.
+- The same retained-once limit now applies to every already-retained normal success, on both sides of the attack: **cover saves**, **Accurate** attack dice, and the **Punishing** fail retention ("retain one of your fails as a normal success instead of discarding it"). None of them can be promoted by NormsToCrits, by **Rending**, or by the norm→crit half of **Mystic Scry**. Previously only Rending-vs-Accurate was handled; the restriction now lives in one place in `applyPostRollModifications`, so the exact Shoot engine and the Monte Carlo Fight engine both honor it.
+- Rules worded as *changing* a success rather than retaining one — **Severe** ("change one of your normal successes to a critical success") and the KT2021 **Waaagh** ploy — still apply to an already-retained dice, and now deliberately spend a retained norm first so the rolled ones stay available for the retain-style promotions that follow. Example: a rolled norm plus a cover/Accurate norm with Severe and one NormsToCrits now ends at 2 crits instead of 1 crit + 1 norm.
+- The **FailsToNorms** input is unchanged: it is treated as a *change* effect, so its norms remain promotable. The in-app note now says so and points at Punishing for the retain-worded version.
+- Mystic Scry's fail→norm option now hands Rending a *retained* norm, so it no longer double-counts that die as promotable.
+- Updated the in-app notes (Cover Saves, NormsToCrits, FailsToNorms, Accurate, Rending, Severe, Punishing) and `rules/COMBAT_RULES.md` / `rules/WEAPON_RULES.md`; two Shoot tests that asserted the old cover-save promotion were corrected, with new tests covering rolled-vs-retained saves, Punishing + Rending, and the Severe ordering.
+
 ## July 2026 - Fight: stable results via Common Random Numbers
 
 - Fixed a Monte Carlo artifact where changing one fighter's stat could nudge **unrelated** result numbers the "wrong" way — e.g. raising a fighter's own critical damage slightly *increasing* that fighter's own death chance. This was sampling noise, not a rules bug: the Fight engine ran on a single RNG stream shared across both fighters and all 15,000 simulations, so any input change that shifted how many random draws a simulation consumed (Feel No Pain and Saintly Relics roll per damaging strike, and strike/parry decisions depend on the profiles) desynchronized the dice of every later simulation, reshuffling the whole sample.

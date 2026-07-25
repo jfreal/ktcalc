@@ -583,12 +583,20 @@ export function applyPostRollModifications(
   critDmgPlusMwx: number = 0,
 ): { crits: number; norms: number } {
   crits += additionalCrits;
-  const accurateNorms = additionalNorms;
+  // A dice can only be *retained* once. Dice retained without rolling (cover saves on defence,
+  // Accurate on attack) and dice retained out of the fail pile (Punishing) are already spent in
+  // that sense, so "retain a normal success as a critical success instead" style rules (Rending,
+  // the NormsToCrits input, Mystic Scry) cannot upgrade them. Rules worded as *change/modify* an
+  // existing success (Severe, Waaagh) still can, so they consume a retained norm by preference,
+  // leaving the rollable ones available for the retain-style promotions that follow.
+  let retainedNorms = additionalNorms;
   norms += additionalNorms;
 
   if (abilities.has(Ability.Punishing) && !abilities.has(Ability.ObscuredTarget)) {
     if (crits > 0 && fails > 0) {
+      // "retain one of your fails as a normal success instead of discarding it"
       norms++;
+      retainedNorms++;
       fails--;
     }
   }
@@ -611,6 +619,7 @@ export function applyPostRollModifications(
     if (norms >= 2) {
       crits++;
       norms--;
+      retainedNorms = Math.max(0, retainedNorms - 1); // promotes, so spend a retained norm first
     }
   }
 
@@ -622,13 +631,18 @@ export function applyPostRollModifications(
   let severeTriggered = false;
   if (abilities.has(Ability.Severe)) {
     if (norms > 0 && crits === 0) {
+      // Severe "changes" a normal success, so it may take an already-retained one
       crits++;
       norms--;
+      retainedNorms = Math.max(0, retainedNorms - 1);
       severeTriggered = true;
     }
   }
 
-  const actualNormToCritPromotions = Math.min(normsToCrits, norms);
+  // NormsToCrits models "retain a normal success as a critical success instead", so it can only
+  // take a norm that came off the dice - not a cover save / Accurate / Punishing retention.
+  const promotableNorms = Math.max(0, norms - retainedNorms);
+  const actualNormToCritPromotions = Math.min(normsToCrits, promotableNorms);
   crits += actualNormToCritPromotions;
   norms -= actualNormToCritPromotions;
 
@@ -643,15 +657,17 @@ export function applyPostRollModifications(
     // crit upgrade ahead of the fail upgrade so a damage tie resolves to the crit, which is strictly
     // better against any real defender (its Devastating/mwx portion bypasses saves, it triggers Piercing,
     // and it eats fewer Feel No Pain rolls). A beneficial upgrade still beats declining.
-    const candidates: Array<{ crits: number; norms: number }> = [];
-    if (norms > 0) candidates.push({ crits: crits + 1, norms: norms - 1 }); // retain a norm as a crit
-    if (fails > 0) candidates.push({ crits, norms: norms + 1 });   // retain a fail as a norm
-    candidates.push({ crits, norms });                             // decline (the buff is optional)
+    // Both options are worded as retentions: the norm->crit one needs a norm that isn't already
+    // retained, and the fail->norm one hands Rending a retained norm it can't promote afterwards.
+    const candidates: Array<{ crits: number; norms: number; retainedNorms: number }> = [];
+    if (norms - retainedNorms > 0) candidates.push({ crits: crits + 1, norms: norms - 1, retainedNorms }); // retain a norm as a crit
+    if (fails > 0) candidates.push({ crits, norms: norms + 1, retainedNorms: retainedNorms + 1 }); // retain a fail as a norm
+    candidates.push({ crits, norms, retainedNorms });              // decline (the buff is optional)
 
     let best: { crits: number; norms: number } | null = null;
     let bestDmg = -Infinity;
     for (const cand of candidates) {
-      const finished = finishRendingAndObscured(cand.crits, cand.norms, accurateNorms, severeTriggered, abilities);
+      const finished = finishRendingAndObscured(cand.crits, cand.norms, cand.retainedNorms, severeTriggered, abilities);
       const dmg = dmgOf(finished.crits, finished.norms);
       if (dmg > bestDmg) {
         bestDmg = dmg;
@@ -661,23 +677,24 @@ export function applyPostRollModifications(
     return best!;
   }
 
-  return finishRendingAndObscured(crits, norms, accurateNorms, severeTriggered, abilities);
+  return finishRendingAndObscured(crits, norms, retainedNorms, severeTriggered, abilities);
 }
 
 // The damage-affecting tail shared by every roll: Rending promotes a rolled norm to a crit when a
-// crit is present (but not after Severe, and never an Accurate-retained norm), then ObscuredTarget
+// crit is present (but not after Severe, and never an already-retained norm), then ObscuredTarget
 // (if the defender has it) collapses crits into norms and discards one success.
 function finishRendingAndObscured(
   crits: number,
   norms: number,
-  accurateNorms: number,
+  retainedNorms: number,
   severeTriggered: boolean,
   abilities: Set<Ability>,
 ): { crits: number; norms: number } {
   // Rending doesn't work if Severe triggered (per KT2024 rules)
-  // Rending also cannot upgrade normals retained from Accurate (only rolled normals)
+  // Rending says "retain ... as a critical success instead", so it can only take a rolled normal,
+  // never one already retained from cover / Accurate / Punishing
   if (abilities.has(Ability.Rending) && !severeTriggered) {
-    const rollableNorms = Math.max(0, norms - accurateNorms);
+    const rollableNorms = Math.max(0, norms - retainedNorms);
     if (crits > 0 && rollableNorms > 0) {
       crits++;
       norms--;

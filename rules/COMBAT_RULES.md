@@ -24,6 +24,17 @@ Operatives in cover can retain **automatic saves** without rolling:
 - These are retained as normal successes (not critical)
 - Piercing can reduce the number of available cover saves
 
+**A dice can only be retained once.** A cover save was retained (as a normal success) without ever
+being rolled, so a rule that lets you *retain a normal success as a critical success instead*
+— Rending's wording, and the calculator's **NormsToCrits** input — has nothing left to do with it.
+Only saves that came off the dice can be promoted that way. Rules worded as *changing* a success
+(Severe: "change one of your normal successes to a critical success") do apply to an
+already-retained dice; the calculator spends those on a retained save first, so any rolled saves
+stay available for the retain-style promotions that follow.
+
+The same limit applies on the attack side to **Accurate** dice and to a **Punishing** fail
+retention: both are already-retained dice, so Rending and NormsToCrits can't promote them.
+
 ---
 
 ## Changes from Kill Team 2021
