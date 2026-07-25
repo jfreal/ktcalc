@@ -33,14 +33,18 @@ critical save instead cannot touch it — there is no un-retained dice there to 
 
 ### When all of this happens
 
-**All dice are retained and modified before any damage is inflicted.** Every effect on this page
-resolves in the dice step, while you are looking at your roll and deciding what to keep. Once the
+**All dice are retained and modified before any hits are resolved.** Every effect on this page
+happens in the dice step, while you are looking at your roll and deciding what to keep. Once the
 shooting or the combat starts resolving, the dice are what they are — you cannot hold a promotion
 in reserve and spend it later, after seeing how the first few hits land.
 
+The one thing that does happen during the dice step is **Devastating x**, which inflicts its damage
+the moment a critical success is retained. That still doesn't let you defer a decision: it means a
+promotion which creates a critical success pays out immediately, not that you may wait and see.
+
 That matters for reading the calculator's numbers: when it decides whether to take an optional rule
 (Punishing, Accurate, Mystic Scry), it is making that decision **once, in the dice step**, exactly
-as a player must. It never adapts the choice to how the damage turns out afterwards.
+as a player must. It never adapts the choice to how the damage turns out afterward.
 
 ---
 
@@ -54,10 +58,12 @@ can promote them afterwards.
 | **Cover saves** | Retained as a normal success without rolling | Defence |
 | **Accurate X** | "Retain up to x attack dice as normal successes without rolling them" | Attack |
 | **Punishing** | "You can **retain** one of your fails as a normal success instead of discarding it" | Attack |
+| **Mystic Scry**, fail→norm half | "**Retain** one of your fails as a normal success" | Attack |
 
-Cover and Accurate are obvious — the dice was never rolled. Punishing is the one people miss: it
-rescues a fail by *retaining* it, so that dice has now been retained once and is closed to further
-retention.
+Cover and Accurate are obvious — the dice was never rolled. Punishing and Mystic Scry's fail rescue
+are the ones people miss: they save a fail by *retaining* it, so that dice has now been retained
+once and is closed to further retention. That is why taking Mystic Scry's fail→norm option does not
+hand Rending another norm to promote.
 
 ---
 
@@ -145,9 +151,9 @@ and one NormsToCrits promotion, and no criticals.
 
 ## Optional rules the calculator decides for you
 
-Two of these effects are worded "you **can**", so taking them is a choice — and taking them is not
-always right, because the dice they produce are locked. The calculator resolves both lines and
-keeps whichever ends better, deciding in the dice step exactly as a player must.
+Three of these effects are worded "you **can**", so taking them is a choice — and taking them is not
+always right, because the dice they produce are locked. The calculator resolves every line and keeps
+whichever ends better, deciding in the dice step exactly as a player must.
 
 **Punishing.** With 1 critical hit and 1 fail, Rending, and FailsToNorms 1:
 
@@ -157,6 +163,12 @@ keeps whichever ends better, deciding in the dice step exactly as a player must.
   2 criticals (8 damage).
 
 The calculator declines. Whenever nothing else wants the fail, it takes the retention as usual.
+
+**Mystic Scry.** Retain one fail as a normal success, *or* one normal success as a critical success,
+or decline. The norm→crit half needs a norm that isn't already retained, and the fail→norm half
+produces a locked norm that Rending then can't promote — so the calculator scores all three lines
+through the remaining steps and keeps the best. Its own page, `/notes/mystic-scry-buff`, works
+through the Rending interaction.
 
 **Accurate.** The rule is "retain **up to** x dice", so retaining fewer is legal. A retained dice is
 locked, while rolling it can produce a critical success or a promotable norm. With one die at 2+ and

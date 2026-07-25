@@ -728,7 +728,7 @@ function outcomeValue(
   normDmg: number,
   critDmgPlusMwx: number,
 ): number {
-  const useFallback = normDmg === 0 && critDmgPlusMwx === 0;
+  const useFallback = !canRankByDamage(normDmg, critDmgPlusMwx);
   const critValue = useFallback ? 2 : critDmgPlusMwx;
   const normValue = useFallback ? 1 : normDmg;
   return outcome.crits * critValue + outcome.norms * normValue;

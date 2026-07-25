@@ -75,9 +75,12 @@ describe('calcDieChoice lookahead does not consume rng draws', () => {
 
   it('leaves the real fighters untouched (rng still attached, wounds unchanged)', () => {
     const { chooser, enemy } = countingRngFighters(FightStrategy.MaxDmgToEnemy);
+    const chooserRng = chooser.rng;
+    const enemyRng = enemy.rng;
     calcDieChoice(chooser, enemy);
-    expect(chooser.rng).not.toBeNull();
-    expect(enemy.rng).not.toBeNull();
+    // toBe, not just non-null: swapping in a different rng would also leave it non-null
+    expect(chooser.rng).toBe(chooserRng);
+    expect(enemy.rng).toBe(enemyRng);
     expect(chooser.currentWounds).toBe(6);
     expect(enemy.currentWounds).toBe(6);
   });

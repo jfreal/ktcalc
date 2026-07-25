@@ -27,10 +27,12 @@ Operatives in cover can retain **automatic saves** without rolling:
 **A dice can only be retained once.** A cover save was retained (as a normal success) without ever
 being rolled, so a rule that lets you *retain a normal success as a critical success instead*
 — Rending's wording, and the calculator's **NormsToCrits** input — has nothing left to do with it.
-Only saves that came off the dice can be promoted that way. Rules worded as *changing* a success
-(Severe: "change one of your normal successes to a critical success") do apply to an
-already-retained dice; the calculator spends those on a retained save first, so any rolled saves
-stay available for the retain-style promotions that follow.
+Only saves that came off the dice can be promoted that way.
+
+A rule worded as *changing* a success rather than retaining one is not restricted like this, and
+could act on a cover save. Note that the change-worded promotions Kill Team actually gives you
+(Severe, the KT2021 Waaagh ploy) are **attack** rules, so they never apply to saves — on defence
+the practical effect is simply that cover saves cannot be promoted.
 
 The same limit applies on the attack side to **Accurate** dice and to a **Punishing** fail
 retention: both are already-retained dice, so Rending and NormsToCrits can't promote them.

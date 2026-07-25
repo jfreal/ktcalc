@@ -21,10 +21,22 @@ export function mulberry32(seed: number): RngFunction {
 // by process exit; the key space is tiny (one entry per distinct fighter profile).
 const accurateChoiceCache = new Map<string, number>();
 
+// Identity fast path in front of the string cache: a run reuses the same Model, and the same
+// merged abilities Set unless ObscuredTarget forces a fresh copy, so identity alone usually answers
+// without building a key. Safe because the only field the sim loop mutates on a Model between
+// rounds is `wounds`, which no part of the Accurate decision reads.
+const accurateChoiceByIdentity = new WeakMap<Model, WeakMap<Set<Ability>, number>>();
+
 function accurateDiceToRetain(model: Model, abilities: Set<Ability>): number {
   const critDmgPlusMwx = model.critDmg + model.mwx;
   if (model.autoNorms <= 0 || !canRankByDamage(model.normDmg, critDmgPlusMwx)) {
     return model.autoNorms;
+  }
+
+  const byAbilities = accurateChoiceByIdentity.get(model);
+  const byIdentity = byAbilities?.get(abilities);
+  if (byIdentity !== undefined) {
+    return byIdentity;
   }
 
   const key = [
@@ -35,14 +47,18 @@ function accurateDiceToRetain(model: Model, abilities: Set<Ability>): number {
   ].join('|');
 
   const cached = accurateChoiceCache.get(key);
-  if (cached !== undefined) {
-    return cached;
-  }
-
-  const chosen = chooseAutoNorms(
+  const chosen = cached !== undefined ? cached : chooseAutoNorms(
     model.toAttackerDieProbs(), model.numDice, model.reroll, model.autoCrits, model.autoNorms,
     model.failsToNorms, model.normsToCrits, abilities, model.normDmg, critDmgPlusMwx);
-  accurateChoiceCache.set(key, chosen);
+
+  if (cached === undefined) {
+    accurateChoiceCache.set(key, chosen);
+  }
+  if (byAbilities) {
+    byAbilities.set(abilities, chosen);
+  } else {
+    accurateChoiceByIdentity.set(model, new WeakMap([[abilities, chosen]]));
+  }
   return chosen;
 }
 
