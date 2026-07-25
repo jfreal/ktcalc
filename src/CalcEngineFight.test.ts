@@ -99,6 +99,39 @@ describe('calcDieChoice lookahead does not consume rng draws', () => {
       expect(estimate.currentWounds).toBeCloseTo(10 - 3 * (5 / 6), 6);
     });
 
+    it('spends the relic across strikes instead of re-offering it at full odds', () => {
+      // The ignore is consumed by a SUCCESSFUL roll, so a later strike is only protected if every
+      // earlier attempt failed. Two 3-damage strikes, ignore on a 6 (p = 1/6):
+      //   strike 1: 3 * (1 - 1/6)                     = 2.5
+      //   strike 2: 3 * (1 - (5/6)(1/6))              = 2.5833...
+      // Applying the full ignore chance to both would give 5.0, crediting a relic already spent.
+      const { estimate } = estimateOf(
+        new Model(1, 3, 1, 2).setProp('saintlyRelics', SaintlyRelicsNormal));
+      const p = 1 / 6;
+
+      estimate.applyDmg(3);
+      estimate.applyDmg(3);
+
+      const expected = 3 * (1 - p) + 3 * (1 - (1 - p) * p);
+      const dealt = 10 - estimate.currentWounds; // estimateOf starts clones on 10 wounds
+      expect(dealt).toBeCloseTo(expected, 6);
+      expect(dealt).toBeGreaterThan(2 * 3 * (1 - p)); // strictly above the naive 5.0
+    });
+
+    it('matches the exact expectation over two relic-eligible strikes', () => {
+      // independent check of the same two strikes, enumerated rather than derived:
+      // strike 2 is protected only if strike 1's attempt failed, otherwise it takes full damage
+      const { estimate } = estimateOf(
+        new Model(1, 3, 1, 2).setProp('saintlyRelics', SaintlyRelicsNormal));
+      const p = 1 / 6;
+      const exact = 3 * (1 - p) + ((1 - p) * (3 * (1 - p)) + p * 3);
+
+      estimate.applyDmg(3);
+      estimate.applyDmg(3);
+
+      expect(10 - estimate.currentWounds).toBeCloseTo(exact, 6);
+    });
+
     it('ignores prevention it does not have', () => {
       const { estimate } = estimateOf(new Model(1, 3, 1, 2).setProp('wounds', 10));
       estimate.applyDmg(3);

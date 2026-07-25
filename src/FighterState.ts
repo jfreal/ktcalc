@@ -21,6 +21,9 @@ export default class FighterState {
   public rng: RngFunction | null;
   // set on lookahead clones only: apply damage prevention as expected values, never rolled
   public estimateMode: boolean = false;
+  // estimate mode only: probability the Saintly Relics ignore is still unspent. A failed roll does
+  // not consume it, so this decays by (1 - ignoreProb) per attempt rather than dropping to 0.
+  public estimateRelicAvailProb: number = 1;
 
   public constructor(
     profile: Model,
@@ -86,8 +89,13 @@ export default class FighterState {
     }
     if (relicWorthy && this.profile.usesSaintlyRelics()
       && !this.relicUsed && this.relicIgnoresUsed < maxRelicIgnoresPerBattle) {
-      // the ignore wipes the whole strike, so its expected cost is that share of the damage
-      dmg *= 1 - relicIgnoreProb(this.profile.saintlyRelics);
+      // The ignore wipes the whole strike, but only once: it is spent by a SUCCESSFUL roll, so a
+      // later strike is only protected if every earlier attempt failed. Weighting by the running
+      // availability probability keeps a multi-strike estimate honest — applying the full ignore
+      // chance to every strike would credit the defender with a relic it had already spent.
+      const ignoreProb = relicIgnoreProb(this.profile.saintlyRelics);
+      dmg *= 1 - this.estimateRelicAvailProb * ignoreProb;
+      this.estimateRelicAvailProb *= 1 - ignoreProb;
     }
     if (this.profile.usesFnp()) {
       // one roll per strike, each success shaving 1 damage
@@ -209,8 +217,10 @@ export default class FighterState {
       this.relicIgnoresUsed,
       this.hasDuelistParried,
     );
-    // carried so a lookahead nested inside a lookahead stays an estimate
+    // carried so a lookahead nested inside a lookahead stays an estimate, and so a nested clone
+    // doesn't hand the relic back after earlier strikes in the same estimate already spent it
     copy.estimateMode = this.estimateMode;
+    copy.estimateRelicAvailProb = this.estimateRelicAvailProb;
     return copy;
   }
 

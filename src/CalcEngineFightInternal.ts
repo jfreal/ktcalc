@@ -218,13 +218,12 @@ export function preferredStrikeChoice(chooser: FighterState, enemy: FighterState
   // better (we may die before spending the crit). So decide by simulating the rest of the
   // fight both ways against the enemy's ACTUAL strategy and keeping the better order.
   //
-  // The clones get their own lookahead generator (see LOOKAHEAD_SEED) instead of the live one, so
-  // the estimate models Feel No Pain and Saintly Relics without consuming Monte Carlo draws the
-  // real resolution needs. Both orders draw the same sequence, so the comparison isolates the
-  // choice. It remains a heuristic rather than an exact solver: it weighs one representative
-  // sequence of prevention rolls, not their full distribution, and Saintly Relics is order-
-  // sensitive (relicWorthy targets the biggest pending strike). Each branch spends a die before
-  // recursing, so total successes strictly decrease and this terminates.
+  // The clones are estimates (see asEstimate above): no rng at all, with Feel No Pain and Saintly
+  // Relics applied as expected values, so the comparison accounts for damage prevention without
+  // consuming Monte Carlo draws the real resolution needs. It remains a heuristic rather than an
+  // exact solver: expected values collapse the spread of prevention outcomes, and Saintly Relics is
+  // order-sensitive (relicWorthy targets the biggest pending strike). Each branch spends a die
+  // before recursing, so total successes strictly decrease and this terminates.
   const simulateFirstStrike = (first: FightChoice): [FighterState, FighterState] => {
     const ch = chooser.asEstimate();
     const en = enemy.asEstimate();
@@ -306,12 +305,11 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
     || chooser.strategy === FightStrategy.MinDmgToSelf)
   {
     // calc dmgs if all strike or all parry; take better option.
-    // Every clone gets its own lookahead generator rather than the live one (see LOOKAHEAD_SEED):
-    // these throwaway simulations must not consume draws the real per-round streams need, or the
-    // actual resolution desynchronizes and the Common Random Numbers scheme breaks — but they must
-    // still model Feel No Pain and Saintly Relics, since applyDmg skips both without an rng and a
-    // strike-vs-parry estimate that ignores damage prevention can pick the wrong die. The strike
-    // and parry branches draw identical sequences, so the comparison isolates the choice.
+    // Every clone is an estimate (see asEstimate above): these throwaway simulations must not
+    // consume draws the real per-round streams need, or the actual resolution desynchronizes and
+    // the Common Random Numbers scheme breaks — but they must still account for Feel No Pain and
+    // Saintly Relics, since a strike-vs-parry estimate that ignores damage prevention can pick the
+    // wrong die. Estimate mode gives both, by applying prevention as its expected value.
     const enemyWeStruck = enemy.withStrategy(FightStrategy.Strike).asEstimate();
     const enemyWeParried = enemyWeStruck.clone();
 
@@ -512,11 +510,11 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
     // the parry, then striking out the rest through the real resolution path.
     // This keeps resolveDieChoice the single source of truth for first-strike
     // handling (JaS Crits, JaS Normals, Hammerhand, Durable, etc.) instead of
-    // re-deriving it here. The clones get their own lookahead generator (see
-    // LOOKAHEAD_SEED) rather than the live one, so the estimate models Feel No
-    // Pain and Saintly Relics — the enemy surviving on Feel No Pain is exactly
-    // what decides whether this parry-then-kill line works — without consuming
-    // draws the real resolution needs.
+    // re-deriving it here. The clones are estimates (see asEstimate above), so
+    // Feel No Pain and Saintly Relics are applied as expected values — the enemy
+    // surviving on Feel No Pain is exactly what decides whether this
+    // parry-then-kill line works — without consuming draws the real resolution
+    // needs.
     const chooserClone = chooser.asEstimate();
     const enemyClone = enemy.asEstimate();
 
