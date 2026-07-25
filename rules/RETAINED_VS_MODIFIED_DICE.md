@@ -31,6 +31,17 @@ The clearest case is a **cover save**. You retain it as a normal success without
 dice. It is retained, immediately and permanently. A rule offering to retain a normal save as a
 critical save instead cannot touch it — there is no un-retained dice there to retain.
 
+### When all of this happens
+
+**All dice are retained and modified before any damage is inflicted.** Every effect on this page
+resolves in the dice step, while you are looking at your roll and deciding what to keep. Once the
+shooting or the combat starts resolving, the dice are what they are — you cannot hold a promotion
+in reserve and spend it later, after seeing how the first few hits land.
+
+That matters for reading the calculator's numbers: when it decides whether to take an optional rule
+(Punishing, Accurate, Mystic Scry), it is making that decision **once, in the dice step**, exactly
+as a player must. It never adapts the choice to how the damage turns out afterwards.
+
 ---
 
 ## Which effects lock a dice
@@ -118,6 +129,10 @@ normal save.
   the Punishing one, already retained.
 - **Result: 1 critical + 1 normal.** Not 2 criticals.
 
+Taking Punishing is still right here: declining would leave you with the critical hit alone. It
+stops being right only when something else can turn that same fail into a *promotable* norm — see
+the optional-rules section below.
+
 **Severe ordering.** You have 1 rolled normal success and 1 Accurate normal success, plus Severe
 and one NormsToCrits promotion, and no criticals.
 
@@ -128,21 +143,40 @@ and one NormsToCrits promotion, and no criticals.
 
 ---
 
+## Optional rules the calculator decides for you
+
+Two of these effects are worded "you **can**", so taking them is a choice — and taking them is not
+always right, because the dice they produce are locked. The calculator resolves both lines and
+keeps whichever ends better, deciding in the dice step exactly as a player must.
+
+**Punishing.** With 1 critical hit and 1 fail, Rending, and FailsToNorms 1:
+
+- **Taking it:** the fail becomes a locked norm, leaving FailsToNorms nothing and Rending no legal
+  target → 1 critical + 1 normal (7 damage at 3/4).
+- **Declining it:** FailsToNorms converts the fail to a *promotable* norm and Rending promotes it →
+  2 criticals (8 damage).
+
+The calculator declines. Whenever nothing else wants the fail, it takes the retention as usual.
+
+**Accurate.** The rule is "retain **up to** x dice", so retaining fewer is legal. A retained dice is
+locked, while rolling it can produce a critical success or a promotable norm. With one die at 2+ and
+a spare norm→crit promotion, rolling is worth 3.33 damage against a retained norm's 3.00 — so the
+calculator rolls. It keeps the maximum whenever that is at least as good, which is the usual case.
+
+---
+
 ## Known modelling limitations
 
-**Punishing is always taken.** In the rules Punishing is optional ("you *can* retain"), but the
-calculator applies it whenever it triggers. That is normally free, since a rescued fail is pure
-upside — but it is not free when another effect wants the same fail and would have produced a
-*promotable* norm from it. With 1 critical hit and 1 fail, Rending, and FailsToNorms 1:
+**Cover saves are always taken.** Cover is optional in the same way Accurate is, but ranking the
+choice properly needs the incoming hit profile — a normal save is worth half a critical save only
+against critical hits — which the dice step cannot see. Declining cover is a corner case regardless:
+a guaranteed normal save beats rolling for one at any save of 3+ or worse. If you want to check a
+specific matchup, set Cover Saves to 0 by hand and compare.
 
-- **Punishing off:** FailsToNorms converts the fail to a promotable norm, Rending promotes it →
-  **2 criticals** (8 damage at 3/4).
-- **Punishing on:** Punishing takes the fail first and produces a locked norm, leaving FailsToNorms
-  nothing and Rending no legal target → **1 critical + 1 normal** (7 damage).
-
-So in that narrow combination, switching Punishing on lowers the reported damage, where a player
-would simply decline it. Mystic Scry already models this kind of decision by scoring a "decline"
-option; Punishing does not yet.
+**Optional rules are ranked on pre-save damage.** When the calculator decides Punishing, Accurate or
+Mystic Scry, it scores the options by the damage the dice would deal, without weighing the
+defender's saves or Piercing. For save dice, where there is no damage to score, it falls back to
+counting a critical save as two normal saves.
 
 **FailsToNorms is treated as a change, not a retention.** The generic input is worded as a
 modification, so the norms it produces stay promotable. If your rule is worded "retain one of your

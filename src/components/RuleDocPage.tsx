@@ -37,6 +37,22 @@ const DOC_SEO: Record<string, { title: string; description: string; path: string
   },
 };
 
+// Markdown links to other in-app pages ("/rules/...") must go through react-router,
+// otherwise clicking one triggers a full page reload out of the SPA. External links
+// (and anchors) stay plain <a>, and get the usual new-tab safety attributes.
+export function MarkdownLink({ href, children }: React.ComponentPropsWithoutRef<'a'>) {
+  const isInternal = !!href && href.startsWith('/') && !href.startsWith('//');
+  if (isInternal) {
+    return <Link to={href}>{children}</Link>;
+  }
+  const isExternal = !!href && /^https?:/i.test(href);
+  return (
+    <a href={href} {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+      {children}
+    </a>
+  );
+}
+
 // Plain CSS can't import theme.ts, so the handful of theme colors this
 // stylesheet needs are threaded in as custom properties instead of being
 // hardcoded a second time in RuleDocPage.css.
@@ -101,7 +117,9 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
       )}
       {state.status === 'ok' && (
         <div className="RuleDoc-body">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{state.text}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>
+            {state.text}
+          </ReactMarkdown>
         </div>
       )}
 

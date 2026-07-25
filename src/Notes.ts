@@ -30,7 +30,9 @@ export const AutoNorms = new Note(
   `Accurate`,
   `How many attack dice can be automatically retained as a normal success. Much like cover saves but for attack dice. `
     + `A dice can only be retained once, so these are not promotable by NormsToCrits or Rending ("retain a normal success `
-    + `as a critical success instead"); Severe, which changes a success, can still take one.`,
+    + `as a critical success instead"); Severe, which changes a success, can still take one. The rule is "retain UP TO x", `
+    + `so the calculator retains fewer when rolling those dice is worth more (a high crit chance, or a spare promotion that `
+    + `a locked norm would waste), decided before the roll as at the table.`,
 );
 export const AutoCrits = new Note(
   `AutoCrits`,
@@ -39,8 +41,10 @@ export const AutoCrits = new Note(
 export const FailsToNorms = new Note(
   `FailsToNorms`,
   `How many fails can be modified to normal successes. These are treated as *changed* dice, so NormsToCrits and Rending `
-    + `can still promote them; if your rule instead says to *retain* a fail as a normal success, that die has been retained `
-    + `and cannot be promoted afterwards (use Punishing, which is modeled that way).`,
+    + `can still promote them. If your rule instead says to *retain* a fail as a normal success, that die has been retained `
+    + `and cannot be promoted afterwards. Punishing is modeled that way, but only fits if your rule shares its conditions `
+    + `(needs at least one crit, and is switched off against an Obscured target); for an unconditional retain-worded rule `
+    + `there is no exact input yet, and FailsToNorms will slightly overstate it whenever the new norm gets promoted.`,
 );
 export const NormsToCrits = new Note(
   `NormsToCrits`,
@@ -69,7 +73,8 @@ export const Severe = new Note(
 export const Punishing = new Note(
   `Punishing`,
   `Retain a failed hit as a normal hit if you had at least one critical hit; Necron equipment Starfire Core, Kommando strategic ploy "Dakka! Dakka! Dakka!", Hive Fleet equipment Toxin Sacs, Corsair Voidscarred strategic ploy Outcasts. `
-    + `That die has now been retained, so Rending and NormsToCrits cannot promote it.`,
+    + `That die has now been retained, so Rending and NormsToCrits cannot promote it. Punishing is optional ("you can `
+    + `retain"), so the calculator declines it on the rolls where taking it would starve a promotion of its only legal target.`,
 );
 export const CoverNormSaves = new Note(
   `Cover Saves`,

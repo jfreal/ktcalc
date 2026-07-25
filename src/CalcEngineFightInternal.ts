@@ -294,12 +294,22 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
   else if(chooser.strategy === FightStrategy.MaxDmgToEnemy
     || chooser.strategy === FightStrategy.MinDmgToSelf)
   {
-    // calc dmgs if all strike or all parry; take better option
+    // calc dmgs if all strike or all parry; take better option.
+    // rng is cleared on every clone so these throwaway lookaheads stay deterministic and don't
+    // consume draws from the real per-round Monte Carlo streams — advancing the shared rng here
+    // would desynchronize the actual resolution and defeat the Common Random Numbers scheme.
+    // Same discipline as preferredStrikeChoice and calcParryForLastEnemySuccessThenKillEnemy,
+    // and the same trade-off: rng-driven damage prevention (Feel No Pain, Saintly Relics) is not
+    // modeled inside the estimate, so the strike-vs-parry comparison is approximate for fighters
+    // using those.
     const enemyWeStruck = enemy.withStrategy(FightStrategy.Strike);
+    enemyWeStruck.rng = null;
     const enemyWeParried = enemyWeStruck.clone();
 
     const chooserWhoStruck = chooser.clone();
     const chooserWhoParried = chooser.clone();
+    chooserWhoStruck.rng = null;
+    chooserWhoParried.rng = null;
     const strikeChoice = preferredStrikeChoice(chooser, enemy);
     const parryChoice = wiseParry(chooser, enemy);
 

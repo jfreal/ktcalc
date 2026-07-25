@@ -48,6 +48,41 @@ function newFighterState(
   );
 }
 
+// The strike-vs-parry lookahead clones both fighters and resolves throwaway fights to compare the
+// options. Those clones must not hold the live rng: draws taken inside an estimate would be missing
+// from the real resolution, desynchronizing the Common Random Numbers streams the Fight engine
+// relies on for stable comparisons.
+describe('calcDieChoice lookahead does not consume rng draws', () => {
+  function countingRngFighters(strategy: FightStrategy) {
+    let draws = 0;
+    const rng = () => { draws++; return 0.5; };
+    // fnp gives the lookahead's resolveFight a reason to roll, so a leak shows up as draws > 0
+    const chooserProfile = new Model(2, 2, 1, 2).setProp('wounds', 6).setProp('fnp', 4);
+    const enemyProfile = new Model(2, 2, 1, 2).setProp('wounds', 6).setProp('fnp', 4);
+    const chooser = new FighterState(chooserProfile, 1, 1, strategy, 6, false, false, rng);
+    const enemy = new FighterState(enemyProfile, 1, 1, FightStrategy.Strike, 6, false, false, rng);
+    return { chooser, enemy, draws: () => draws };
+  }
+
+  it.each([
+    ['MaxDmgToEnemy', FightStrategy.MaxDmgToEnemy],
+    ['MinDmgToSelf', FightStrategy.MinDmgToSelf],
+  ])('%s: choosing a die takes no rng draws', (_name, strategy) => {
+    const { chooser, enemy, draws } = countingRngFighters(strategy as FightStrategy);
+    calcDieChoice(chooser, enemy);
+    expect(draws()).toBe(0);
+  });
+
+  it('leaves the real fighters untouched (rng still attached, wounds unchanged)', () => {
+    const { chooser, enemy } = countingRngFighters(FightStrategy.MaxDmgToEnemy);
+    calcDieChoice(chooser, enemy);
+    expect(chooser.rng).not.toBeNull();
+    expect(enemy.rng).not.toBeNull();
+    expect(chooser.currentWounds).toBe(6);
+    expect(enemy.currentWounds).toBe(6);
+  });
+});
+
 describe(wiseParry.name, () => {
   const guy1n = newFighterState(0, 1);
   const guy1c = newFighterState(1, 0);

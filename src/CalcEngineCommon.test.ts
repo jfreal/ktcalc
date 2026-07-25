@@ -318,6 +318,25 @@ describe(Common.calcFinalDiceProb.name, () => {
     const actual = Common.calcFinalDiceProb(dieProbs, 0, 0, 0, Ability.None, 0, 1, 0, 0, justMysticScryBuff, 3, 8);
     expectClose(actual, 1, 0, 1);
   });
+  // Punishing is optional ("you CAN retain one of your fails as a normal success"), and taking it
+  // is not always right: its norm is retained, so it cannot be promoted afterwards. When another
+  // effect wants the same fail and would leave it promotable, declining wins.
+  it('punishing declines when it would starve FailsToNorms + Rending {1c,0n,1f} => {2c,0n}', () => {
+    // take: {1c,1n retained}, Rending blocked = 4+3 = 7. decline: FailsToNorms makes a promotable
+    // norm, Rending promotes it = {2c,0n} = 8. The engine must pick the decline.
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 1, 0, punishingAndRending, 3, 4);
+    expectClose(actual, pc * pf * 2, 2, 0);
+  });
+  it('punishing is still taken when nothing else wants the fail {1c,0n,1f} => {1c,1n}', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, justPunishing, 3, 4);
+    expectClose(actual, pc * pf * 2, 1, 1);
+  });
+  it('punishing is still taken on the defence path, where there is no damage to rank by', () => {
+    // saves carry no damage numbers, so the fallback ranking (crit save = 2 norm saves) applies
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, justPunishing);
+    expectClose(actual, pc * pf * 2, 1, 1);
+  });
+
   it('mysticScryBuff + rending {1c,0n,1f} => {1c,1n} (the fail->norm retention is not Rending fodder)', () => {
     // fail->norm gives {1c,1n} where that norm is retained, so Rending cannot promote it: 4+3=7.
     // Declining leaves {1c,0n}=4 with nothing for Rending. Treating the new norm as rollable would

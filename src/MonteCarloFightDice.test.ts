@@ -172,6 +172,26 @@ describe('simulateFighterDice auto-dice and promotions', () => {
     expect(result).toStrictEqual({ crits: 2, norms: 0 });
   });
 
+  // Accurate is "retain up to x": the Fight engine must make the same decline-when-worse choice as
+  // the exact engine, and make it once up front rather than per simulated roll.
+  it('declines Accurate when rolling the dice is worth more', () => {
+    // 1 die at 2+, never-crit, one promotion spare: rolling gives 5/6 crits, retaining gives 1 norm
+    const model = new Model(1, 2, 3, 4).setProp('lethal', 7)
+      .setProp('normsToCrits', 1).setProp('autoNorms', 1);
+    const { avgCrits, avgNorms } = averageDiceResults(model);
+
+    expect(avgCrits).toBeCloseTo(5 / 6, 1);
+    expect(avgNorms).toBeCloseTo(0, 1);
+  });
+
+  it('keeps Accurate when the guaranteed norm is worth more', () => {
+    const model = new Model(1, 5, 3, 4).setProp('autoNorms', 1);
+    const { avgCrits, avgNorms } = averageDiceResults(model);
+
+    expect(avgCrits).toBeCloseTo(0, 1);
+    expect(avgNorms).toBeCloseTo(1, 1);
+  });
+
   it('Severe promotes one norm to crit when no crits rolled', () => {
     // WS 6+ means no norms possible, only crits and fails - not great for testing Severe
     // Use WS 3+ and Lethal 7 (never-crit) so all successes are norms
