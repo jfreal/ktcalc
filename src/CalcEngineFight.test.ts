@@ -73,6 +73,62 @@ describe('calcDieChoice lookahead does not consume rng draws', () => {
     expect(draws()).toBe(0);
   });
 
+  // The lookahead must still ACCOUNT for damage prevention — an estimate that ignores Feel No Pain
+  // or Saintly Relics compares damage the defender would in fact have prevented, and can pick the
+  // wrong die. Estimate clones apply prevention as its expected value instead of rolling it.
+  describe('estimate clones model prevention without rolling', () => {
+    function estimateOf(profile: Model) {
+      const live = new FighterState(profile, 1, 0, FightStrategy.Strike, 10, false, false, () => {
+        throw new Error('estimate clone must not draw from the rng');
+      });
+      return { live, estimate: live.asEstimate() };
+    }
+
+    it('applies Feel No Pain as its expected reduction', () => {
+      // fnp 4+ succeeds on 3 of 6, so a 3-damage strike is expected to land 3 - 0.5
+      const { estimate } = estimateOf(new Model(1, 3, 1, 2).setProp('wounds', 10).setProp('fnp', 4));
+      estimate.applyDmg(3);
+      expect(estimate.currentWounds).toBeCloseTo(10 - 2.5, 6);
+    });
+
+    it('applies Saintly Relics as its expected reduction', () => {
+      // 1 D6 ignoring the whole strike on a 6: expected damage is 3 * 5/6
+      const { estimate } = estimateOf(
+        new Model(1, 3, 1, 2).setProp('wounds', 10).setProp('saintlyRelics', SaintlyRelicsNormal));
+      estimate.applyDmg(3);
+      expect(estimate.currentWounds).toBeCloseTo(10 - 3 * (5 / 6), 6);
+    });
+
+    it('ignores prevention it does not have', () => {
+      const { estimate } = estimateOf(new Model(1, 3, 1, 2).setProp('wounds', 10));
+      estimate.applyDmg(3);
+      expect(estimate.currentWounds).toBe(7);
+    });
+
+    it('never draws from the rng, and leaves the live fighter alone', () => {
+      const { live, estimate } = estimateOf(
+        new Model(1, 3, 1, 2).setProp('wounds', 10).setProp('fnp', 4));
+      expect(estimate.rng).toBeNull();
+      estimate.applyDmg(3); // the live rng throws if touched
+      expect(live.currentWounds).toBe(10);
+      expect(live.rng).not.toBeNull();
+    });
+
+    it('stays an estimate through nested clones', () => {
+      const { estimate } = estimateOf(new Model(1, 3, 1, 2).setProp('wounds', 10).setProp('fnp', 4));
+      const nested = estimate.clone();
+      nested.applyDmg(3);
+      expect(nested.currentWounds).toBeCloseTo(10 - 2.5, 6);
+    });
+  });
+
+  it('is deterministic — the same position always yields the same choice', () => {
+    const first = countingRngFighters(FightStrategy.MaxDmgToEnemy);
+    const second = countingRngFighters(FightStrategy.MaxDmgToEnemy);
+    expect(calcDieChoice(first.chooser, first.enemy))
+      .toBe(calcDieChoice(second.chooser, second.enemy));
+  });
+
   it('leaves the real fighters untouched (rng still attached, wounds unchanged)', () => {
     const { chooser, enemy } = countingRngFighters(FightStrategy.MaxDmgToEnemy);
     const chooserRng = chooser.rng;

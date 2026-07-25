@@ -8,6 +8,22 @@ import { simulateFighterDice, mulberry32 } from "src/MonteCarloFightDice";
 
 const DEFAULT_SEED = 0x4B54_4341; // "KTCA" - deterministic default for stable results
 
+// Lookaheads (strike-vs-parry, strike order, parry-then-kill) resolve throwaway fights to compare
+// options, via FighterState.asEstimate(). Estimate clones carry no rng and prevent damage by
+// expected value instead of rolling, which is what makes the comparison both safe and stable:
+//
+//  - they never draw from the live per-round streams, so the real resolution keeps the draws it
+//    needs and the Common Random Numbers scheme holds;
+//  - they still account for Feel No Pain and Saintly Relics, so an estimate isn't comparing damage
+//    the defender would in fact have prevented;
+//  - and being deterministic and smooth in their inputs, a decision only flips when the underlying
+//    trade-off flips. Rolling against a fixed seed would instead make each estimate a step function
+//    of its inputs, which measurably reintroduced the jitter CRN removed (raising a fighter's own
+//    crit damage nudged that fighter's own death chance up again).
+//
+// It stays a heuristic: expected values ignore the spread of prevention outcomes, and Saintly
+// Relics is order-sensitive (relicWorthy targets the biggest pending strike).
+
 // Distinct per-simulation RNG streams so a change to one input can't shift the
 // draw alignment of unrelated streams. See mixSeed / the sim loop below.
 const enum RngStream {
@@ -202,21 +218,16 @@ export function preferredStrikeChoice(chooser: FighterState, enemy: FighterState
   // better (we may die before spending the crit). So decide by simulating the rest of the
   // fight both ways against the enemy's ACTUAL strategy and keeping the better order.
   //
-  // rng is cleared on the clones so the estimate is deterministic and doesn't consume Monte
-  // Carlo draws — same discipline as calcParryForLastEnemySuccessThenKillEnemy. (Advancing the
-  // shared rng here would corrupt the real resolution's draws.) The trade-off is that rng-driven
-  // damage prevention (Feel No Pain, Saintly Relics) isn't modeled in this estimate, so the
-  // comparison is APPROXIMATE for fighters using those. In the common parry shape the direction
-  // still holds (norm-first lands crit+norm vs crit-first's crit alone), but it isn't guaranteed
-  // in general — Saintly Relics is order-sensitive (relicWorthy targets the biggest pending
-  // strike), so with unlucky/lucky ignores the truly optimal order could differ. This is a
-  // heuristic tie-breaker, not an exact solver. Each branch spends a die before recursing, so
-  // total successes strictly decrease and this terminates.
+  // The clones get their own lookahead generator (see LOOKAHEAD_SEED) instead of the live one, so
+  // the estimate models Feel No Pain and Saintly Relics without consuming Monte Carlo draws the
+  // real resolution needs. Both orders draw the same sequence, so the comparison isolates the
+  // choice. It remains a heuristic rather than an exact solver: it weighs one representative
+  // sequence of prevention rolls, not their full distribution, and Saintly Relics is order-
+  // sensitive (relicWorthy targets the biggest pending strike). Each branch spends a die before
+  // recursing, so total successes strictly decrease and this terminates.
   const simulateFirstStrike = (first: FightChoice): [FighterState, FighterState] => {
-    const ch = chooser.clone();
-    const en = enemy.clone();
-    ch.rng = null;
-    en.rng = null;
+    const ch = chooser.asEstimate();
+    const en = enemy.asEstimate();
     resolveDieChoice(first, ch, en);
     resolveFight(en, ch); // enemy acts next
     return [ch, en];
@@ -295,21 +306,17 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
     || chooser.strategy === FightStrategy.MinDmgToSelf)
   {
     // calc dmgs if all strike or all parry; take better option.
-    // rng is cleared on every clone so these throwaway lookaheads stay deterministic and don't
-    // consume draws from the real per-round Monte Carlo streams — advancing the shared rng here
-    // would desynchronize the actual resolution and defeat the Common Random Numbers scheme.
-    // Same discipline as preferredStrikeChoice and calcParryForLastEnemySuccessThenKillEnemy,
-    // and the same trade-off: rng-driven damage prevention (Feel No Pain, Saintly Relics) is not
-    // modeled inside the estimate, so the strike-vs-parry comparison is approximate for fighters
-    // using those.
-    const enemyWeStruck = enemy.withStrategy(FightStrategy.Strike);
-    enemyWeStruck.rng = null;
+    // Every clone gets its own lookahead generator rather than the live one (see LOOKAHEAD_SEED):
+    // these throwaway simulations must not consume draws the real per-round streams need, or the
+    // actual resolution desynchronizes and the Common Random Numbers scheme breaks — but they must
+    // still model Feel No Pain and Saintly Relics, since applyDmg skips both without an rng and a
+    // strike-vs-parry estimate that ignores damage prevention can pick the wrong die. The strike
+    // and parry branches draw identical sequences, so the comparison isolates the choice.
+    const enemyWeStruck = enemy.withStrategy(FightStrategy.Strike).asEstimate();
     const enemyWeParried = enemyWeStruck.clone();
 
-    const chooserWhoStruck = chooser.clone();
-    const chooserWhoParried = chooser.clone();
-    chooserWhoStruck.rng = null;
-    chooserWhoParried.rng = null;
+    const chooserWhoStruck = chooser.asEstimate();
+    const chooserWhoParried = chooser.asEstimate();
     const strikeChoice = preferredStrikeChoice(chooser, enemy);
     const parryChoice = wiseParry(chooser, enemy);
 
@@ -505,13 +512,13 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
     // the parry, then striking out the rest through the real resolution path.
     // This keeps resolveDieChoice the single source of truth for first-strike
     // handling (JaS Crits, JaS Normals, Hammerhand, Durable, etc.) instead of
-    // re-deriving it here. rng is cleared on the clones so the estimate stays
-    // deterministic and doesn't consume Monte Carlo draws (matching the old
-    // possibleDmg-based estimate, which also ignored Feel No Pain).
-    const chooserClone = chooser.clone();
-    const enemyClone = enemy.clone();
-    chooserClone.rng = null;
-    enemyClone.rng = null;
+    // re-deriving it here. The clones get their own lookahead generator (see
+    // LOOKAHEAD_SEED) rather than the live one, so the estimate models Feel No
+    // Pain and Saintly Relics — the enemy surviving on Feel No Pain is exactly
+    // what decides whether this parry-then-kill line works — without consuming
+    // draws the real resolution needs.
+    const chooserClone = chooser.asEstimate();
+    const enemyClone = enemy.asEstimate();
 
     resolveDieChoice(fightChoice, chooserClone, enemyClone);
 
