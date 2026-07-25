@@ -87,6 +87,7 @@ export default class FighterState {
     if (dmg <= 0) {
       return dmg;
     }
+    let relicSurvivalProb = 1;
     if (relicWorthy && this.profile.usesSaintlyRelics()
       && !this.relicUsed && this.relicIgnoresUsed < maxRelicIgnoresPerBattle) {
       // The ignore wipes the whole strike, but only once: it is spent by a SUCCESSFUL roll, so a
@@ -94,14 +95,18 @@ export default class FighterState {
       // availability probability keeps a multi-strike estimate honest — applying the full ignore
       // chance to every strike would credit the defender with a relic it had already spent.
       const ignoreProb = relicIgnoreProb(this.profile.saintlyRelics);
-      dmg *= 1 - this.estimateRelicAvailProb * ignoreProb;
+      relicSurvivalProb -= this.estimateRelicAvailProb * ignoreProb;
       this.estimateRelicAvailProb *= 1 - ignoreProb;
     }
     if (this.profile.usesFnp()) {
       // one roll per strike, each success shaving 1 damage
       dmg = Math.max(0, dmg - (7 - this.profile.fnp) / 6);
     }
-    return dmg;
+    // Feel No Pain only rolls on a strike the relic did NOT ignore, so the two prevention steps
+    // compose as P(not ignored) * E[damage after FNP] rather than stacking on the same strike.
+    // Subtracting the FNP expectation from already-relic-scaled damage would spend FNP on the
+    // probability mass where the strike had been wiped out entirely.
+    return dmg * relicSurvivalProb;
   }
 
   private rollFnp(dmg: number): number {

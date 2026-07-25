@@ -132,6 +132,19 @@ describe('calcDieChoice lookahead does not consume rng draws', () => {
       expect(10 - estimate.currentWounds).toBeCloseTo(exact, 6);
     });
 
+    it('composes relics and Feel No Pain without double-counting prevention', () => {
+      // FNP only rolls on a strike the relic did NOT ignore, so the two compose as
+      // P(not ignored) * E[damage after FNP] = (5/6) * (3 - 1/2) = 2.0833...
+      // Subtracting FNP from already-relic-scaled damage would give 2.5 - 0.5 = 2.0, spending FNP
+      // on the probability mass where the strike had been wiped out entirely.
+      const { estimate } = estimateOf(new Model(1, 3, 1, 2)
+        .setProp('fnp', 4).setProp('saintlyRelics', SaintlyRelicsNormal));
+
+      estimate.applyDmg(3);
+
+      expect(10 - estimate.currentWounds).toBeCloseTo((1 - 1 / 6) * (3 - 0.5), 6);
+    });
+
     it('ignores prevention it does not have', () => {
       const { estimate } = estimateOf(new Model(1, 3, 1, 2).setProp('wounds', 10));
       estimate.applyDmg(3);

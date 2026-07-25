@@ -151,9 +151,10 @@ and one NormsToCrits promotion, and no criticals.
 
 ## Optional rules the calculator decides for you
 
-Three of these effects are worded "you **can**", so taking them is a choice — and taking them is not
-always right, because the dice they produce are locked. The calculator resolves every line and keeps
-whichever ends better, deciding in the dice step exactly as a player must.
+Three of these effects are **optional** — Punishing and Mystic Scry say "you *can*", and Accurate
+lets you retain "*up to* x" — so taking them in full is a choice, and not always the right one,
+because the dice they produce are locked. The calculator resolves every line and keeps whichever
+ends better, deciding in the dice step exactly as a player must.
 
 **Punishing.** With 1 critical hit and 1 fail, Rending, and FailsToNorms 1:
 
