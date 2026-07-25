@@ -278,6 +278,7 @@ describe(Common.calcFinalDiceProb.name, () => {
   // success (Severe, Waaagh) still can, and spend a retained norm first so the rollable ones stay
   // available for the retain-style promotions that follow.
   const justSevere = new Set<Ability>([Ability.Severe]);
+  const justWaaagh = new Set<Ability>([Ability.NormToCritIfAtLeastTwoNorms]);
   const punishingAndRending = new Set<Ability>([Ability.Punishing, Ability.Rending]);
 
   it('normsToCrits with accurate/cover: {0c,0n rolled,1n retained} => {0c,1n} (retained norm cannot be promoted)', () => {
@@ -305,6 +306,24 @@ describe(Common.calcFinalDiceProb.name, () => {
     // norm for the normsToCrits retention. Taking the rolled norm instead would end at {1c,1n}.
     const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 1, 0, 1, justSevere);
     expectClose(actual, pn, 2, 0);
+  });
+  it('waaagh + normsToCrits: {0c,1n rolled,1n retained} => {2c,0n} (Waaagh promotes the retained norm)', () => {
+    // Same ordering as Severe: Waaagh promotes rather than retains, so it spends the retained norm
+    // and leaves the rolled one for normsToCrits.
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 1, 0, 1, justWaaagh);
+    expectClose(actual, pn, 2, 0);
+  });
+  it('mysticScryBuff with only a retained norm {0c,0n,0f,1n retained} => {0c,1n} (nothing it may retain)', () => {
+    // crit-favored damage (3/8), but the lone norm is already retained and there is no fail to take.
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 0, 0, Ability.None, 0, 1, 0, 0, justMysticScryBuff, 3, 8);
+    expectClose(actual, 1, 0, 1);
+  });
+  it('mysticScryBuff + rending {1c,0n,1f} => {1c,1n} (the fail->norm retention is not Rending fodder)', () => {
+    // fail->norm gives {1c,1n} where that norm is retained, so Rending cannot promote it: 4+3=7.
+    // Declining leaves {1c,0n}=4 with nothing for Rending. Treating the new norm as rollable would
+    // have wrongly produced {2c,0n}.
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, rendingAndMysticScryBuff, 3, 4);
+    expectClose(actual, pc * pf * 2, 1, 1);
   });
 });
 

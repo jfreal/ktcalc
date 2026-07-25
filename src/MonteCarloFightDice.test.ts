@@ -134,6 +134,44 @@ describe('simulateFighterDice auto-dice and promotions', () => {
     expect(avgCritsRend).toBeGreaterThan(avgCritsNone);
   });
 
+  // A dice can only be retained once, so an auto-retained norm (cover / Accurate) cannot then be
+  // retained as a crit. These cases are deterministic - no die is ever rolled that can vary the
+  // outcome - so they assert exact counts rather than averages.
+  it('normsToCrits cannot promote an auto-retained norm', () => {
+    // 1 die, all of it consumed by the auto-norm, so the only norm was never rolled
+    const model = new Model(1, 6, 1, 2).setProp('autoNorms', 1).setProp('normsToCrits', 1);
+    const result = simulateFighterDice(model, undefined, mulberry32(7));
+
+    expect(result).toStrictEqual({ crits: 0, norms: 1 });
+  });
+
+  it('normsToCrits promotes a rolled norm', () => {
+    // 1 die that always lands a norm (stat 1+, never-crit), so the promotion has a legal target
+    const model = new Model(1, 1, 1, 2).setProp('lethal', 7).setProp('normsToCrits', 1);
+    const result = simulateFighterDice(model, undefined, mulberry32(7));
+
+    expect(result).toStrictEqual({ crits: 1, norms: 0 });
+  });
+
+  it('normsToCrits promotes the rolled norm, not the auto-retained one', () => {
+    // 2 dice: 1 auto-retained norm + 1 rolled always-norm, and only one promotion available
+    const model = new Model(2, 1, 1, 2).setProp('lethal', 7)
+      .setProp('autoNorms', 1).setProp('normsToCrits', 1);
+    const result = simulateFighterDice(model, undefined, mulberry32(7));
+
+    expect(result).toStrictEqual({ crits: 1, norms: 1 });
+  });
+
+  it('Severe changes an auto-retained norm, freeing the rolled one for normsToCrits', () => {
+    const model = new Model(2, 1, 1, 2, 0, new Set([Ability.Severe])).setProp('lethal', 7)
+      .setProp('autoNorms', 1).setProp('normsToCrits', 1);
+    const result = simulateFighterDice(model, undefined, mulberry32(7));
+
+    // Severe takes the retained norm; normsToCrits then takes the rolled one. Had Severe taken the
+    // rolled norm, the retained one would be unpromotable and this would be {1c,1n}.
+    expect(result).toStrictEqual({ crits: 2, norms: 0 });
+  });
+
   it('Severe promotes one norm to crit when no crits rolled', () => {
     // WS 6+ means no norms possible, only crits and fails - not great for testing Severe
     // Use WS 3+ and Lethal 7 (never-crit) so all successes are norms

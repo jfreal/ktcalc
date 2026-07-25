@@ -7,7 +7,8 @@
 - Rules worded as *changing* a success rather than retaining one — **Severe** ("change one of your normal successes to a critical success") and the KT2021 **Waaagh** ploy — still apply to an already-retained dice, and now deliberately spend a retained norm first so the rolled ones stay available for the retain-style promotions that follow. Example: a rolled norm plus a cover/Accurate norm with Severe and one NormsToCrits now ends at 2 crits instead of 1 crit + 1 norm.
 - The **FailsToNorms** input is unchanged: it is treated as a *change* effect, so its norms remain promotable. The in-app note now says so and points at Punishing for the retain-worded version.
 - Mystic Scry's fail→norm option now hands Rending a *retained* norm, so it no longer double-counts that die as promotable.
-- Updated the in-app notes (Cover Saves, NormsToCrits, FailsToNorms, Accurate, Rending, Severe, Punishing) and `rules/COMBAT_RULES.md` / `rules/WEAPON_RULES.md`; two Shoot tests that asserted the old cover-save promotion were corrected, with new tests covering rolled-vs-retained saves, Punishing + Rending, and the Severe ordering.
+- Updated the in-app notes (Cover Saves, NormsToCrits, FailsToNorms, Accurate, Rending, Severe, Punishing) and `rules/COMBAT_RULES.md` / `rules/WEAPON_RULES.md`.
+- Tests: the two Shoot tests that asserted the old cover-save promotion were corrected, and coverage was added across all three layers — Shoot damage probabilities (cover vs rolled saves, and a mixed pool where only the rolled save promotes), the shared post-roll step (Accurate/cover, Punishing, Punishing + Rending, more promotions than rollable norms, Mystic Scry, and the Severe/Waaagh ordering), and the Monte Carlo Fight engine (deterministic single-roll cases asserting exact crit/norm counts). Each was checked against a mutated engine to confirm it fails without the fix.
 
 ## July 2026 - Fight: stable results via Common Random Numbers
 
