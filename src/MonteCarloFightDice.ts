@@ -1,6 +1,6 @@
 import Model from "src/Model";
 import Ability from "src/Ability";
-import { applyPostRollModifications } from "src/CalcEngineCommon";
+import { applyPostRollModifications, canRankByDamage, chooseAutoNorms } from "src/CalcEngineCommon";
 
 export type RngFunction = () => number; // returns [0, 1)
 
@@ -15,6 +15,40 @@ export function mulberry32(seed: number): RngFunction {
   };
 }
 
+
+// simulateFighterDice runs tens of thousands of times per comparison, so the Accurate decision -
+// which enumerates exact distributions - is cached by the inputs that can change it. Cleared only
+// by process exit; the key space is tiny (one entry per distinct fighter profile).
+const accurateChoiceCache = new Map<string, number>();
+
+// Keyed by VALUE, not by object identity: Model.setProp mutates decision inputs in place and
+// setAbility mutates the ability Set in place, so a cache keyed on (model, abilities) identity
+// would hand back a stale retention count after any such edit. Building the key is cheap next to
+// that risk, and the early return below keeps it off the path entirely unless Accurate is in play.
+function accurateDiceToRetain(model: Model, abilities: Set<Ability>): number {
+  const critDmgPlusMwx = model.critDmg + model.mwx;
+  if (model.autoNorms <= 0 || !canRankByDamage(model.normDmg, critDmgPlusMwx)) {
+    return model.autoNorms;
+  }
+
+  const key = [
+    model.numDice, model.diceStat, model.critSkill(), model.reroll,
+    model.autoCrits, model.autoNorms, model.failsToNorms, model.normsToCrits,
+    model.normDmg, critDmgPlusMwx,
+    Array.from(abilities).sort().join('.'),
+  ].join('|');
+
+  const cached = accurateChoiceCache.get(key);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const chosen = chooseAutoNorms(
+    model.toAttackerDieProbs(), model.numDice, model.reroll, model.autoCrits, model.autoNorms,
+    model.failsToNorms, model.normsToCrits, abilities, model.normDmg, critDmgPlusMwx);
+  accurateChoiceCache.set(key, chosen);
+  return chosen;
+}
 
 export function simulateFighterDice(
   model: Model,
@@ -36,7 +70,10 @@ export function simulateFighterDice(
   let numDice = model.numDice;
   const autoCrits = Math.min(model.autoCrits, numDice);
   numDice -= autoCrits;
-  const autoNorms = Math.min(model.autoNorms, numDice);
+  // Accurate is "retain UP TO x", and retaining fewer is sometimes better (a retained norm can't be
+  // promoted). The choice is made before rolling, so it must be the same for every simulation -
+  // hence it is decided from the exact distributions and cached, never re-decided per roll.
+  const autoNorms = Math.min(accurateDiceToRetain(model, abilities), numDice);
   numDice -= autoNorms;
 
   // Roll raw d6 values (inlined rollD6 to avoid function call overhead)

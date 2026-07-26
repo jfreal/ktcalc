@@ -271,6 +271,79 @@ describe(Common.calcFinalDiceProb.name, () => {
     const actual = Common.calcFinalDiceProb(dieProbs, 0, 2, 0, Ability.None, 0, 0, 0, 0, rendingAndMysticScryBuff, 3, 4);
     expectClose(actual, pn * pn, 2, 0);
   });
+
+  // A dice can only be retained once, so "retain a normal success as a critical success instead"
+  // rules (the normsToCrits input, Rending) can't touch a norm that was already retained: cover
+  // saves / Accurate (never rolled) or a Punishing fail retention. Rules worded as *changing* a
+  // success (Severe, Waaagh) still can, and spend a retained norm first so the rollable ones stay
+  // available for the retain-style promotions that follow.
+  const justSevere = new Set<Ability>([Ability.Severe]);
+  const justWaaagh = new Set<Ability>([Ability.NormToCritIfAtLeastTwoNorms]);
+  const punishingAndRending = new Set<Ability>([Ability.Punishing, Ability.Rending]);
+
+  it('normsToCrits with accurate/cover: {0c,0n rolled,1n retained} => {0c,1n} (retained norm cannot be promoted)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 0, 0, Ability.None, 0, 1, 0, 1);
+    expectClose(actual, 1, 0, 1);
+  });
+  it('normsToCrits with accurate/cover: {0c,1n rolled,1n retained} => {1c,1n} (only the rolled norm promotes)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 1, 0, 1);
+    expectClose(actual, pn, 1, 1);
+  });
+  it('normsToCrits with 2 promotions and 1 rolled + 1 retained norm => {1c,1n} (promotions cannot stack onto the retained norm)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 1, 0, 2);
+    expectClose(actual, pn, 1, 1);
+  });
+  it('normsToCrits with punishing {1c,0n,1f} => {1c,1n} (the Punishing norm is already retained)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 1, justPunishing);
+    expectClose(actual, pc * pf * 2, 1, 1);
+  });
+  it('punishing + rending {1c,0n,1f} => {1c,1n} (Rending cannot re-retain the Punishing norm)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, punishingAndRending);
+    expectClose(actual, pc * pf * 2, 1, 1);
+  });
+  it('severe + normsToCrits: {0c,1n rolled,1n retained} => {2c,0n} (Severe changes the retained norm)', () => {
+    // Severe may change any normal success, so it takes the retained one; that leaves the rolled
+    // norm for the normsToCrits retention. Taking the rolled norm instead would end at {1c,1n}.
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 1, 0, 1, justSevere);
+    expectClose(actual, pn, 2, 0);
+  });
+  it('waaagh + normsToCrits: {0c,1n rolled,1n retained} => {2c,0n} (Waaagh promotes the retained norm)', () => {
+    // Same ordering as Severe: Waaagh promotes rather than retains, so it spends the retained norm
+    // and leaves the rolled one for normsToCrits.
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 1, 0, 1, justWaaagh);
+    expectClose(actual, pn, 2, 0);
+  });
+  it('mysticScryBuff with only a retained norm {0c,0n,0f,1n retained} => {0c,1n} (nothing it may retain)', () => {
+    // crit-favored damage (3/8), but the lone norm is already retained and there is no fail to take.
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 0, 0, Ability.None, 0, 1, 0, 0, justMysticScryBuff, 3, 8);
+    expectClose(actual, 1, 0, 1);
+  });
+  // Punishing is optional ("you CAN retain one of your fails as a normal success"), and taking it
+  // is not always right: its norm is retained, so it cannot be promoted afterwards. When another
+  // effect wants the same fail and would leave it promotable, declining wins.
+  it('punishing declines when it would starve FailsToNorms + Rending {1c,0n,1f} => {2c,0n}', () => {
+    // take: {1c,1n retained}, Rending blocked = 4+3 = 7. decline: FailsToNorms makes a promotable
+    // norm, Rending promotes it = {2c,0n} = 8. The engine must pick the decline.
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 1, 0, punishingAndRending, 3, 4);
+    expectClose(actual, pc * pf * 2, 2, 0);
+  });
+  it('punishing is still taken when nothing else wants the fail {1c,0n,1f} => {1c,1n}', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, justPunishing, 3, 4);
+    expectClose(actual, pc * pf * 2, 1, 1);
+  });
+  it('punishing is still taken on the defence path, where there is no damage to rank by', () => {
+    // saves carry no damage numbers, so the fallback ranking (crit save = 2 norm saves) applies
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, justPunishing);
+    expectClose(actual, pc * pf * 2, 1, 1);
+  });
+
+  it('mysticScryBuff + rending {1c,0n,1f} => {1c,1n} (the fail->norm retention is not Rending fodder)', () => {
+    // fail->norm gives {1c,1n} where that norm is retained, so Rending cannot promote it: 4+3=7.
+    // Declining leaves {1c,0n}=4 with nothing for Rending. Treating the new norm as rollable would
+    // have wrongly produced {2c,0n}.
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, rendingAndMysticScryBuff, 3, 4);
+    expectClose(actual, pc * pf * 2, 1, 1);
+  });
 });
 
 /*

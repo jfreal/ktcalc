@@ -15,6 +15,8 @@
 - [Combat rules](https://ktcalc.com/rules/combat/): how the combat math is modeled.
 - [Fight rules](https://ktcalc.com/rules/fight/): how the fighting sequence is modeled.
 - [Weapon rules](https://ktcalc.com/rules/weapon/): supported weapon special rules and how they affect the math.
+- [When not to take cover saves](https://ktcalc.com/rules/cover-saves/): the rare matchups where declining an optional cover save reduces damage, with measured numbers.
+- [Retained vs modified dice](https://ktcalc.com/rules/retained-vs-modified/): why a dice can only be retained once, which rules lock a dice (cover, Accurate, Punishing) and which can still change one (Severe, Waaagh).
 
 ## About
 Kill Team is a tabletop skirmish game by Games Workshop. ktcalc is an unofficial,

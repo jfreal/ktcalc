@@ -45,6 +45,20 @@ const rulesDocs: DocLink[] = [
       'The alternating strike/parry sequence, what a parry can cancel, the engine’s strike-vs-parry decision logic, and hand-verifiable scenarios.',
   },
   {
+    title: 'Retained vs modified dice — why cover saves cannot be promoted',
+    href: '/rules/retained-vs-modified',
+    blurb:
+      'A dice can only be retained once. Sorts every effect into the ones that lock a dice (cover, Accurate, Punishing) ' +
+      'and the ones that can still change it (Severe, Waaagh), and explains what the calculator does with each.',
+  },
+  {
+    title: 'When not to take cover saves',
+    href: '/rules/cover-saves',
+    blurb:
+      'Cover is optional, and occasionally worth declining: with norm\u2192crit save promotions against a mostly-critical '
+      + 'attack, rolling the dice beats a locked normal save. Measured numbers, plus why the calculator always takes cover.',
+  },
+  {
     title: 'Weapon rules — all weapon rule effects',
     href: '/rules/weapon',
     blurb:

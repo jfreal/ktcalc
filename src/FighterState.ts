@@ -4,7 +4,7 @@ import FightChoice from "src/FightChoice";
 import Ability from "./Ability";
 import { MinCritDmgAfterDurable } from "./KtMisc";
 import { RngFunction } from "src/MonteCarloFightDice";
-import { maxRelicIgnoresPerBattle, relicDiceCount } from "src/SaintlyRelics";
+import { maxRelicIgnoresPerBattle, relicDiceCount, relicIgnoreProb } from "src/SaintlyRelics";
 
 export default class FighterState {
   public profile: Model;
@@ -19,6 +19,11 @@ export default class FighterState {
   public relicIgnoresUsed: number; // SaintlyRelics: ignores spent so far this battle (capped per battle)
   public hasDuelistParried: boolean; // Duelist: whether this fighter's once-per-fight free parry is spent
   public rng: RngFunction | null;
+  // set on lookahead clones only: apply damage prevention as expected values, never rolled
+  public estimateMode: boolean = false;
+  // estimate mode only: probability the Saintly Relics ignore is still unspent. A failed roll does
+  // not consume it, so this decays by (1 - ignoreProb) per attempt rather than dropping to 0.
+  public estimateRelicAvailProb: number = 1;
 
   public constructor(
     profile: Model,
@@ -55,6 +60,16 @@ export default class FighterState {
   // relicWorthy: whether this strike is the biggest one still coming, so it's worth spending the
   // single per-action SaintlyRelics ignore on now (vs saving it for a larger pending strike).
   public applyDmg(dmg: number, relicWorthy: boolean = true) {
+    // Lookahead clones run in estimate mode: damage prevention is applied as its EXPECTED value
+    // instead of rolled. Rolling inside an estimate needs an rng, and either choice there is bad -
+    // the live one corrupts the real fight's draws, a seeded one makes the estimate a step function
+    // of its inputs, which is the very jitter Common Random Numbers exists to remove. Expected
+    // values are deterministic and vary smoothly, so a decision only changes when the underlying
+    // trade-off does. Wounds go fractional here; that is fine, estimates are only ever compared.
+    if (this.estimateMode) {
+      this.currentWounds = Math.max(0, this.currentWounds - this.expectedDmgAfterPrevention(dmg, relicWorthy));
+      return;
+    }
     if (relicWorthy && dmg > 0 && this.rng && this.profile.usesSaintlyRelics()
       && !this.relicUsed && this.relicIgnoresUsed < maxRelicIgnoresPerBattle && this.rollRelic()) {
       this.relicUsed = true;
@@ -65,6 +80,33 @@ export default class FighterState {
       dmg = this.rollFnp(dmg);
     }
     this.currentWounds = Math.max(0, this.currentWounds - dmg);
+  }
+
+  // Expected damage left after Saintly Relics and Feel No Pain, for estimate mode.
+  private expectedDmgAfterPrevention(dmg: number, relicWorthy: boolean): number {
+    if (dmg <= 0) {
+      return dmg;
+    }
+    let relicSurvivalProb = 1;
+    if (relicWorthy && this.profile.usesSaintlyRelics()
+      && !this.relicUsed && this.relicIgnoresUsed < maxRelicIgnoresPerBattle) {
+      // The ignore wipes the whole strike, but only once: it is spent by a SUCCESSFUL roll, so a
+      // later strike is only protected if every earlier attempt failed. Weighting by the running
+      // availability probability keeps a multi-strike estimate honest — applying the full ignore
+      // chance to every strike would credit the defender with a relic it had already spent.
+      const ignoreProb = relicIgnoreProb(this.profile.saintlyRelics);
+      relicSurvivalProb -= this.estimateRelicAvailProb * ignoreProb;
+      this.estimateRelicAvailProb *= 1 - ignoreProb;
+    }
+    if (this.profile.usesFnp()) {
+      // one roll per strike, each success shaving 1 damage
+      dmg = Math.max(0, dmg - (7 - this.profile.fnp) / 6);
+    }
+    // Feel No Pain only rolls on a strike the relic did NOT ignore, so the two prevention steps
+    // compose as P(not ignored) * E[damage after FNP] rather than stacking on the same strike.
+    // Subtracting the FNP expectation from already-relic-scaled damage would spend FNP on the
+    // probability mass where the strike had been wiped out entirely.
+    return dmg * relicSurvivalProb;
   }
 
   private rollFnp(dmg: number): number {
@@ -166,7 +208,7 @@ export default class FighterState {
   }
 
   public clone(): FighterState {
-    return new FighterState(
+    const copy = new FighterState(
       this.profile,
       this.crits,
       this.norms,
@@ -180,6 +222,20 @@ export default class FighterState {
       this.relicIgnoresUsed,
       this.hasDuelistParried,
     );
+    // carried so a lookahead nested inside a lookahead stays an estimate, and so a nested clone
+    // doesn't hand the relic back after earlier strikes in the same estimate already spent it
+    copy.estimateMode = this.estimateMode;
+    copy.estimateRelicAvailProb = this.estimateRelicAvailProb;
+    return copy;
+  }
+
+  // A lookahead clone: never rolls, never touches the caller's rng, and prevents damage by
+  // expected value. Nested clones inherit the mode through clone().
+  public asEstimate(): FighterState {
+    const copy = this.clone();
+    copy.rng = null;
+    copy.estimateMode = true;
+    return copy;
   }
 
   public withStrategy(strategy: FightStrategy): FighterState {

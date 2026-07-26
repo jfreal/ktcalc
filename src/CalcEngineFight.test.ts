@@ -48,6 +48,146 @@ function newFighterState(
   );
 }
 
+// The strike-vs-parry lookahead clones both fighters and resolves throwaway fights to compare the
+// options. Those clones must not hold the live rng: draws taken inside an estimate would be missing
+// from the real resolution, desynchronizing the Common Random Numbers streams the Fight engine
+// relies on for stable comparisons.
+describe('calcDieChoice lookahead does not consume rng draws', () => {
+  function countingRngFighters(strategy: FightStrategy) {
+    let draws = 0;
+    const rng = () => { draws++; return 0.5; };
+    // fnp gives the lookahead's resolveFight a reason to roll, so a leak shows up as draws > 0
+    const chooserProfile = new Model(2, 2, 1, 2).setProp('wounds', 6).setProp('fnp', 4);
+    const enemyProfile = new Model(2, 2, 1, 2).setProp('wounds', 6).setProp('fnp', 4);
+    const chooser = new FighterState(chooserProfile, 1, 1, strategy, 6, false, false, rng);
+    const enemy = new FighterState(enemyProfile, 1, 1, FightStrategy.Strike, 6, false, false, rng);
+    return { chooser, enemy, draws: () => draws };
+  }
+
+  it.each([
+    ['MaxDmgToEnemy', FightStrategy.MaxDmgToEnemy],
+    ['MinDmgToSelf', FightStrategy.MinDmgToSelf],
+  ])('%s: choosing a die takes no rng draws', (_name, strategy) => {
+    const { chooser, enemy, draws } = countingRngFighters(strategy as FightStrategy);
+    calcDieChoice(chooser, enemy);
+    expect(draws()).toBe(0);
+  });
+
+  // The lookahead must still ACCOUNT for damage prevention — an estimate that ignores Feel No Pain
+  // or Saintly Relics compares damage the defender would in fact have prevented, and can pick the
+  // wrong die. Estimate clones apply prevention as its expected value instead of rolling it.
+  describe('estimate clones model prevention without rolling', () => {
+    function estimateOf(profile: Model) {
+      const live = new FighterState(profile, 1, 0, FightStrategy.Strike, 10, false, false, () => {
+        throw new Error('estimate clone must not draw from the rng');
+      });
+      return { live, estimate: live.asEstimate() };
+    }
+
+    it('applies Feel No Pain as its expected reduction', () => {
+      // fnp 4+ succeeds on 3 of 6, so a 3-damage strike is expected to land 3 - 0.5
+      const { estimate } = estimateOf(new Model(1, 3, 1, 2).setProp('wounds', 10).setProp('fnp', 4));
+      estimate.applyDmg(3);
+      expect(estimate.currentWounds).toBeCloseTo(10 - 2.5, 6);
+    });
+
+    it('applies Saintly Relics as its expected reduction', () => {
+      // 1 D6 ignoring the whole strike on a 6: expected damage is 3 * 5/6
+      const { estimate } = estimateOf(
+        new Model(1, 3, 1, 2).setProp('wounds', 10).setProp('saintlyRelics', SaintlyRelicsNormal));
+      estimate.applyDmg(3);
+      expect(estimate.currentWounds).toBeCloseTo(10 - 3 * (5 / 6), 6);
+    });
+
+    it('spends the relic across strikes instead of re-offering it at full odds', () => {
+      // The ignore is consumed by a SUCCESSFUL roll, so a later strike is only protected if every
+      // earlier attempt failed. Two 3-damage strikes, ignore on a 6 (p = 1/6):
+      //   strike 1: 3 * (1 - 1/6)                     = 2.5
+      //   strike 2: 3 * (1 - (5/6)(1/6))              = 2.5833...
+      // Applying the full ignore chance to both would give 5.0, crediting a relic already spent.
+      const { estimate } = estimateOf(
+        new Model(1, 3, 1, 2).setProp('saintlyRelics', SaintlyRelicsNormal));
+      const p = 1 / 6;
+
+      estimate.applyDmg(3);
+      estimate.applyDmg(3);
+
+      const expected = 3 * (1 - p) + 3 * (1 - (1 - p) * p);
+      const dealt = 10 - estimate.currentWounds; // estimateOf starts clones on 10 wounds
+      expect(dealt).toBeCloseTo(expected, 6);
+      expect(dealt).toBeGreaterThan(2 * 3 * (1 - p)); // strictly above the naive 5.0
+    });
+
+    it('matches the exact expectation over two relic-eligible strikes', () => {
+      // independent check of the same two strikes, enumerated rather than derived:
+      // strike 2 is protected only if strike 1's attempt failed, otherwise it takes full damage
+      const { estimate } = estimateOf(
+        new Model(1, 3, 1, 2).setProp('saintlyRelics', SaintlyRelicsNormal));
+      const p = 1 / 6;
+      const exact = 3 * (1 - p) + ((1 - p) * (3 * (1 - p)) + p * 3);
+
+      estimate.applyDmg(3);
+      estimate.applyDmg(3);
+
+      expect(10 - estimate.currentWounds).toBeCloseTo(exact, 6);
+    });
+
+    it('composes relics and Feel No Pain without double-counting prevention', () => {
+      // FNP only rolls on a strike the relic did NOT ignore, so the two compose as
+      // P(not ignored) * E[damage after FNP] = (5/6) * (3 - 1/2) = 2.0833...
+      // Subtracting FNP from already-relic-scaled damage would give 2.5 - 0.5 = 2.0, spending FNP
+      // on the probability mass where the strike had been wiped out entirely.
+      const { estimate } = estimateOf(new Model(1, 3, 1, 2)
+        .setProp('fnp', 4).setProp('saintlyRelics', SaintlyRelicsNormal));
+
+      estimate.applyDmg(3);
+
+      expect(10 - estimate.currentWounds).toBeCloseTo((1 - 1 / 6) * (3 - 0.5), 6);
+    });
+
+    it('ignores prevention it does not have', () => {
+      const { estimate } = estimateOf(new Model(1, 3, 1, 2).setProp('wounds', 10));
+      estimate.applyDmg(3);
+      expect(estimate.currentWounds).toBe(7);
+    });
+
+    it('never draws from the rng, and leaves the live fighter alone', () => {
+      const { live, estimate } = estimateOf(
+        new Model(1, 3, 1, 2).setProp('wounds', 10).setProp('fnp', 4));
+      expect(estimate.rng).toBeNull();
+      estimate.applyDmg(3); // the live rng throws if touched
+      expect(live.currentWounds).toBe(10);
+      expect(live.rng).not.toBeNull();
+    });
+
+    it('stays an estimate through nested clones', () => {
+      const { estimate } = estimateOf(new Model(1, 3, 1, 2).setProp('wounds', 10).setProp('fnp', 4));
+      const nested = estimate.clone();
+      nested.applyDmg(3);
+      expect(nested.currentWounds).toBeCloseTo(10 - 2.5, 6);
+    });
+  });
+
+  it('is deterministic — the same position always yields the same choice', () => {
+    const first = countingRngFighters(FightStrategy.MaxDmgToEnemy);
+    const second = countingRngFighters(FightStrategy.MaxDmgToEnemy);
+    expect(calcDieChoice(first.chooser, first.enemy))
+      .toBe(calcDieChoice(second.chooser, second.enemy));
+  });
+
+  it('leaves the real fighters untouched (rng still attached, wounds unchanged)', () => {
+    const { chooser, enemy } = countingRngFighters(FightStrategy.MaxDmgToEnemy);
+    const chooserRng = chooser.rng;
+    const enemyRng = enemy.rng;
+    calcDieChoice(chooser, enemy);
+    // toBe, not just non-null: swapping in a different rng would also leave it non-null
+    expect(chooser.rng).toBe(chooserRng);
+    expect(enemy.rng).toBe(enemyRng);
+    expect(chooser.currentWounds).toBe(6);
+    expect(enemy.currentWounds).toBe(6);
+  });
+});
+
 describe(wiseParry.name, () => {
   const guy1n = newFighterState(0, 1);
   const guy1c = newFighterState(1, 0);

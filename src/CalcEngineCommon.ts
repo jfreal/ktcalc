@@ -46,16 +46,29 @@ export function calcFinalDiceProbs(
   critDmgPlusMwx: number = 0,
 ): FinalDiceProb[]
 {
-  let finalDiceProbs: FinalDiceProb[] = [];
+  return bestAutoNormPlan(
+    singleDieProbs, numDice, reroll, autoCrits, autoNorms,
+    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx).probs;
+}
 
-  autoCrits = Math.min(autoCrits, numDice);
-  numDice -= autoCrits;
-  autoNorms = Math.min(autoNorms, numDice);
-  numDice -= autoNorms;
+// Builds the distribution for an exact number of retained Accurate/cover dice.
+function buildFinalDiceProbs(
+  singleDieProbs: DieProbs,
+  rolledDice: number,
+  reroll: Ability,
+  autoCrits: number,
+  usedAutoNorms: number,
+  failsToNorms: number,
+  normsToCrits: number,
+  abilities: Set<Ability>,
+  normDmg: number,
+  critDmgPlusMwx: number,
+): FinalDiceProb[] {
+  const finalDiceProbs: FinalDiceProb[] = [];
 
-  for (let crits = 0; crits <= numDice; crits++) {
-    for (let norms = 0; norms <= numDice - crits; norms++) {
-      const fails = numDice - crits - norms;
+  for (let crits = 0; crits <= rolledDice; crits++) {
+    for (let norms = 0; norms <= rolledDice - crits; norms++) {
+      const fails = rolledDice - crits - norms;
 
       const finalDiceProb = calcFinalDiceProb(
         singleDieProbs,
@@ -64,7 +77,7 @@ export function calcFinalDiceProbs(
         fails,
         reroll,
         autoCrits,
-        autoNorms,
+        usedAutoNorms,
         failsToNorms,
         normsToCrits,
         abilities,
@@ -79,6 +92,97 @@ export function calcFinalDiceProbs(
   }
 
   return finalDiceProbs;
+}
+
+// Accurate is "retain UP TO x dice as normal successes without rolling them", so retaining all of
+// them is a choice, not a requirement — and not always the right one. A retained norm is locked (it
+// can't be promoted by Rending/NormsToCrits), and rolling that dice instead could produce a critical
+// success or a promotable norm. With a high crit chance or a spare promotion, rolling wins.
+// Evaluate every legal count and keep the best; ties keep the maximum, which is both the historical
+// behavior and the intuitive one.
+//
+// Ranking needs damage numbers, so this only applies where they are known — attack dice. Defence
+// dice pass none, so cover saves are still always taken; ranking those properly needs the incoming
+// hit profile (a norm save is worth half a crit save only against crits), which this step can't
+// see. It is a narrow corner: measured against a normal attacker, cover wins at every save value and
+// every promotion count, and declining only pulls ahead once the defender holds norm->crit save
+// promotions AND most incoming hits are crits. See rules/COVER_SAVES.md.
+function bestAutoNormPlan(
+  singleDieProbs: DieProbs,
+  numDice: number,
+  reroll: Ability,
+  autoCrits: number,
+  autoNorms: number,
+  failsToNorms: number,
+  normsToCrits: number,
+  abilities: Set<Ability>,
+  normDmg: number,
+  critDmgPlusMwx: number,
+): { used: number; probs: FinalDiceProb[] } {
+  const cappedAutoCrits = Math.min(autoCrits, numDice);
+  const diceAfterAutoCrits = numDice - cappedAutoCrits;
+  const maxAutoNorms = Math.min(autoNorms, diceAfterAutoCrits);
+
+  const build = (used: number) => buildFinalDiceProbs(
+    singleDieProbs, diceAfterAutoCrits - used, reroll, cappedAutoCrits, used,
+    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx);
+
+  if (maxAutoNorms === 0 || !canRankByDamage(normDmg, critDmgPlusMwx)) {
+    return { used: maxAutoNorms, probs: build(maxAutoNorms) };
+  }
+
+  let best = { used: maxAutoNorms, probs: [] as FinalDiceProb[] };
+  let bestValue = -Infinity;
+  for (let used = maxAutoNorms; used >= 0; used--) {
+    const probs = build(used);
+    const value = expectedDiceValue(probs, normDmg, critDmgPlusMwx);
+    if (value > bestValue) {
+      bestValue = value;
+      best = { used, probs };
+    }
+  }
+  return best;
+}
+
+// Whether a damage-weighted comparison is meaningful: attack paths supply real damage, defence
+// paths supply none (a save has no damage of its own).
+export function canRankByDamage(normDmg: number, critDmgPlusMwx: number): boolean {
+  return normDmg > 0 || critDmgPlusMwx > 0;
+}
+
+// Expected pre-save damage of a final-dice distribution. Saves and Piercing are not weighed —
+// the same attack-only, damage-first simplification Mystic Scry's choice already uses.
+function expectedDiceValue(
+  finalDiceProbs: FinalDiceProb[],
+  normDmg: number,
+  critDmgPlusMwx: number,
+): number {
+  let total = 0;
+  for (const fdp of finalDiceProbs) {
+    total += fdp.prob * (fdp.crits * critDmgPlusMwx + fdp.norms * normDmg);
+  }
+  return total;
+}
+
+// How many Accurate dice a fighter should actually retain, for callers that roll dice themselves
+// (the Monte Carlo Fight engine) rather than enumerating a distribution. Same choice as above,
+// decided once from the exact distributions rather than per simulated roll — the real decision is
+// made before rolling, so it must not vary roll to roll.
+export function chooseAutoNorms(
+  singleDieProbs: DieProbs,
+  numDice: number,
+  reroll: Ability,
+  autoCrits: number,
+  autoNorms: number,
+  failsToNorms: number,
+  normsToCrits: number,
+  abilities: Set<Ability>,
+  normDmg: number,
+  critDmgPlusMwx: number,
+): number {
+  return bestAutoNormPlan(
+    singleDieProbs, numDice, reroll, autoCrits, autoNorms,
+    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx).used;
 }
 
 export function calcFinalDiceProb(
@@ -583,16 +687,66 @@ export function applyPostRollModifications(
   critDmgPlusMwx: number = 0,
 ): { crits: number; norms: number } {
   crits += additionalCrits;
-  const accurateNorms = additionalNorms;
+  // A dice can only be *retained* once. Dice retained without rolling (cover saves on defence,
+  // Accurate on attack) and dice retained out of the fail pile (Punishing) are already spent in
+  // that sense, so "retain a normal success as a critical success instead" style rules (Rending,
+  // the NormsToCrits input, Mystic Scry) cannot upgrade them. Rules worded as *change/modify* an
+  // existing success (Severe, Waaagh) still can, so they consume a retained norm by preference,
+  // leaving the rollable ones available for the retain-style promotions that follow.
+  const retainedNorms = additionalNorms;
   norms += additionalNorms;
 
-  if (abilities.has(Ability.Punishing) && !abilities.has(Ability.ObscuredTarget)) {
-    if (crits > 0 && fails > 0) {
-      norms++;
-      fails--;
-    }
+  // Punishing is optional - "you CAN retain one of your fails as a normal success instead of
+  // discarding it" - and taking it is not always right. The norm it produces is retained, so it
+  // can't be promoted afterwards; if another effect (FailsToNorms, and then Rending/NormsToCrits)
+  // wanted that same fail, taking Punishing can cost more than it gains. Resolve both lines
+  // through the remaining steps and keep the better, the same way Mystic Scry scores a decline.
+  const punishingAvailable = abilities.has(Ability.Punishing)
+    && !abilities.has(Ability.ObscuredTarget)
+    && crits > 0
+    && fails > 0;
+
+  const resolve = (c: number, n: number, f: number, retained: number) => resolveAfterPunishing(
+    c, n, f, retained, failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx);
+
+  if (!punishingAvailable) {
+    return resolve(crits, norms, fails, retainedNorms);
   }
 
+  const taken = resolve(crits, norms + 1, fails - 1, retainedNorms + 1);
+  const declined = resolve(crits, norms, fails, retainedNorms);
+  // Ties keep the retention, which is the historical behavior and never worse in dice terms.
+  return outcomeValue(declined, normDmg, critDmgPlusMwx) > outcomeValue(taken, normDmg, critDmgPlusMwx)
+    ? declined
+    : taken;
+}
+
+// Ranks two candidate outcomes. Attack paths pass real damage numbers; the defence path has none
+// (saves have no damage of their own), so fall back to weights that mirror how saves cancel hits:
+// a critical save cancels any hit, and it takes two normal saves to do the same.
+function outcomeValue(
+  outcome: { crits: number; norms: number },
+  normDmg: number,
+  critDmgPlusMwx: number,
+): number {
+  const useFallback = !canRankByDamage(normDmg, critDmgPlusMwx);
+  const critValue = useFallback ? 2 : critDmgPlusMwx;
+  const normValue = useFallback ? 1 : normDmg;
+  return outcome.crits * critValue + outcome.norms * normValue;
+}
+
+// Everything after the Punishing decision, factored out so that decision can score both lines.
+function resolveAfterPunishing(
+  crits: number,
+  norms: number,
+  fails: number,
+  retainedNorms: number,
+  failsToNorms: number,
+  normsToCrits: number,
+  abilities: Set<Ability>,
+  normDmg: number,
+  critDmgPlusMwx: number,
+): { crits: number; norms: number } {
   if (abilities.has(Ability.PuritySeal) || abilities.has(Ability.Indomitus)) {
     if (fails >= 2) {
       norms++;
@@ -611,6 +765,7 @@ export function applyPostRollModifications(
     if (norms >= 2) {
       crits++;
       norms--;
+      retainedNorms = Math.max(0, retainedNorms - 1); // promotes, so spend a retained norm first
     }
   }
 
@@ -622,13 +777,18 @@ export function applyPostRollModifications(
   let severeTriggered = false;
   if (abilities.has(Ability.Severe)) {
     if (norms > 0 && crits === 0) {
+      // Severe "changes" a normal success, so it may take an already-retained one
       crits++;
       norms--;
+      retainedNorms = Math.max(0, retainedNorms - 1);
       severeTriggered = true;
     }
   }
 
-  const actualNormToCritPromotions = Math.min(normsToCrits, norms);
+  // NormsToCrits models "retain a normal success as a critical success instead", so it can only
+  // take a norm that came off the dice - not a cover save / Accurate / Punishing retention.
+  const promotableNorms = Math.max(0, norms - retainedNorms);
+  const actualNormToCritPromotions = Math.min(normsToCrits, promotableNorms);
   crits += actualNormToCritPromotions;
   norms -= actualNormToCritPromotions;
 
@@ -643,15 +803,17 @@ export function applyPostRollModifications(
     // crit upgrade ahead of the fail upgrade so a damage tie resolves to the crit, which is strictly
     // better against any real defender (its Devastating/mwx portion bypasses saves, it triggers Piercing,
     // and it eats fewer Feel No Pain rolls). A beneficial upgrade still beats declining.
-    const candidates: Array<{ crits: number; norms: number }> = [];
-    if (norms > 0) candidates.push({ crits: crits + 1, norms: norms - 1 }); // retain a norm as a crit
-    if (fails > 0) candidates.push({ crits, norms: norms + 1 });   // retain a fail as a norm
-    candidates.push({ crits, norms });                             // decline (the buff is optional)
+    // Both options are worded as retentions: the norm->crit one needs a norm that isn't already
+    // retained, and the fail->norm one hands Rending a retained norm it can't promote afterwards.
+    const candidates: Array<{ crits: number; norms: number; retainedNorms: number }> = [];
+    if (norms - retainedNorms > 0) candidates.push({ crits: crits + 1, norms: norms - 1, retainedNorms }); // retain a norm as a crit
+    if (fails > 0) candidates.push({ crits, norms: norms + 1, retainedNorms: retainedNorms + 1 }); // retain a fail as a norm
+    candidates.push({ crits, norms, retainedNorms });              // decline (the buff is optional)
 
     let best: { crits: number; norms: number } | null = null;
     let bestDmg = -Infinity;
     for (const cand of candidates) {
-      const finished = finishRendingAndObscured(cand.crits, cand.norms, accurateNorms, severeTriggered, abilities);
+      const finished = finishRendingAndObscured(cand.crits, cand.norms, cand.retainedNorms, severeTriggered, abilities);
       const dmg = dmgOf(finished.crits, finished.norms);
       if (dmg > bestDmg) {
         bestDmg = dmg;
@@ -661,23 +823,24 @@ export function applyPostRollModifications(
     return best!;
   }
 
-  return finishRendingAndObscured(crits, norms, accurateNorms, severeTriggered, abilities);
+  return finishRendingAndObscured(crits, norms, retainedNorms, severeTriggered, abilities);
 }
 
 // The damage-affecting tail shared by every roll: Rending promotes a rolled norm to a crit when a
-// crit is present (but not after Severe, and never an Accurate-retained norm), then ObscuredTarget
+// crit is present (but not after Severe, and never an already-retained norm), then ObscuredTarget
 // (if the defender has it) collapses crits into norms and discards one success.
 function finishRendingAndObscured(
   crits: number,
   norms: number,
-  accurateNorms: number,
+  retainedNorms: number,
   severeTriggered: boolean,
   abilities: Set<Ability>,
 ): { crits: number; norms: number } {
   // Rending doesn't work if Severe triggered (per KT2024 rules)
-  // Rending also cannot upgrade normals retained from Accurate (only rolled normals)
+  // Rending says "retain ... as a critical success instead", so it can only take a rolled normal,
+  // never one already retained from cover / Accurate / Punishing
   if (abilities.has(Ability.Rending) && !severeTriggered) {
-    const rollableNorms = Math.max(0, norms - accurateNorms);
+    const rollableNorms = Math.max(0, norms - retainedNorms);
     if (crits > 0 && rollableNorms > 0) {
       crits++;
       norms--;

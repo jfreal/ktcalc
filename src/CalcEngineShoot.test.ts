@@ -752,20 +752,86 @@ describe(calcDmgProbs.name + ', defender cover saves', () => {
     expect(dmgs.get(atk.normDmg)).toBeCloseTo(1, requiredPrecision);
     expect(dmgs.size).toBe(1);
   });
-  it('save promotions, 1 always-crit-hit vs 1 cover norm save + 1 promotion (always cancel)', () => {
+  // A dice can only be retained once. A cover save is retained (as a normal success) without ever
+  // being rolled, so a rule that lets you "retain a normal success as a critical success instead"
+  // has nothing left to do with it - only saves that came off the dice can be promoted.
+  it('save promotions, 1 always-crit-hit vs 1 cover norm save + 1 promotion (cover save cannot be promoted)', () => {
     const atk = newTestAttacker(1).withAlwaysCrit();
     const def = new Model(1, 6).setProp('autoNorms', 1).setProp('normsToCrits', 1);
+
+    const dmgs = calcDmgProbs(atk, def);
+    expect(dmgs.get(atk.critDmg)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.size).toBe(1);
+  });
+  it('save promotions, 2 always-crit-hit vs 1 cover norm save + 1 promotion (cover save cannot be promoted)', () => {
+    const atk = newTestAttacker(2).withAlwaysCrit();
+    const def = new Model(1, 6).setProp('autoNorms', 1).setProp('normsToCrits', 1);
+
+    const dmgs = calcDmgProbs(atk, def);
+    expect(dmgs.get(2 * atk.critDmg)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.size).toBe(1);
+  });
+  it('save promotions, 1 always-crit-hit vs 1 rolled always-norm save + 1 promotion (rolled save promotes, cancels)', () => {
+    const atk = newTestAttacker(1).withAlwaysCrit();
+    const def = new Model(1, 6).withAlwaysNorm().setProp('normsToCrits', 1);
 
     const dmgs = calcDmgProbs(atk, def);
     expect(dmgs.get(0)).toBeCloseTo(1, requiredPrecision);
     expect(dmgs.size).toBe(1);
   });
-  it('save promotions, 2 always-crit-hit vs 1 cover norm save + 2 promotions (always cancel 1 of the 2)', () => {
-    const atk = newTestAttacker(2).withAlwaysCrit();
-    const def = new Model(1, 6).setProp('autoNorms', 1).setProp('normsToCrits', 1);
+  it('save promotions, 1 always-crit-hit vs 1 cover + 1 rolled always-norm save + 1 promotion (promotes the rolled one)', () => {
+    const atk = newTestAttacker(1).withAlwaysCrit();
+    const def = new Model(2, 6).withAlwaysNorm().setProp('autoNorms', 1).setProp('normsToCrits', 1);
 
     const dmgs = calcDmgProbs(atk, def);
-    expect(dmgs.get(atk.critDmg)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.get(0)).toBeCloseTo(1, requiredPrecision);
+    expect(dmgs.size).toBe(1);
+  });
+});
+
+// Accurate is "retain UP TO x dice as normal successes", so retaining fewer is a legal - and
+// sometimes better - play: a retained norm is locked and cannot be promoted, while rolling that
+// dice can produce a crit or a promotable norm.
+describe(calcDmgProbs.name + ', Accurate is optional', () => {
+  const noSaves = new Model(0); // 0 defence dice, so damage is the attacker's dice value
+
+  it('declines Accurate when the dice is worth more rolled (a promotion is going spare)', () => {
+    // 1 die at 2+, never-crit, one norm->crit promotion available.
+    // retain: locked norm = 3 dmg. roll: 5/6 chance of a promotable norm -> crit = 5/6 * 4 = 3.333
+    const atk = new Model(1, 2, 3, 4).setProp('lethal', 7)
+      .setProp('normsToCrits', 1).setProp('autoNorms', 1);
+
+    expect(avgDmg(atk, noSaves)).toBeCloseTo(5 / 6 * 4, requiredPrecision);
+  });
+
+  it('declines Accurate when the crit chance alone beats a guaranteed norm', () => {
+    // 1 die at 2+ critting on 2+: rolling is 5/6 * 4 = 3.333 vs a retained norm's 3
+    const atk = new Model(1, 2, 3, 4).setProp('lethal', 2).setProp('autoNorms', 1);
+
+    expect(avgDmg(atk, noSaves)).toBeCloseTo(5 / 6 * 4, requiredPrecision);
+  });
+
+  it('keeps Accurate when the guaranteed norm is worth more than the roll', () => {
+    // 1 die at 5+, no promotions: rolling is worth 1/6*4 + 1/6*3 = 1.167 vs a retained norm's 3
+    const atk = new Model(1, 5, 3, 4).setProp('autoNorms', 1);
+
+    expect(avgDmg(atk, noSaves)).toBeCloseTo(3, requiredPrecision);
+  });
+
+  it('keeps Accurate on ties, so the dice count is the intuitive one', () => {
+    // 1 die at 2+, never-crit, no promotions: rolling is 5/6*3 = 2.5 < 3
+    const atk = new Model(1, 2, 3, 4).setProp('lethal', 7).setProp('autoNorms', 1);
+
+    expect(avgDmg(atk, noSaves)).toBeCloseTo(3, requiredPrecision);
+  });
+
+  it('picks the best count when several Accurate dice are available', () => {
+    // 2 Accurate dice, 2 promotions, 3 dice at 2+ never-crit: every rolled norm becomes a crit,
+    // so rolling all three (retaining none) is best: 3 * 5/6 * 4 = 10
+    const atk = new Model(3, 2, 3, 4).setProp('lethal', 7)
+      .setProp('normsToCrits', 3).setProp('autoNorms', 2);
+
+    expect(avgDmg(atk, noSaves)).toBeCloseTo(3 * (5 / 6) * 4, requiredPrecision);
   });
 });
 

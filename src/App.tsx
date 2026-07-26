@@ -175,6 +175,22 @@ const App = () => (
           </ErrorBoundary>
         }
       />
+      <Route
+        path="/rules/cover-saves"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <RuleDocPage file="COVER_SAVES.md" />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path="/rules/retained-vs-modified"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <RuleDocPage file="RETAINED_VS_MODIFIED_DICE.md" />
+          </ErrorBoundary>
+        }
+      />
       <Route path="*" element={<AppContent />} />
       </Route>
     </Routes>

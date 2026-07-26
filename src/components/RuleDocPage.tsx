@@ -29,7 +29,35 @@ const DOC_SEO: Record<string, { title: string; description: string; path: string
       'Reference for every Kill Team 2024 weapon rule ktcalc supports — Accurate, Balanced, Brutal, Ceaseless, Devastating, Lethal, Piercing, Relentless, Rending and more.',
     path: '/rules/weapon/',
   },
+  'COVER_SAVES.md': {
+    title: 'When Not to Take Cover Saves in Kill Team 2024 | ktcalc',
+    description:
+      'Cover saves are optional. Measured guidance on the rare matchups where declining cover is correct \u2014 save promotions against a mostly-critical attack \u2014 and why ktcalc always takes them.',
+    path: '/rules/cover-saves/',
+  },
+  'RETAINED_VS_MODIFIED_DICE.md': {
+    title: 'Retained vs Modified Dice in Kill Team 2024 | ktcalc',
+    description:
+      'A dice can only be retained once. Why Rending cannot promote a cover save but Severe can, which Kill Team 2024 rules lock a dice, and how ktcalc models the difference.',
+    path: '/rules/retained-vs-modified/',
+  },
 };
+
+// Markdown links to other in-app pages ("/rules/...") must go through react-router,
+// otherwise clicking one triggers a full page reload out of the SPA. External links
+// (and anchors) stay plain <a>, and get the usual new-tab safety attributes.
+export function MarkdownLink({ href, children }: React.ComponentPropsWithoutRef<'a'>) {
+  const isInternal = !!href && href.startsWith('/') && !href.startsWith('//');
+  if (isInternal) {
+    return <Link to={href}>{children}</Link>;
+  }
+  const isExternal = !!href && /^https?:/i.test(href);
+  return (
+    <a href={href} {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+      {children}
+    </a>
+  );
+}
 
 // Plain CSS can't import theme.ts, so the handful of theme colors this
 // stylesheet needs are threaded in as custom properties instead of being
@@ -95,7 +123,9 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
       )}
       {state.status === 'ok' && (
         <div className="RuleDoc-body">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{state.text}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>
+            {state.text}
+          </ReactMarkdown>
         </div>
       )}
 
