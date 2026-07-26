@@ -27,6 +27,13 @@ const notes: DocLink[] = [
     blurb:
       'The "retain a fail as a norm, or a norm as a crit" decision is not fixed. Explains when each choice wins and how the calculator models it.',
   },
+  {
+    title: 'Why Punishing can lower your damage',
+    href: '/notes/punishing',
+    blurb:
+      'Switching on an ability that only adds a hit can reduce reported damage. Punishing retains the fail, '
+      + 'locking it, where another effect would have left it promotable \u2014 so the promotion is stranded.',
+  },
 ];
 
 // Game-rules reference docs (rendered in-app from rules/*.md) that the engine
