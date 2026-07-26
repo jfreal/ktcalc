@@ -20,12 +20,13 @@ describe('HelpPage', () => {
     expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('How KT Calc works');
   });
 
-  it('links to all seven in-app docs', () => {
+  it('links to all eight in-app docs', () => {
     renderHelp();
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
     [
       '/notes/lethal-relentless',
       '/notes/mystic-scry-buff',
+      '/notes/punishing',
       '/rules/combat',
       '/rules/fight',
       '/rules/weapon',

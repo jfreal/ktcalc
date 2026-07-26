@@ -47,7 +47,8 @@
       "/rules/retained-vs-modified",
       "/rules/cover-saves",
       "/notes/lethal-relentless",
-      "/notes/mystic-scry-buff"
+      "/notes/mystic-scry-buff",
+      "/notes/punishing"
     ],
     "puppeteerArgs": [
       "--no-sandbox",

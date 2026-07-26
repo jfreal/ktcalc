@@ -13,6 +13,7 @@ import RuleDocPage from 'src/components/RuleDocPage';
 import Seo from 'src/components/Seo';
 import LethalRelentlessNote from 'src/components/notes/LethalRelentlessNote';
 import MysticScryBuffNote from 'src/components/notes/MysticScryBuffNote';
+import PunishingNote from 'src/components/notes/PunishingNote';
 import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
 import ShootSection from 'src/components/ShootSection';
 import { ShareProvider } from 'src/context/ShareContext';
@@ -140,6 +141,14 @@ const App = () => (
         element={
           <ErrorBoundary fallbackRender={fallbackRender}>
             <MysticScryBuffNote />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path="/notes/punishing"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <PunishingNote />
           </ErrorBoundary>
         }
       />
