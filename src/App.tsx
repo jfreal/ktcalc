@@ -193,6 +193,14 @@ const App = () => (
         }
       />
       <Route
+        path="/rules/weapon-balance"
+        element={
+          <ErrorBoundary fallbackRender={fallbackRender}>
+            <RuleDocPage file="WEAPON_BALANCE.md" />
+          </ErrorBoundary>
+        }
+      />
+      <Route
         path="/rules/retained-vs-modified"
         element={
           <ErrorBoundary fallbackRender={fallbackRender}>

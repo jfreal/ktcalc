@@ -34,6 +34,13 @@ const notes: DocLink[] = [
       'Switching on an ability that only adds a hit can reduce reported damage. Punishing retains the fail, '
       + 'locking it, where another effect would have left it promotable \u2014 so the promotion is stranded.',
   },
+  {
+    title: 'Comparing weapons by power level',
+    href: '/rules/weapon-balance',
+    blurb:
+      'Which weapons are actually the same power level, measured against a fixed slate of targets — plain and with '
+      + 'the buff that upgrades them, because a set that looks even can still come apart once everyone is buffed.',
+  },
 ];
 
 // Game-rules reference docs (rendered in-app from rules/*.md) that the engine

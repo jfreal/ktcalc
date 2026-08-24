@@ -17,6 +17,7 @@
 - [Weapon rules](https://ktcalc.com/rules/weapon/): supported weapon special rules and how they affect the math.
 - [When not to take cover saves](https://ktcalc.com/rules/cover-saves/): the rare matchups where declining an optional cover save reduces damage, with measured numbers.
 - [Retained vs modified dice](https://ktcalc.com/rules/retained-vs-modified/): why a dice can only be retained once, which rules lock a dice (cover, Accurate, Punishing) and which can still change one (Severe, Waaagh).
+- [Comparing weapons by power level](https://ktcalc.com/rules/weapon-balance/): measured comparison of KT24 melee and heavy weapon profiles against a fixed slate of targets, plain and buffed, with the balanced sets that result.
 - [Why Punishing can lower your damage](https://ktcalc.com/notes/punishing/): how an optional ability that adds a hit can cost damage by locking a contested fail.
 
 ## About
