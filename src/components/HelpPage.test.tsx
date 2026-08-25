@@ -20,7 +20,7 @@ describe('HelpPage', () => {
     expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('How KT Calc works');
   });
 
-  it('links to all eight in-app docs', () => {
+  it('links to all nine in-app docs', () => {
     renderHelp();
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
     [
@@ -32,6 +32,7 @@ describe('HelpPage', () => {
       '/rules/weapon',
       '/rules/retained-vs-modified',
       '/rules/cover-saves',
+      '/rules/weapon-balance',
     ].forEach((href) => expect(hrefs).toContain(href));
   });
 

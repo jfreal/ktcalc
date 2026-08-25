@@ -35,6 +35,12 @@ const DOC_SEO: Record<string, { title: string; description: string; path: string
       'Cover saves are optional. Measured guidance on the rare matchups where declining cover is correct \u2014 save promotions against a mostly-critical attack \u2014 and why ktcalc always takes them.',
     path: '/rules/cover-saves/',
   },
+  'WEAPON_BALANCE.md': {
+    title: 'Comparing Kill Team 2024 Weapons by Power Level | ktcalc',
+    description:
+      'Measured comparison of KT24 melee and heavy weapon profiles against a fixed slate of targets, plain and buffed, with the sets that come out balanced and what the model leaves out.',
+    path: '/rules/weapon-balance/',
+  },
   'RETAINED_VS_MODIFIED_DICE.md': {
     title: 'Retained vs Modified Dice in Kill Team 2024 | ktcalc',
     description:
