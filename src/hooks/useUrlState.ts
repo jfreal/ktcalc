@@ -175,6 +175,10 @@ function encodeFighter(f: Model): string {
   if (f.has(Ability.Duelist)) abilities.push('duelist');
   if (f.has(Ability.JustAScratch)) abilities.push('jas');
   if (f.has(Ability.Durable)) abilities.push('dur');
+  if (f.has(Ability.Shock)) abilities.push('shock');
+  // Keep this token distinct from 'jas', which enables the other scratch ability.
+  if (f.has(Ability.JustAScratchNorms)) abilities.push('scratchnorm');
+  if (f.has(Ability.HalfDamageFirstStrike)) abilities.push('halfstrike');
 
   // Niche ability (mutually exclusive fight abilities)
   const nicheAbility = mutuallyExclusiveFightAbilities.find(a => a !== Ability.None && f.abilities.has(a));
@@ -234,6 +238,9 @@ function decodeFighter(param: string): Model {
   if (abilities.includes('duelist')) f.abilities.add(Ability.Duelist);
   if (abilities.includes('jas')) f.abilities.add(Ability.JustAScratch);
   if (abilities.includes('dur')) f.abilities.add(Ability.Durable);
+  if (abilities.includes('shock')) f.abilities.add(Ability.Shock);
+  if (abilities.includes('scratchnorm')) f.abilities.add(Ability.JustAScratchNorms);
+  if (abilities.includes('halfstrike')) f.abilities.add(Ability.HalfDamageFirstStrike);
 
   // appended after abilities; absent in older URLs and sanitized to off for unrecognized values
   f.saintlyRelics = parseRelicMode(parts[13]);
