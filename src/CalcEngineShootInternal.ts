@@ -195,9 +195,12 @@ export function calcDamage(
   }
 
   damage += critHits * attacker.critDmg + normHits * attacker.normDmg;
-  // surviving hits get FNP rolls; cancelled crits still count if MWx contributed dmg
+  // Only damaging hits get FNP rolls; zero-damage hits must not reduce other hits.
+  // Cancelled crits still count if MWx contributed damage.
   const mwxCancelledCrits = attacker.mwx > 0 ? (originalCritHits - critHits) : 0;
-  const numHits = critHits + normHits + mwxCancelledCrits;
+  const damagingCrits = attacker.critDmg + attacker.mwx > 0 ? critHits : 0;
+  const damagingNorms = attacker.normDmg > 0 ? normHits : 0;
+  const numHits = damagingCrits + damagingNorms + mwxCancelledCrits;
 
   // TODO: make the above decisions take Durable into account
   const durableCritReduction =
