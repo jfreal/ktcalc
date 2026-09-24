@@ -193,7 +193,8 @@ function encodeFighter(f: Model): string {
     f.failsToNorms,
     nicheAbility || '',
     abilities.join(''),
-    f.saintlyRelics
+    f.saintlyRelics,
+    f.fnp
   ].join(':');
 }
 
@@ -236,6 +237,9 @@ function decodeFighter(param: string): Model {
 
   // appended after abilities; absent in older URLs and sanitized to off for unrecognized values
   f.saintlyRelics = parseRelicMode(parts[13]);
+  // Append FNP so older links retain their field positions and default to off.
+  const fnp = Number(parts[14]);
+  f.fnp = Number.isInteger(fnp) && fnp >= 2 && fnp <= 6 ? fnp : 0;
 
   return f;
 }
