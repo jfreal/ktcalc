@@ -1,6 +1,6 @@
 import React from "react";
 import { Container } from 'react-bootstrap';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import "src/components/AppHeader.css"
 import { CalculatorViewChoice, getViewFromUrlText, viewToUrlText } from 'src/CalculatorViewChoice';
@@ -19,7 +19,8 @@ type AppHeaderProps = {
 
 // NOTE: the 'type' and 'name' on the buttons are for ac11y reasons
 const AppHeader = (props: AppHeaderProps) => {
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
 
   // A view is only "active" on the calculator route; other pages highlight nothing.
   const activeView = props.onCalculator ? getViewFromUrlText(params.get('view')) : null;
@@ -47,7 +48,7 @@ const AppHeader = (props: AppHeaderProps) => {
           // calculator state (a1/d1/fa/fb/etc.) already in the URL.
           const next = new URLSearchParams(params);
           next.set('view', viewToUrlText.get(view) as string);
-          setParams(next);
+          navigate({ pathname: '/', search: `?${next.toString()}` });
         }}
         >
         <img src={img} alt={imgAlt} width="26" height="26" />
