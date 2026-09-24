@@ -36,6 +36,9 @@ const AppHeader = (props: AppHeaderProps) => {
         type="button"
         name={buttonName}
         title={buttonName}
+        // Explicit accessible name: the visible label is hidden on phones, and
+        // the icon alt text describes the picture, not the action.
+        aria-label={buttonName}
         className='AppHeader-view'
         disabled={activeView === view}
         onClick={() => {

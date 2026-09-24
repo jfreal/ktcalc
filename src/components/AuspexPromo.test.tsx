@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 import AuspexPromo from 'src/components/AuspexPromo';
@@ -22,4 +23,10 @@ it('hides and stays hidden after dismissal', () => {
 
   render(<AuspexPromo />);
   expect(screen.queryByRole('link', { name: /Start a league/i })).toBeNull();
+});
+
+it('starts visible so hydration matches the prerendered banner', () => {
+  window.localStorage.setItem('auspexPromoDismissed', '1');
+  const html = ReactDOMServer.renderToString(<AuspexPromo />);
+  expect(html).toMatch(/Start a league/);
 });

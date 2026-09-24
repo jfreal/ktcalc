@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container } from 'react-bootstrap';
 
 import 'src/components/AuspexPromo.css';
@@ -19,7 +19,15 @@ function readDismissed(): boolean {
 }
 
 const AuspexPromo: React.FC = () => {
-  const [dismissed, setDismissed] = useState(readDismissed);
+  // Start visible to match the react-snap prerendered HTML, then apply a
+  // stored dismissal after hydration so the first client render agrees.
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    if (readDismissed()) {
+      setDismissed(true);
+    }
+  }, []);
 
   if (dismissed) {
     return null;
