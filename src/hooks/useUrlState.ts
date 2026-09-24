@@ -91,8 +91,10 @@ function decodeAttacker(param: string): Model {
   const atk = new Model();
   atk.numDice = parseInt(parts[0]) || 4;
   atk.diceStat = parseInt(parts[1]) || 3;
-  atk.normDmg = parseInt(parts[2]) || 3;
-  atk.critDmg = parseInt(parts[3]) || 4;
+  const normDmg = parseInt(parts[2]);
+  const critDmg = parseInt(parts[3]);
+  atk.normDmg = Number.isNaN(normDmg) ? 3 : normDmg;
+  atk.critDmg = Number.isNaN(critDmg) ? 4 : critDmg;
   atk.mwx = parseInt(parts[4]) || 0;
   atk.apx = parseInt(parts[5]) || 0;
   atk.px = parseInt(parts[6]) || 0;
