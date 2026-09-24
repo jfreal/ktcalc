@@ -27,6 +27,7 @@ const AppHeader = (props: AppHeaderProps) => {
   function makeButton(
     view: CalculatorViewChoice,
     buttonName: string,
+    label: string,
     img: any,
     imgAlt: string,
   ) : React.HTMLProps<HTMLButtonElement> {
@@ -34,6 +35,8 @@ const AppHeader = (props: AppHeaderProps) => {
       <button
         type="button"
         name={buttonName}
+        title={buttonName}
+        className='AppHeader-view'
         disabled={activeView === view}
         onClick={() => {
           // Merge into the existing params rather than replacing the query
@@ -44,48 +47,50 @@ const AppHeader = (props: AppHeaderProps) => {
           setParams(next);
         }}
         >
-        <img title={buttonName} src={img} alt={imgAlt} width="40" height="40" />
+        <img src={img} alt={imgAlt} width="26" height="26" />
+        <span className='AppHeader-view-label'>{label}</span>
       </button>);
   }
 
   return <nav className='AppHeader'>
     <Container className='AppHeader-container'>
-      <div className='AppHeader-left'>
-        <Link to="/" className='AppHeader-brand'>
-          <img src={logoSmall} alt='KT Calc logo' height='45' />
-          <span className='AppHeader-title'>KT Calc</span>
-        </Link>
-        <div className='AppHeader-nav'>
+      <Link to="/" className='AppHeader-brand'>
+        <img src={logoSmall} alt='KT Calc logo' height='36' />
+        <span className='AppHeader-title'>KT Calc</span>
+      </Link>
+      <div className='AppHeader-views' role='group' aria-label='Calculator'>
         {makeButton(
           CalculatorViewChoice.KtShoot,
           'Kill Team Shoot Calculator',
+          'Shoot',
           ktShootIcon,
           'Kill Team ranged weapon icon',
         )}
         {makeButton(
           CalculatorViewChoice.KtFight,
           'Kill Team Fight Calculator',
+          'Fight',
           ktFightIcon,
           'Kill Team melee weapon icon',
         )}
         {/*makeButton(
           CalculatorViewChoice.KtShootMassAnalysis,
           'Kill Team Shooting Mass Analysis',
+          'Mass',
           ktShootMassAnalysisIcon,
           'Multiple people targeted.',
         )*/}
-        <Link
-          to="/help"
-          className="AppHeader-help"
-          title="How KT Calc works (opens in a new tab)"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          How it works
-          <span className="sr-only"> (opens in a new tab)</span>
-        </Link>
-        </div>
       </div>
+      <Link
+        to="/help"
+        className="AppHeader-help"
+        title="How KT Calc works (opens in a new tab)"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        How it works
+        <span className="sr-only"> (opens in a new tab)</span>
+      </Link>
       {props.rightContent && <div className='AppHeader-right'>{props.rightContent}</div>}
     </Container>
   </nav>;

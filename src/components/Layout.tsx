@@ -3,6 +3,7 @@ import { Button } from 'react-bootstrap';
 import { Outlet, useLocation } from 'react-router-dom';
 
 import AppHeader from 'src/components/AppHeader';
+import AuspexPromo from 'src/components/AuspexPromo';
 import Footer from 'src/components/Footer';
 import { useShareContext } from 'src/context/ShareContext';
 
@@ -33,7 +34,7 @@ const ShareButtons: React.FC = () => {
 // of these" rather than an exact-match on '/' (which would miss that fallback).
 const NON_CALCULATOR_PATH_PREFIXES = ['/help', '/notes', '/rules'];
 
-// One header + footer wrapped around every route via <Outlet />.
+// One header (plus the Auspex Fatalis promo strip) + footer wrapped around every route via <Outlet />.
 const Layout: React.FC = () => {
   const location = useLocation();
   const onCalculator = !NON_CALCULATOR_PATH_PREFIXES.some((p) => location.pathname.startsWith(p));
@@ -41,6 +42,7 @@ const Layout: React.FC = () => {
   return (
     <>
       <AppHeader onCalculator={onCalculator} rightContent={onCalculator ? <ShareButtons /> : undefined} />
+      <AuspexPromo />
       <Outlet />
       <Footer />
     </>

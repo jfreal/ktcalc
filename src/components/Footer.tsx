@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Panel from 'src/components/Panel';
 import * as T from 'src/theme';
+import kofiIcon from 'src/images/kofi.svg';
 
 const Footer: React.FC = () => {
   return (
@@ -9,7 +10,17 @@ const Footer: React.FC = () => {
       <a href="https://github.com/jfreal/ktcalc" target="_blank" rel="noopener noreferrer">
         Open source on GitHub
       </a> — Pull requests welcome!
-      <br />
+      <div style={{ margin: '8px 0' }}>
+        <a
+          href='https://ko-fi.com/jfreal'
+          target='_blank'
+          rel='noopener noreferrer'
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', whiteSpace: 'nowrap', fontSize: '14px', fontWeight: 600 }}
+        >
+          <img src={kofiIcon} alt='Ko-fi' width='18' height='18' />
+          buy me <s>a coffee</s> grey plastic
+        </a>
+      </div>
       Forked from <a href="https://jmegner.github.io/KT21Calculator/" target="_blank" rel="noopener noreferrer">
         https://jmegner.github.io/KT21Calculator/
       </a>
