@@ -174,6 +174,49 @@ describe(calcDamage.name + ', numHits with MWx', () => {
   });
 });
 
+describe(calcDamage.name + ', JustAScratch cancels the higher-damage hit', () => {
+  const def = new Model().setAbility(Ability.JustAScratch);
+
+  it('critDmg=0 < normDmg=3, 1ch 1nh => cancels the norm, 0 dmg', () => {
+    const atker = new Model(0, 0, 3, 0, 0);
+    const r = calcDamage(atker, def, 1, 1, 0, 0);
+    expect(r.damage).toBe(0);
+    expect(r.survivingCritHits).toBe(1);
+    expect(r.survivingNormHits).toBe(0);
+  });
+  it('critDmg=2 < normDmg=5, 1ch 1nh => cancels the norm, 1dc', () => {
+    const atker = new Model(0, 0, 5, 2, 0);
+    expect(calcDamage(atker, def, 1, 1, 0, 0).damage).toBe(2);
+  });
+  it('critDmg=4 > normDmg=3, 1ch 1nh => cancels the crit, 1dn', () => {
+    const atker = new Model(0, 0, 3, 4, 0);
+    expect(calcDamage(atker, def, 1, 1, 0, 0).damage).toBe(3);
+  });
+  it('critDmg == normDmg, 1ch 1nh => cancels the crit on a tie', () => {
+    const atker = new Model(0, 0, 3, 3, 0);
+    const r = calcDamage(atker, def, 1, 1, 0, 0);
+    expect(r.damage).toBe(3);
+    expect(r.survivingCritHits).toBe(0);
+    expect(r.survivingNormHits).toBe(1);
+  });
+  it('prefers norms but none hit, 2ch 0nh => falls back to cancelling a crit', () => {
+    const atker = new Model(0, 0, 5, 2, 0);
+    expect(calcDamage(atker, def, 2, 0, 0, 0).damage).toBe(2);
+  });
+  it('prefers crits but none hit, 0ch 2nh => falls back to cancelling a norm', () => {
+    const atker = new Model(0, 0, 3, 5, 0);
+    expect(calcDamage(atker, def, 0, 2, 0, 0).damage).toBe(3);
+  });
+  it('no hits => 0 dmg', () => {
+    const atker = new Model(0, 0, 3, 0, 0);
+    expect(calcDamage(atker, def, 0, 0, 0, 0).damage).toBe(0);
+  });
+  it('MWx is kept either way: critDmg=0 < normDmg=3, mwx=2, 1ch 1nh => only 1dmw', () => {
+    const atker = new Model(0, 0, 3, 0, 2);
+    expect(calcDamage(atker, def, 1, 1, 0, 0).damage).toBe(2);
+  });
+});
+
 describe(calcPostFnpDamages.name, () => {
   it('5 damage from 1 hit, fnp 5+: can only reduce to 4', () => {
     const fnp = 5;

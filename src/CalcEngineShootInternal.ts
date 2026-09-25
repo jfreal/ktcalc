@@ -152,8 +152,13 @@ export function calcDamage(
     critHits -= numCancels;
   }
 
+  // JaS cancels whichever hit type deals more per-die damage (crits on a tie), falling back to
+  // the other type if none of the preferred remain. MWx was already counted from the original
+  // crits above, so cancelling a crit only ever removes critDmg.
   if (defender.has(Ability.JustAScratch)) {
-    if (critHits > 0) {
+    const preferCrit = attacker.critDmg >= attacker.normDmg;
+    const cancelCrit = preferCrit ? critHits > 0 : normHits === 0 && critHits > 0;
+    if (cancelCrit) {
       critHits--;
     } else if (normHits > 0) {
       normHits--;

@@ -87,7 +87,7 @@ export const CoverCritSaves = new Note(
 );
 export const JustAScratch2021 = new Note(
   `JaS (Crits)`,
-  `Just a Scratch (JaS): Ignore damage from one attack die, preferring crits.`,
+  `Just a Scratch (JaS): Ignore damage from one attack die, preferring whichever of crits or normals deals more damage (crits on a tie).`,
 );
 export const JustAScratchNorms = new Note(
   `JaS (Normals)`,
