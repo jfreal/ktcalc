@@ -128,7 +128,35 @@ export function calcDamage(
   normSaves: number,
 ): DamageResult {
   const originalCritHits = critHits;
-  let damage = critHits * attacker.mwx;
+  const mwxDamage = critHits * attacker.mwx;
+  const resolve = (crits: number, norms: number) =>
+    calcDamageAfterJas(attacker, defender, originalCritHits, mwxDamage, crits, norms, critSaves, normSaves);
+
+  // Just a Scratch cancels one hit before saves. Which one is best depends on what the saves can
+  // then block and on Durable, so try each hit type and keep the lowest damage. On equal damage,
+  // prefer cancelling the type with more per-die damage (crits on a tie). MWx was already counted
+  // from the original crits, so cancelling a crit only ever removes critDmg.
+  if (defender.has(Ability.JustAScratch) && critHits + normHits > 0) {
+    const options: DamageResult[] = [];
+    if (critHits > 0) options.push(resolve(critHits - 1, normHits));
+    if (normHits > 0) options.push(resolve(critHits, normHits - 1));
+    if (attacker.critDmg < attacker.normDmg) options.reverse();
+    return options.reduce((best, r) => (r.damage < best.damage ? r : best));
+  }
+  return resolve(critHits, normHits);
+}
+
+function calcDamageAfterJas(
+  attacker: Model,
+  defender: Model,
+  originalCritHits: number,
+  mwxDamage: number,
+  critHits: number,
+  normHits: number,
+  critSaves: number,
+  normSaves: number,
+): DamageResult {
+  let damage = mwxDamage;
   const numNormalSavesToCancelCritHit = 2; // for Kill Team rules, not Fire Team rules
 
   function critSavesCancelCritHits() {
@@ -150,19 +178,6 @@ export function calcDamage(
     const numCancels = Math.min((normSaves / numNormalSavesToCancelCritHit) >> 0, critHits);
     normSaves -= numCancels * numNormalSavesToCancelCritHit;
     critHits -= numCancels;
-  }
-
-  // JaS cancels whichever hit type deals more per-die damage (crits on a tie), falling back to
-  // the other type if none of the preferred remain. MWx was already counted from the original
-  // crits above, so cancelling a crit only ever removes critDmg.
-  if (defender.has(Ability.JustAScratch)) {
-    const preferCrit = attacker.critDmg >= attacker.normDmg;
-    const cancelCrit = preferCrit ? critHits > 0 : normHits === 0 && critHits > 0;
-    if (cancelCrit) {
-      critHits--;
-    } else if (normHits > 0) {
-      normHits--;
-    }
   }
 
   if (defender.has(Ability.JustAScratchNorms)) {

@@ -215,6 +215,31 @@ describe(calcDamage.name + ', JustAScratch cancels the higher-damage hit', () =>
     const atker = new Model(0, 0, 3, 0, 2);
     expect(calcDamage(atker, def, 1, 1, 0, 0).damage).toBe(2);
   });
+  // JaS is applied before saves, so the best die to cancel depends on what the saves can block
+  it('critDmg=2 < normDmg=3, 1ch 1nh vs 0cs 1ns => cancels the crit so the save blocks the norm, 0 dmg', () => {
+    const atker = new Model(0, 0, 3, 2, 0);
+    expect(calcDamage(atker, def, 1, 1, 0, 1).damage).toBe(0);
+  });
+});
+
+describe(calcDamage.name + ', JustAScratch with Durable', () => {
+  const def = new Model().setAbility(Ability.JustAScratch).setAbility(Ability.Durable);
+
+  it('critDmg == normDmg == 4, 1ch 1nh => cancels the norm, Durable shaves the crit to 3', () => {
+    const atker = new Model(0, 0, 4, 4, 0);
+    const r = calcDamage(atker, def, 1, 1, 0, 0);
+    expect(r.damage).toBe(3);
+    expect(r.survivingCritHits).toBe(1);
+    expect(r.survivingNormHits).toBe(0);
+  });
+  it('critDmg == normDmg == 4, 1ch 1nh vs 0cs 1ns => cancels the crit so the save blocks the norm, 0 dmg', () => {
+    const atker = new Model(0, 0, 4, 4, 0);
+    expect(calcDamage(atker, def, 1, 1, 0, 1).damage).toBe(0);
+  });
+  it('critDmg == normDmg == 4, 2ch 1nh => cancels a crit (Durable shaves the other), 3 + 4', () => {
+    const atker = new Model(0, 0, 4, 4, 0);
+    expect(calcDamage(atker, def, 2, 1, 0, 0).damage).toBe(7);
+  });
 });
 
 describe(calcPostFnpDamages.name, () => {

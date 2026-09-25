@@ -100,7 +100,7 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
     <Form.Check
       type="checkbox"
       label="JaS (Crits)"
-      title="Just a Scratch (JaS): Ignore damage from an attack die, preferring the higher-damage hit (crits on a tie)."
+      title="Just a Scratch (JaS): Ignore damage from an attack die, choosing whichever die saves the most damage."
       checked={def.has(Ability.JustAScratch)}
       onChange={() => singleHandler(Ability.JustAScratch)(def.has(Ability.JustAScratch) ? 'X' : '✔')}
     />
