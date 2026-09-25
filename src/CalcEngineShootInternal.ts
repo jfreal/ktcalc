@@ -246,9 +246,12 @@ function calcDamageAfterJas(
   return best;
 
   function damageFromSurvivors(critHits: number, normHits: number): DamageResult {
-    // surviving hits get FNP rolls; cancelled crits still count if MWx contributed dmg
+    // Only damaging hits get FNP rolls; zero-damage hits must not reduce other hits.
+    // Cancelled crits still count if MWx contributed damage.
     const mwxCancelledCrits = attacker.mwx > 0 ? (originalCritHits - critHits) : 0;
-    const numHits = critHits + normHits + mwxCancelledCrits;
+    const damagingCrits = attacker.critDmg + attacker.mwx > 0 ? critHits : 0;
+    const damagingNorms = attacker.normDmg > 0 ? normHits : 0;
+    const numHits = damagingCrits + damagingNorms + mwxCancelledCrits;
     const durableCritReduction = durableApplies && critHits > 0 ? 1 : 0;
     const damage = mwxDamage + critHits * attacker.critDmg + normHits * attacker.normDmg - durableCritReduction;
     return { damage, numHits, survivingCritHits: critHits, survivingNormHits: normHits, durableCritReduction };

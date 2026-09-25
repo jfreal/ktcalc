@@ -91,8 +91,10 @@ function decodeAttacker(param: string): Model {
   const atk = new Model();
   atk.numDice = parseInt(parts[0]) || 4;
   atk.diceStat = parseInt(parts[1]) || 3;
-  atk.normDmg = parseInt(parts[2]) || 3;
-  atk.critDmg = parseInt(parts[3]) || 4;
+  const normDmg = parseInt(parts[2]);
+  const critDmg = parseInt(parts[3]);
+  atk.normDmg = Number.isNaN(normDmg) ? 3 : normDmg;
+  atk.critDmg = Number.isNaN(critDmg) ? 4 : critDmg;
   atk.mwx = parseInt(parts[4]) || 0;
   atk.apx = parseInt(parts[5]) || 0;
   atk.px = parseInt(parts[6]) || 0;
@@ -173,6 +175,10 @@ function encodeFighter(f: Model): string {
   if (f.has(Ability.Duelist)) abilities.push('duelist');
   if (f.has(Ability.JustAScratch)) abilities.push('jas');
   if (f.has(Ability.Durable)) abilities.push('dur');
+  if (f.has(Ability.Shock)) abilities.push('shock');
+  // Keep this token distinct from 'jas', which enables the other scratch ability.
+  if (f.has(Ability.JustAScratchNorms)) abilities.push('scratchnorm');
+  if (f.has(Ability.HalfDamageFirstStrike)) abilities.push('halfstrike');
 
   // Niche ability (mutually exclusive fight abilities)
   const nicheAbility = mutuallyExclusiveFightAbilities.find(a => a !== Ability.None && f.abilities.has(a));
@@ -191,7 +197,8 @@ function encodeFighter(f: Model): string {
     f.failsToNorms,
     nicheAbility || '',
     abilities.join(''),
-    f.saintlyRelics
+    f.saintlyRelics,
+    f.fnp
   ].join(':');
 }
 
@@ -231,9 +238,15 @@ function decodeFighter(param: string): Model {
   if (abilities.includes('duelist')) f.abilities.add(Ability.Duelist);
   if (abilities.includes('jas')) f.abilities.add(Ability.JustAScratch);
   if (abilities.includes('dur')) f.abilities.add(Ability.Durable);
+  if (abilities.includes('shock')) f.abilities.add(Ability.Shock);
+  if (abilities.includes('scratchnorm')) f.abilities.add(Ability.JustAScratchNorms);
+  if (abilities.includes('halfstrike')) f.abilities.add(Ability.HalfDamageFirstStrike);
 
   // appended after abilities; absent in older URLs and sanitized to off for unrecognized values
   f.saintlyRelics = parseRelicMode(parts[13]);
+  // Append FNP so older links retain their field positions and default to off.
+  const fnp = Number(parts[14]);
+  f.fnp = Number.isInteger(fnp) && fnp >= 2 && fnp <= 6 ? fnp : 0;
 
   return f;
 }

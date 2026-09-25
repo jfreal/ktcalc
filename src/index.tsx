@@ -15,11 +15,11 @@ const app = (
   </StrictMode>
 );
 
-// react-snap prerenders each route to static HTML at build time; when the app
-// boots against that prerendered markup we hydrate it instead of throwing it
-// away and re-rendering from scratch. On a cold (non-prerendered) load #root is
-// empty and we render normally.
-if (rootElement?.hasChildNodes()) {
+// react-snap snapshots routes without query parameters. Shared URLs can change
+// both the active view and the calculator inputs, so their initial tree does not
+// match the snapshot. React 17 hydration may leave mismatched DOM attributes
+// (including display:none) unchanged; render these URLs from scratch instead.
+if (rootElement?.hasChildNodes() && !window.location.search) {
   ReactDOM.hydrate(app, rootElement);
 } else {
   ReactDOM.render(app, rootElement);
