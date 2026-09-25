@@ -242,6 +242,84 @@ describe(calcDamage.name + ', JustAScratch with Durable', () => {
   });
 });
 
+describe(calcDamage.name + ', save allocation with Durable', () => {
+  const def = new Model().setAbility(Ability.Durable);
+
+  it('critDmg == normDmg == 4, 1ch 1nh vs 1cs => crit save blocks the norm, Durable shaves the crit to 3', () => {
+    const atker = new Model(0, 0, 4, 4, 0);
+    const r = calcDamage(atker, def, 1, 1, 1, 0);
+    expect(r.damage).toBe(3);
+    expect(r.survivingCritHits).toBe(1);
+    expect(r.survivingNormHits).toBe(0);
+    expect(r.durableCritReduction).toBe(1);
+  });
+  it('critDmg=5 > normDmg=4, 1ch 1nh vs 1cs => 4 either way (norm, or crit shaved to 4), keeps blocking the crit', () => {
+    const atker = new Model(0, 0, 4, 5, 0);
+    const r = calcDamage(atker, def, 1, 1, 1, 0);
+    expect(r.damage).toBe(4);
+    expect(r.survivingCritHits).toBe(0);
+  });
+  it('critDmg=3 is too low for Durable, 1ch 1nh vs 1cs => blocks the crit as before', () => {
+    const atker = new Model(0, 0, 3, 3, 0);
+    expect(calcDamage(atker, def, 1, 1, 1, 0).damage).toBe(3);
+  });
+
+  // Brute force: every legal use of the saves (including wasteful ones) and every JaS choice.
+  function bruteForceMinDamage(atker: Model, defender: Model, ch: number, nh: number, cs: number, ns: number) {
+    const jasChoices: [number, number][] = [[ch, nh]];
+    if (defender.has(Ability.JustAScratch)) {
+      jasChoices.length = 0;
+      if (ch > 0) jasChoices.push([ch - 1, nh]);
+      if (nh > 0) jasChoices.push([ch, nh - 1]);
+      if (ch + nh === 0) jasChoices.push([0, 0]);
+    }
+    const durable = defender.has(Ability.Durable) && atker.critDmg > 3;
+    let best = Infinity;
+    for (const [c0, n0] of jasChoices) {
+      for (let a = 0; a <= Math.min(cs, c0); a++) {
+        for (let b = 0; b <= Math.min(cs - a, n0); b++) {
+          for (let c = 0; c <= Math.min(ns, n0 - b); c++) {
+            for (let d = 0; d <= Math.min(Math.floor((ns - c) / 2), c0 - a); d++) {
+              const crits = c0 - a - d;
+              const norms = n0 - b - c;
+              const dmg = ch * atker.mwx + crits * atker.critDmg + norms * atker.normDmg
+                - (durable && crits > 0 ? 1 : 0);
+              best = Math.min(best, dmg);
+            }
+          }
+        }
+      }
+    }
+    return best;
+  }
+
+  const profiles: [number, number][] = [[3, 4], [4, 4], [4, 5], [3, 6], [3, 7], [2, 4], [5, 4], [4, 9]];
+  for (const withJas of [false, true]) {
+    it(`matches brute force for every 0-3 hits/saves split${withJas ? ', with JaS' : ''}`, () => {
+      const defender = withJas ? new Model().setAbility(Ability.Durable).setAbility(Ability.JustAScratch) : def;
+      for (const [dn, dc] of profiles) {
+        for (const mwx of [0, 2]) {
+          const atker = new Model(0, 0, dn, dc, mwx);
+          for (let ch = 0; ch <= 3; ch++) {
+            for (let nh = 0; nh <= 3; nh++) {
+              for (let cs = 0; cs <= 3; cs++) {
+                for (let ns = 0; ns <= 3; ns++) {
+                  const expected = bruteForceMinDamage(atker, defender, ch, nh, cs, ns);
+                  const actual = calcDamage(atker, defender, ch, nh, cs, ns).damage;
+                  if (actual !== expected) {
+                    throw new Error(`D=${dn}/${dc} mwx=${mwx} ${ch}ch ${nh}nh vs ${cs}cs ${ns}ns: `
+                      + `got ${actual}, brute force ${expected}`);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+});
+
 describe(calcPostFnpDamages.name, () => {
   it('5 damage from 1 hit, fnp 5+: can only reduce to 4', () => {
     const fnp = 5;
