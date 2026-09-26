@@ -36,20 +36,34 @@ const PAGE_HOOKS = `
     return true;
   }
 
-  function panel(title) {
-    const spans = [...document.querySelectorAll('span')].filter(
-      (span) => span.textContent.trim() === title && isVisible(span),
-    );
-    if (spans.length !== 1) {
-      throw new Error('expected 1 visible panel titled ' + JSON.stringify(title) + ', found ' + spans.length);
+  // Panel titles are not one element type. A title bar with no right-hand
+  // button renders the title as a text node (Situation 1, Fighter A). A title
+  // bar with a button wraps the title in a span (Situation 2).
+  function isTitleElement(el, title) {
+    if (!el || !isVisible(el)) return false;
+    if (el.tagName === 'SPAN') return el.textContent.trim() === title;
+    if (el.tagName === 'DIV') {
+      const textKids = [...el.childNodes].filter((node) => node.nodeType === 3 && node.textContent.trim());
+      return textKids.length === 1 && textKids[0].textContent.trim() === title;
     }
-    let el = spans[0];
+    return false;
+  }
+
+  function situationTitleCount(root) {
+    return [...root.querySelectorAll('span, div')].filter((el) =>
+      isTitleElement(el, 'Situation 1') || isTitleElement(el, 'Situation 2'),
+    ).length;
+  }
+
+  function panel(title) {
+    const starts = [...document.querySelectorAll('span, div')].filter((el) => isTitleElement(el, title));
+    if (starts.length !== 1) {
+      throw new Error('expected 1 visible panel titled ' + JSON.stringify(title) + ', found ' + starts.length);
+    }
+    let el = starts[0];
     while (el) {
       const selects = el.querySelectorAll('select');
-      const titles = [...el.querySelectorAll('span')].filter((span) =>
-        /^(Situation|Fighter) /.test(span.textContent.trim()),
-      );
-      if (selects.length > 0 && titles.length === 1) return el;
+      if (selects.length > 0 && situationTitleCount(el) === 1) return el;
       el = el.parentElement;
     }
     throw new Error('could not find the panel root for ' + title);
@@ -255,10 +269,11 @@ async function shotClip(cdp) {
     const damage = window.__ktVerify.averageDamageElement(s1);
     const a = attacks.getBoundingClientRect();
     const d = damage.getBoundingClientRect();
-    const left = window.scrollX + Math.min(a.left, d.left) - 24;
-    const top = window.scrollY + Math.min(a.top, d.top) - 80;
-    const right = window.scrollX + Math.max(a.right, d.right) + 24;
-    const bottom = window.scrollY + Math.max(a.bottom, d.bottom) + 36;
+    const panelBox = s1.getBoundingClientRect();
+    const left = window.scrollX + Math.min(panelBox.left, a.left, d.left) - 8;
+    const top = window.scrollY + Math.min(panelBox.top, a.top, d.top) - 8;
+    const right = window.scrollX + Math.max(panelBox.right, a.right, d.right) + 8;
+    const bottom = window.scrollY + Math.max(panelBox.bottom, a.bottom, d.bottom) + 8;
     return {
       x: Math.max(0, Math.floor(left)),
       y: Math.max(0, Math.floor(top)),

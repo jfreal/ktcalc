@@ -21,7 +21,7 @@ With the dev server up and doctor passing:
 .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
 ```
 
-That is the scripted path. The same steps by hand, scoped to the visible Situation 1 panel (the title span text is `Situation 1`):
+That is the scripted path. The same steps by hand, scoped to the visible Situation 1 panel. Its title is the text node `Situation 1` in the title bar (not a span; Situation 2's title is a span because that bar has the copy button):
 
 1. Wait for `h1` text `Kill Team 2024 Shooting Calculator`.
 2. Inside that panel, read `select#Attacks` (default `4`) and the accordion header matching `Average Damage:`.

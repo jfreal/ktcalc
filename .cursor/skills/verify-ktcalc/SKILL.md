@@ -84,7 +84,7 @@ What that script does:
 1. Runs doctor. If doctor fails, it does not drive.
 2. Opens `http://127.0.0.1:$VERIFY_PORT/` in a fresh Chrome profile under the artifacts directory.
 3. Waits until the `h1` contains `Shooting Calculator`.
-4. Scopes to the visible panel whose title span is `Situation 1` (not `document.getElementById`, because ids are duplicated).
+4. Scopes to the visible panel titled `Situation 1`. That title is a text node in the title bar (Situation 2's title is a span, because that bar has a button). Do not use `document.getElementById`; ids are duplicated.
 5. Reads the Attacks `<select id="Attacks">` and the `Average Damage: N.NN` accordion header. Also reads Situation 2's average.
 6. Clicks the `+` button that is the next sibling of that Attacks select (the same control a user presses).
 7. Waits until Situation 1's Attacks value and Average Damage both change. Situation 2's Average Damage must stay the same.

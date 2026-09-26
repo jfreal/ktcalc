@@ -18,7 +18,7 @@ There is no separate fight script. Use the same Chrome session pattern as `drive
 
 1. Click `button[aria-label="Kill Team Fight Calculator"]`.
 2. Wait until `h1` text is `Kill Team 2024 Fight Calculator` and the Fight button is `disabled`.
-3. Scope to the visible panel whose title span is `Fighter A`. Ignore hidden Shoot selects.
+3. Scope to the visible panel titled `Fighter A` (a text node in the title bar, same pattern as Situation 1). Ignore hidden Shoot selects.
 4. Read `select#Attacks` in that panel and the `AvgRemainingWounds:` value in the Results panel under the `FighterA` heading.
 5. Click the `+` button that is the next sibling of Fighter A's Attacks select.
 6. Fighter A's Attacks value changed, and the `AvgRemainingWounds:` number for FighterA changed. Fighter B's Attacks select is unchanged.
