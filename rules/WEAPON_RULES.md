@@ -119,7 +119,7 @@ The first time you strike with a critical success in each sequence, also **disca
 | **Rending** | If have crit, convert 1 normal to crit |
 | **Saturate** | Defender cannot use cover saves |
 | **Severe** | If no crits, convert 1 normal to crit |
-| **Shock** | First crit strike discards one unresolved normal (or a crit if none) |
+| **Shock** | First crit strike discards one of the opponent's unresolved normal successes (or a crit if none) |
 
 ---
 
