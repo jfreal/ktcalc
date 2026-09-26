@@ -342,6 +342,25 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
     const enemy = newFighterState(99, 99, 20);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
   });
+  it('#2d: Parry shock-strikes a crit-only enemy, because that strike discards a crit', () => {
+    // Shock discards a normal if the enemy has one, otherwise a crit. Against a crit-only
+    // opponent the discard removes a crit and still deals damage, so it beats a plain parry.
+    // The enemy having crits must not keep a Parry fighter parrying when they have no normals.
+    const chooser = newFighterState(1, 0, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
+    const enemy = newFighterState(2, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('#2e: a mixed hand still shock-strikes the crit against a crit-only enemy', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
+    const enemy = newFighterState(1, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('#2f: already shocked, a crit-only enemy does not force another strike under Parry', () => {
+    const chooser = newFighterState(1, 0, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
+    chooser.hasCritStruck = true;
+    const enemy = newFighterState(2, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+  });
   it('#3: parry if can parry last enemy success and still kill them', () => {
     const chooser = newFighterState(99, 99, 99, FightStrategy.Strike);
     const enemy = newFighterState(1, 0, 20);
@@ -523,6 +542,29 @@ describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, duel
       expect(enemy.norms).toBe(origEnemyNorms - 1);
       expect(enemy.currentWounds).toBe(finalWounds);
     }
+  });
+  it('CritStrike+shock, enemy has no normals, so a crit is discarded', () => {
+    const chooser = makeChooser(Ability.Shock);
+    chooser.profile.setAbility(Ability.Shock, true);
+    const enemy = newFighterState(origEnemyCrits, 0, chooser.profile.critDmg + finalWounds);
+
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(chooser.crits).toBe(origChooserCrits - 1);
+    expect(chooser.norms).toBe(origChooserNorms);
+    expect(chooser.currentWounds).toBe(finalWounds);
+    expect(enemy.crits).toBe(origEnemyCrits - 1);
+    expect(enemy.norms).toBe(0);
+    expect(enemy.currentWounds).toBe(finalWounds);
+  });
+  it('CritStrike+shock, enemy has no successes, discards nothing', () => {
+    const chooser = makeChooser(Ability.Shock);
+    chooser.profile.setAbility(Ability.Shock, true);
+    const enemy = newFighterState(0, 0, chooser.profile.critDmg + finalWounds);
+
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.crits).toBe(0);
+    expect(enemy.norms).toBe(0);
+    expect(enemy.currentWounds).toBe(finalWounds);
   });
   it('CritStrike+shock, already shocked', () => {
     for(let stormShieldMaybe of [Ability.None, Ability.StormShield2021]) { // storm shield shouldn't matter
@@ -930,6 +972,18 @@ describe(resolveFight.name + 'hardcoded answers', () => {
     resolveFight(guy1, guy2);
     expect(guy1.currentWounds).toBe(1);
     expect(guy2.currentWounds).toBe(0);
+  });
+  it('Parry fighter with Shock discards a crit-only enemy crit and deals the strike', () => {
+    // newFighterState uses critDmg=2. A plain crit parry would cancel the enemy crit and deal
+    // nothing; the shocking crit strike deals 2 and discards that crit, so they never strike back.
+    const atk = newFighterState(1, 0, 10, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
+    const def = newFighterState(1, 0, 10, FightStrategy.Strike);
+
+    resolveFight(atk, def);
+    expect(atk.currentWounds).toBe(10);
+    expect(def.currentWounds).toBe(10 - atk.profile.critDmg);
+    expect(def.crits).toBe(0);
+    expect(atk.crits).toBe(0);
   });
 });
 

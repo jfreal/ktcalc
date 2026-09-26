@@ -29,7 +29,7 @@ export enum Ability {
 
     // fight stuff relevant to 2024
     Brutal = "Brutal", // opponent can only parry with crit
-    Shock = "Shock", // "the first time you strike with a crit, also discard one of opponent's unresolved norms"
+    Shock = "Shock", // first crit strike discards one unresolved enemy normal, or a crit if there are none
 
     // fight stuff relevant to only 2021 or I have not checked for 2024
     StormShield2021 = "StormShield2021", // each parry cancels two successes

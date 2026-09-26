@@ -145,7 +145,7 @@ export const Brutal = new Note(
 );
 export const Shock = new Note(
   `Shock`,
-  `First crit strike also cancels one enemy unresolved norm.`,
+  `First crit strike discards one unresolved enemy normal, or a crit if there are none.`,
 );
 export const NicheAbility = new Note(
   `NicheAbility`,
