@@ -359,7 +359,9 @@ export function resolveDieChoice(
           dmg++;
         }
         if(enemy.profile.abilities.has(Ability.HalfDamageFirstStrike)) {
-          dmg = Math.max(2, Math.ceil(dmg / 2));
+          // Halved and rounded up, but never below 2 and never above the strike itself.
+          // A 2 stays 2 (half would be 1). A 0 or 1 is already at or under that floor.
+          dmg = dmg <= 2 ? dmg : Math.ceil(dmg / 2);
         }
       }
       chooser.hasStruck = true;
