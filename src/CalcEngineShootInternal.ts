@@ -79,6 +79,39 @@ export function calcDefenderFinalDiceStuff(
   );
 }
 
+// Expected damage of one already-retained hit profile against this defender.
+// Cover and both Piercing rules come from the same defence-dice distributions the
+// shot uses afterwards, so a retain choice ranked with this scorer is ranking the
+// damage that choice will actually deal. Feel No Pain stays out: calcDamage is
+// pre-FNP, and the retain step still does not weigh the shape of those rolls.
+// Saintly Relics are likewise left out. Pass the shot's own defence-dice stuff to
+// avoid building those distributions twice.
+export function hitScorerForDefender(
+  attacker: Model,
+  defender: Model,
+  stuff: DefenderFinalDiceStuff = calcDefenderFinalDiceStuff(defender, attacker),
+): (crits: number, norms: number) => number {
+  const cache = new Map<string, number>();
+  return (crits, norms) => {
+    const key = `${crits},${norms}`;
+    const cached = cache.get(key);
+    if (cached !== undefined) {
+      return cached;
+    }
+    let total = 0;
+    if (crits + norms > 0) {
+      const defs = (stuff.pxIsRelevant && crits > 0)
+        ? stuff.finalDiceProbsWithPx
+        : stuff.finalDiceProbs;
+      for (const def of defs) {
+        total += def.prob * calcDamage(attacker, defender, crits, norms, def.crits, def.norms).damage;
+      }
+    }
+    cache.set(key, total);
+    return total;
+  };
+}
+
 export function calcPostFnpDamages(
   fnp: number,
   preFnpDmgs: Map<string,number>, // key = "damage,numHits"

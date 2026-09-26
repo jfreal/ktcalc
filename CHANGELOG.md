@@ -1,5 +1,11 @@
 # Changelog
 
+## September 2026 - Mystic Scry and Punishing weigh saves and Piercing
+
+- **Mystic Scry and Punishing no longer pick the higher raw-damage line when a defender is in the shoot.** One rolled normal and one fail at 3/4 damage used to keep two normals (raw 6 beats a crit's 4). Against one cover save and Piercing Crits 1, the cover blocks one of those normals (3 through) while the crit removes the cover die and 4 gets through. Punishing's take-versus-decline choice used the same blind score, so it could lock a normal that a save made worse than declining.
+- On a shoot, each candidate is scored with the shot's own damage resolution against that defender's saves, cover, and Piercing. Defence dice, fights, and callers with no defender still rank by raw damage (a critical save counting as two normal saves on defence). Accurate's pre-roll choice is unchanged. Feel No Pain is still not weighed.
+- The in-app notes and the retained-dice rules page now say so.
+
 ## July 2026 - Optional rules are now optional (Punishing, Accurate), and a Fight lookahead RNG fix
 
 - **Punishing is no longer forced.** The rule is "you *can* retain one of your fails as a normal success", and taking it isn't always right: the norm it produces is retained, so it can't be promoted afterwards. With 1 crit, 1 fail, Rending and FailsToNorms 1, taking it scored 7 damage where declining scores 8 (FailsToNorms leaves the fail *promotable*, Rending promotes it). Enabling an optional ability could therefore *lower* reported damage. The engine now resolves both lines and keeps the better, the same way Mystic Scry already scored a "decline"; ties keep the retention, so every roll where nothing else wants the fail is unchanged.

@@ -660,6 +660,33 @@ describe(calcDmgProbs.name + ', relentless', () => {
   });
 });
 
+describe(calcDmgProbs.name + ', mystic scry and punishing vs saves', () => {
+  it('mystic scry keeps the crit when one cover save and Piercing Crits 1 beat two normals', () => {
+    // 2 dice at 2+, never crit: 25/36 two norms, 10/36 one norm + one fail, 1/36 two fails.
+    // Two normals upgrade one to a crit (Piercing removes the cover) for 7.
+    // One norm and one fail: fail->norm is 6 raw but the cover leaves 3; norm->crit is 4 and
+    // Piercing Crits 1 removes the cover die, so 4 gets through. Two fails become one saved norm.
+    const atk = new Model(2, 2, 3, 4).setProp('lethal', 7).setProp('px', 1)
+      .setAbility(Ability.MysticScryBuff, true);
+    const def = new Model(1, 6).setProp('autoNorms', 1);
+
+    expect(avgDmg(atk, def)).toBeCloseTo((25 * 7 + 10 * 4) / 36, requiredPrecision);
+  });
+
+  it('punishing declines the locked norm when one normal save makes the crit line better', () => {
+    // 2 dice at 6+: 1/36 two crits, 10/36 one crit + one fail, 25/36 two fails.
+    // Norm 6 / crit 2, Rending, FailsToNorms 1, one always-normal save.
+    // Taking on the mixed roll locks {1c,1n}: the save blocks the norm and 2 gets through.
+    // Declining lets FailsToNorms + Rending make {2c}: one normal save cannot block a crit, so 4.
+    const atk = new Model(2, 6, 6, 2).setProp('failsToNorms', 1)
+      .setAbility(Ability.Punishing, true)
+      .setAbility(Ability.Rending, true);
+    const def = new Model(1).withAlwaysNorm();
+
+    expect(avgDmg(atk, def)).toBeCloseTo((1 * 4 + 10 * 4) / 36, requiredPrecision);
+  });
+});
+
 describe(calcDmgProbs.name + ', rending & starfire', () => {
   it('rending, 2 atk dice, probability 2 crits', () => {
     const atk = newTestAttacker(2).setAbility(Ability.Rending, true);
