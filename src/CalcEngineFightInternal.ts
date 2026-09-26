@@ -181,7 +181,7 @@ export function resolveFight(
     && currentGuy.currentWounds > 0 && nextGuy.currentWounds > 0)
   {
     // used to have a `if(oneGuy out of successes){ oneGuy.applyDmg(otherGuy.totalDmg())); }`
-    // but it would be painful to make that handle Durable and other abilities
+    // but it would be painful to make that handle first-strike and other abilities
 
     if(currentGuy.crits + currentGuy.norms > 0) {
       const choice = calcDieChoice(currentGuy, nextGuy);
@@ -273,7 +273,7 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
 
   // ALWAYS strike if you can kill enemy with a single strike;
   // also, if enemy has brutal and you have no crits, then you must strike;
-  if(chooser.nextDmg(enemy) >= enemy.currentWounds
+  if(chooser.nextDmg() >= enemy.currentWounds
     || (enemy.profile.has(Ability.Brutal) && chooser.crits === 0)) {
     return chooser.nextStrike();
   }
@@ -398,8 +398,7 @@ export function resolveDieChoice(
   }
 
   if(choice === FightChoice.CritStrike) {
-    let critDmgAfterPossibleDurable = chooser.nextCritDmgWithDurableAndWithoutHammerhand(enemy);
-    applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable, false);
+    applyDmgWithFirstStrikeHandling(chooser.profile.critDmg, false);
     chooser.crits--;
 
     if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck) {
@@ -520,7 +519,7 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
     // Estimate the chooser's remaining damage by cloning the fighters, applying
     // the parry, then striking out the rest through the real resolution path.
     // This keeps resolveDieChoice the single source of truth for first-strike
-    // handling (JaS Crits, JaS Normals, Hammerhand, Durable, etc.) instead of
+    // handling (JaS Crits, JaS Normals, Hammerhand, etc.) instead of
     // re-deriving it here. The clones are estimates (see asEstimate above), so
     // Feel No Pain and Saintly Relics are applied as expected values — the enemy
     // surviving on Feel No Pain is exactly what decides whether this

@@ -183,7 +183,7 @@ shape and chooses the order by **simulating both lines** against the enemy's act
 it picks norm-first only when it genuinely deals more — and stays crit-first in a death-race,
 where front-loading the bigger die wins (Scenario C-adjacent: the enemy is *striking*, not
 parrying). Because the decision runs through the real resolution path, first-strike effects
-(Hammerhand's +1, Just a Scratch, Durable, Murderous Entrance) are accounted for automatically.
+(Hammerhand's +1, Just a Scratch, Murderous Entrance) are accounted for automatically.
 
 Regression coverage lives in `CalcEngineFight.test.ts` under
 *"calcDieChoice, norm-first to deny a normal parry"*.

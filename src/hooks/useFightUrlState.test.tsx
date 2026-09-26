@@ -34,14 +34,14 @@ it.each([
   }
 });
 
-it('preserves abilities in legacy fight links without enabling new abilities', () => {
+it('preserves abilities in legacy fight links without enabling new or removed abilities', () => {
   const params = new URLSearchParams({
     fa: '12:4:3:3:4:X:0:0:0:0:0::rendjasdur',
     fb: '12:4:3:3:4:X:0:0:0:0:0::',
   });
   window.history.replaceState({}, '', `/?${params}`);
   const restored = getFightStateFromUrl()!;
-  expect(restored.fighterA.abilities).toEqual(new Set([Ability.Rending, Ability.JustAScratch, Ability.Durable]));
+  expect(restored.fighterA.abilities).toEqual(new Set([Ability.Rending, Ability.JustAScratch]));
   expect(restored.fighterB.abilities.size).toBe(0);
 });
 
