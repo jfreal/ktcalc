@@ -15,6 +15,14 @@ describe('public/llms.txt', () => {
 
   it('lists the live calculator views', () => {
     expect(llmsTxt).toContain('https://ktcalc.com/?view=shoot');
-    expect(llmsTxt).toContain('https://ktcalc.com/?view=fight');
+    // The fight calculator is linked either as /?view=fight or its own /fight/ path.
+    expect(llmsTxt).toMatch(/https:\/\/ktcalc\.com\/(\?view=fight|fight\/?)\)/);
+  });
+});
+
+describe('public/index.html', () => {
+  it('does not describe the unfinished mass analysis in its structured data', () => {
+    const indexHtml = fs.readFileSync(path.join(process.cwd(), 'public/index.html'), 'utf8');
+    expect(indexHtml).not.toMatch(/mass matchup analysis/i);
   });
 });
