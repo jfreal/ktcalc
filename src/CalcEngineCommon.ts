@@ -7,9 +7,14 @@ import DieProbs from "src/DieProbs";
 import FinalDiceProb from 'src/FinalDiceProb';
 import { addMapValues, addToMapValue, upTo } from 'src/Util';
 
+// Two retain candidates whose scores differ by less than this are a tie. Defender-scored
+// expected damage is a float sum, so mathematically equal lines can differ by rounding noise.
+const scoreTieEpsilon = 1e-9;
+
 export function calcFinalDiceProbsForAttacker(
   attacker: Model,
   defender?: Model,
+  defenderScorer?: (crits: number, norms: number) => number,
 ): FinalDiceProb[]
 {
   // Merge defender's ObscuredTarget into abilities if present
@@ -20,14 +25,14 @@ export function calcFinalDiceProbsForAttacker(
   }
 
   // Mystic Scry and Punishing choose after the attack roll, before defence dice are
-  // rolled. When this defender is known, score each candidate by the damage it deals
-  // against that defender's saves, cover, and Piercing — not by raw hit damage.
-  // Defence dice and callers with no defender never reach this, and keep the raw
-  // fallback. Accurate's pre-roll choice is separate and still ranks pre-save damage.
-  const scoreHits = defender !== undefined
+  // rolled. On a shoot the caller passes a scorer (hitScorerForDefender) so each
+  // candidate is ranked by the damage it deals against that defender's saves, cover,
+  // and Piercing — not by raw hit damage. Defence dice and callers with no scorer keep
+  // the raw fallback. Accurate's pre-roll choice is separate and still ranks pre-save damage.
+  const scoreHits = defenderScorer !== undefined
     && canRankByDamage(attacker.normDmg, attacker.critDmg + attacker.mwx)
     && (abilities.has(Ability.MysticScryBuff) || abilities.has(Ability.Punishing))
-    ? hitScorerFor(attacker, defender)
+    ? defenderScorer
     : undefined;
 
   return calcFinalDiceProbs(
@@ -43,18 +48,6 @@ export function calcFinalDiceProbsForAttacker(
     attacker.critDmg + attacker.mwx,
     scoreHits,
   );
-}
-
-// CalcEngineShootInternal imports this module. A top-level import of it would cycle
-// under CRA's CJS transform, which copies named bindings before the other module
-// has finished exporting. The scorer is only needed once a shot is actually ranked.
-function hitScorerFor(
-  attacker: Model,
-  defender: Model,
-): (crits: number, norms: number) => number {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const shoot = require('./CalcEngineShootInternal') as typeof import('./CalcEngineShootInternal');
-  return shoot.hitScorerForDefender(attacker, defender);
 }
 
 export function calcFinalDiceProbs(
@@ -748,7 +741,9 @@ export function applyPostRollModifications(
   const taken = resolve(crits, norms + 1, fails - 1, retainedNorms + 1);
   const declined = resolve(crits, norms, fails, retainedNorms);
   // Ties keep the retention, which is the historical behavior and never worse in dice terms.
-  return outcomeValue(declined, normDmg, critDmgPlusMwx, scoreHits) > outcomeValue(taken, normDmg, critDmgPlusMwx, scoreHits)
+  const declinedValue = outcomeValue(declined, normDmg, critDmgPlusMwx, scoreHits);
+  const takenValue = outcomeValue(taken, normDmg, critDmgPlusMwx, scoreHits);
+  return declinedValue > takenValue + scoreTieEpsilon
     ? declined
     : taken;
 }
@@ -854,7 +849,7 @@ function resolveAfterPunishing(
     for (const cand of candidates) {
       const finished = finishRendingAndObscured(cand.crits, cand.norms, cand.retainedNorms, severeTriggered, abilities);
       const dmg = dmgOf(finished.crits, finished.norms);
-      if (dmg > bestDmg) {
+      if (dmg > bestDmg + scoreTieEpsilon) {
         bestDmg = dmg;
         best = finished;
       }

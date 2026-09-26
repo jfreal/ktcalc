@@ -9,6 +9,7 @@ import {
   calcDefenderFinalDiceStuff,
   calcPostFnpDamages,
   calcRelicsOutcomes,
+  hitScorerForDefender,
 } from 'src/CalcEngineShootInternal'
 
 type ScenarioVisitor = (result: DamageResult, currProb: number) => void;
@@ -19,8 +20,9 @@ export function calcDmgProbs(
   shootOptions: ShootOptions = new ShootOptions(),
 ): Map<number, number> // damage to prob
 {
-  const attackerFinalDiceProbs = Common.calcFinalDiceProbsForAttacker(attacker, defender);
   const defenderStuff = calcDefenderFinalDiceStuff(defender, attacker);
+  const attackerFinalDiceProbs = Common.calcFinalDiceProbsForAttacker(
+    attacker, defender, hitScorerForDefender(attacker, defender, defenderStuff));
   const usesFnp = defender.usesFnp();
   const usesRelics = defender.usesSaintlyRelics();
   const numRounds = shootOptions.numRounds;

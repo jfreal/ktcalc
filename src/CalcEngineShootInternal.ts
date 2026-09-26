@@ -84,11 +84,13 @@ export function calcDefenderFinalDiceStuff(
 // shot uses afterwards, so a retain choice ranked with this scorer is ranking the
 // damage that choice will actually deal. Feel No Pain stays out: calcDamage is
 // pre-FNP, and the retain step still does not weigh the shape of those rolls.
+// Saintly Relics are likewise left out. Pass the shot's own defence-dice stuff to
+// avoid building those distributions twice.
 export function hitScorerForDefender(
   attacker: Model,
   defender: Model,
+  stuff: DefenderFinalDiceStuff = calcDefenderFinalDiceStuff(defender, attacker),
 ): (crits: number, norms: number) => number {
-  const stuff = calcDefenderFinalDiceStuff(defender, attacker);
   const cache = new Map<string, number>();
   return (crits, norms) => {
     const key = `${crits},${norms}`;

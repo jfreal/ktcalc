@@ -366,7 +366,7 @@ describe(Common.calcFinalDiceProb.name, () => {
     const atk = new Model(2, 2, 3, 4).setProp('lethal', 7).setProp('px', 1)
       .setAbility(Ability.MysticScryBuff, true);
     const def = new Model(1, 6).setProp('autoNorms', 1);
-    const probs = Common.calcFinalDiceProbsForAttacker(atk, def);
+    const probs = Common.calcFinalDiceProbsForAttacker(atk, def, hitScorerForDefender(atk, def));
     expect(probs.find(p => p.crits === 0 && p.norms === 2)).toBeUndefined();
     const critLine = probs.find(p => p.crits === 1 && p.norms === 0);
     expect(critLine).toBeDefined();
