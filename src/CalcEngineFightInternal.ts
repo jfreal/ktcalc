@@ -350,7 +350,7 @@ export function resolveDieChoice(
   chooser: FighterState,
   enemy: FighterState,
 ): void {
-  function applyDmgWithFirstStrikeHandling(dmg: number, isNorm: boolean) {
+  function applyDmgWithFirstStrikeHandling(dmg: number, isNorm: boolean): number {
     if(!chooser.hasStruck) {
       if(enemy.profile.abilities.has(Ability.JustAScratch)) {
         dmg = 0;
@@ -389,12 +389,24 @@ export function resolveDieChoice(
       maxPendingDmg = Math.max(maxPendingDmg, chooser.profile.normDmg);
     }
     enemy.applyDmg(dmg, dmg >= maxPendingDmg);
+    return dmg;
+  }
+
+  // Spend Durable only when this crit still deals damage after Just a Scratch.
+  // A zeroed crit inflicted nothing, so the shave stays for a later crit,
+  // including a Murderous Entrance follow-up. Shock still keys off hasCritStruck.
+  function strikeCrit(): void {
+    const baseCritDmg = chooser.profile.critDmg;
+    const critDmgAfterPossibleDurable = chooser.nextCritDmgWithDurableAndWithoutHammerhand(enemy);
+    const damageAfterScratch = applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable, false);
+    if(critDmgAfterPossibleDurable < baseCritDmg && damageAfterScratch > 0) {
+      chooser.durableUsed = true;
+    }
+    chooser.crits--;
   }
 
   if(choice === FightChoice.CritStrike) {
-    let critDmgAfterPossibleDurable = chooser.nextCritDmgWithDurableAndWithoutHammerhand(enemy);
-    applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable, false);
-    chooser.crits--;
+    strikeCrit();
 
     if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck) {
       enemy.norms = Math.max(0, enemy.norms - 1); // shock ability cancels an enemy norm success
@@ -406,8 +418,7 @@ export function resolveDieChoice(
       && !chooser.hasCritStruck
     ) {
       if(chooser.crits > 0) {
-        applyDmgWithFirstStrikeHandling(chooser.profile.critDmg, false);
-        chooser.crits--;
+        strikeCrit();
       }
       else {
         applyDmgWithFirstStrikeHandling(chooser.profile.normDmg, true);

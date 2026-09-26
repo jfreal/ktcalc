@@ -14,6 +14,9 @@ export default class FighterState {
   public currentWounds: number;
   public hasStruck: boolean;
   public hasCritStruck: boolean;
+  // Durable shave is separate from hasCritStruck: Shock still keys off a crit
+  // having been struck, even when Just a Scratch zeroed that crit's damage.
+  public durableUsed: boolean;
   public normScratchUsed: boolean; // JaS (Normals): whether this fighter's norm-only scratch is spent
   public relicUsed: boolean; // SaintlyRelics: whether this fighter's once-per-action ignore is spent
   public relicIgnoresUsed: number; // SaintlyRelics: ignores spent so far this battle (capped per battle)
@@ -38,6 +41,7 @@ export default class FighterState {
     relicUsed: boolean = false,
     relicIgnoresUsed: number = 0,
     hasDuelistParried: boolean = false,
+    durableUsed: boolean = false,
   ) {
     this.profile = profile;
     this.crits = crits;
@@ -46,6 +50,7 @@ export default class FighterState {
     this.currentWounds = currentWounds === -1 ? this.profile.wounds : currentWounds;
     this.hasStruck = hasStruck;
     this.hasCritStruck = hasCritStruck;
+    this.durableUsed = durableUsed;
     this.normScratchUsed = normScratchUsed;
     this.relicUsed = relicUsed;
     this.relicIgnoresUsed = relicIgnoresUsed;
@@ -165,7 +170,7 @@ export default class FighterState {
     let critDmg = this.profile.critDmg;
 
     if(enemy.profile.abilities.has(Ability.Durable)
-      && !this.hasCritStruck
+      && !this.durableUsed
       && this.profile.critDmg > MinCritDmgAfterDurable
     ) {
       critDmg--;
@@ -202,6 +207,7 @@ export default class FighterState {
     this.currentWounds = currentWounds;
     this.hasStruck = false;
     this.hasCritStruck = false;
+    this.durableUsed = false;
     this.normScratchUsed = false;
     this.relicUsed = false;
     this.hasDuelistParried = false;
@@ -221,6 +227,7 @@ export default class FighterState {
       this.relicUsed,
       this.relicIgnoresUsed,
       this.hasDuelistParried,
+      this.durableUsed,
     );
     // carried so a lookahead nested inside a lookahead stays an estimate, and so a nested clone
     // doesn't hand the relic back after earlier strikes in the same estimate already spent it

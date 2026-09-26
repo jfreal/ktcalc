@@ -814,6 +814,36 @@ describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, duel
     resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds - critDmg);
   });
+  it('Just a Scratch does not spend Durable on a zero-damage crit', () => {
+    // Two crits at 4. JaS zeroes the first, so that hit inflicted nothing and must
+    // not spend Durable. The shave belongs on the second crit, reduced to the minimum of 3.
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 0, 10, FightStrategy.Strike);
+    chooser.profile.setProp('critDmg', 4);
+    const enemy = newFighterState(0, 0, initialWounds);
+    enemy.profile.setAbility(Ability.JustAScratch, true);
+    enemy.profile.setAbility(Ability.Durable, true);
+
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 3);
+  });
+  it('Durable still shaves only the first crit that deals damage', () => {
+    // critDmg 5 is above the minimum of 3, so the first crit is 4 and the next stays 5.
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 0, 10, FightStrategy.Strike);
+    chooser.profile.setProp('critDmg', 5);
+    const enemy = newFighterState(0, 0, initialWounds);
+    enemy.profile.setAbility(Ability.Durable, true);
+
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 4);
+
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 4 - 5);
+  });
 });
 
 describe(resolveFight.name + ' smart strategies should optimize goal', () => {
