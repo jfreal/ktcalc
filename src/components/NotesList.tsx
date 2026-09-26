@@ -5,9 +5,8 @@ import { advancedMarkerChar } from 'src/components/AdvancedMarker';
 
 // The Notes panel is split into a "Basic" section and an "Advanced" section. The advanced section
 // collects the rules whose control only appears once the per-panel "Advanced" checkbox is ticked, so
-// they line up with the gear-marked controls. The set of advanced rules is passed in per calculator
-// (Shoot and Fight hide different controls) and must be kept in sync with the basic/advanced split in
-// the AttackerControls / DefenderControls / FighterControls components.
+// they line up with the gear-marked controls. FightSection and ShootSection pass the set derived
+// from the same param and checkbox catalogs those panels render.
 
 export interface NotesListProps {
   notes: Note[];

@@ -24,6 +24,14 @@ import {
   xspan,
 } from 'src/Util';
 import { relicModeToLabel } from 'src/SaintlyRelics';
+import {
+  AbilityCheckbox,
+  NotedControl,
+  ParamSpec,
+  buildParams,
+  notedControlsFromCheckboxes,
+  notedControlsFromParams,
+} from 'src/components/controlNotes';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 
 export interface Props {
@@ -31,6 +39,44 @@ export interface Props {
   changeHandler: Accepter<Model>;
 }
 
+export type DefenderParamId =
+  | 'save'
+  | 'wounds'
+  | 'coverNorms'
+  | 'coverCrits'
+  | 'normsToCrits'
+  | 'failsToNorms'
+  | 'punishing'
+  | 'hardy'
+  | 'fnp'
+  | 'relics'
+  | 'reroll';
+
+export const defenderParamSpecs: readonly ParamSpec<DefenderParamId>[] = [
+  { id: 'save', label: 'Save', advanced: false },
+  { id: 'wounds', label: 'Wounds', advanced: false },
+  { id: 'coverNorms', label: N.CoverNormSaves, advanced: false },
+  { id: 'coverCrits', label: N.CoverCritSaves, advanced: true },
+  { id: 'normsToCrits', label: N.NormsToCrits, advanced: true },
+  { id: 'failsToNorms', label: N.FailsToNorms, advanced: true },
+  { id: 'punishing', label: N.Punishing, advanced: true },
+  { id: 'hardy', label: N.HardyX, advanced: true },
+  { id: 'fnp', label: N.FeelNoPain, advanced: true },
+  { id: 'relics', label: N.SaintlyRelics, advanced: true },
+  { id: 'reroll', label: N.Reroll, advanced: true },
+];
+
+export const defenderBasicCheckboxes: readonly AbilityCheckbox[] = [
+  { note: N.Indomitus, ability: Ability.Indomitus },
+  { note: N.ObscuredTarget, ability: Ability.ObscuredTarget, label: 'Obscured' },
+  { note: N.JustAScratch2021, ability: Ability.JustAScratch },
+  { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
+];
+
+export const defenderNotedControls: readonly NotedControl[] = [
+  ...notedControlsFromParams(defenderParamSpecs),
+  ...notedControlsFromCheckboxes(defenderBasicCheckboxes, false),
+];
 
 const DefenderControls: React.FC<Props> = (props: Props) => {
   const def = props.defender;
@@ -51,24 +97,38 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
     return boolToCheckX(def.has(ability));
   }
 
-  const basicParams: IncProps[] = [
-    //           id,               selectedValue,            values,           valueChangeHandler
-    new IncProps('Save',           def.diceStat + '+',       withPlus(SaveRange), numHandler('diceStat')),
-    new IncProps('Wounds',         def.wounds,               span(1, MaxWounds),      numHandler('wounds')),
-    new IncProps(N.CoverNormSaves, def.autoNorms,            xspan(1, 3),      numHandler('autoNorms')),
-  ];
-  const advancedParams: IncProps[] = [
-    new IncProps(N.CoverCritSaves, def.autoCrits,            xspan(1, 3),      numHandler('autoCrits')),
-    new IncProps(N.NormsToCrits,   def.normsToCrits,         xspan(1, 9),      numHandler('normsToCrits')),
-    new IncProps(N.FailsToNorms,   def.failsToNorms,         xspan(1, 9),      numHandler('failsToNorms')),
-    new IncProps(N.Punishing, toYN(Ability.Punishing), xAndCheck, singleHandler(Ability.Punishing)),
-    new IncProps(N.HardyX,         def.hardyx + '+',         xspan(5, 2, '+'), numHandler('hardyx')),
-    new IncProps(N.FeelNoPain,     def.fnp + '+',            xspan(6, 4, '+'), numHandler('fnp')),
-    makeIncDecPropsFromLookup(N.SaintlyRelics, def, props.changeHandler, 'saintlyRelics', relicModeToLabel),
-    new IncProps(N.Reroll,         def.reroll,               preX(rerolls),    textHandler('reroll')),
-  ];
-  // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
-  advancedParams.forEach(p => { p.advanced = true; });
+  function buildParam(spec: ParamSpec<DefenderParamId>): IncProps {
+    switch (spec.id) {
+      case 'save':
+        return new IncProps(spec.label, def.diceStat + '+', withPlus(SaveRange), numHandler('diceStat'));
+      case 'wounds':
+        return new IncProps(spec.label, def.wounds, span(1, MaxWounds), numHandler('wounds'));
+      case 'coverNorms':
+        return new IncProps(spec.label, def.autoNorms, xspan(1, 3), numHandler('autoNorms'));
+      case 'coverCrits':
+        return new IncProps(spec.label, def.autoCrits, xspan(1, 3), numHandler('autoCrits'));
+      case 'normsToCrits':
+        return new IncProps(spec.label, def.normsToCrits, xspan(1, 9), numHandler('normsToCrits'));
+      case 'failsToNorms':
+        return new IncProps(spec.label, def.failsToNorms, xspan(1, 9), numHandler('failsToNorms'));
+      case 'punishing':
+        return new IncProps(spec.label, toYN(Ability.Punishing), xAndCheck, singleHandler(Ability.Punishing));
+      case 'hardy':
+        return new IncProps(spec.label, def.hardyx + '+', xspan(5, 2, '+'), numHandler('hardyx'));
+      case 'fnp':
+        return new IncProps(spec.label, def.fnp + '+', xspan(6, 4, '+'), numHandler('fnp'));
+      case 'relics':
+        return makeIncDecPropsFromLookup(spec.label, def, props.changeHandler, 'saintlyRelics', relicModeToLabel);
+      case 'reroll':
+        return new IncProps(spec.label, def.reroll, preX(rerolls), textHandler('reroll'));
+      default: {
+        const unexpected: never = spec.id;
+        throw new Error(`unknown defender control '${unexpected}'`);
+      }
+    }
+  }
+
+  const { basicParams, advancedParams } = buildParams(defenderParamSpecs, buildParam);
 
   // we actually have 1 column when rendered, and order gets weird if we pretend we have 2
   const usedAdvancedParams = advancedParams.filter(p => incDecPropsHasNondefaultSelectedValue(p));
@@ -76,45 +136,6 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
   const paramsToShow = basicParams.concat(advancedParamsToShow);
   const elemsCol0 = propsToRows(paramsToShow);
 
-  const indomitusCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label={N.Indomitus.name}
-      title={N.Indomitus.description}
-      checked={def.has(Ability.Indomitus)}
-      onChange={() => singleHandler(Ability.Indomitus)(def.has(Ability.Indomitus) ? 'X' : '✔')}
-    />
-  );
-
-  const obscuredCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label="Obscured"
-      title={N.ObscuredTarget.description}
-      checked={def.has(Ability.ObscuredTarget)}
-      onChange={() => singleHandler(Ability.ObscuredTarget)(def.has(Ability.ObscuredTarget) ? 'X' : '✔')}
-    />
-  );
-
-  const justAScratchCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label="JaS (Crits)"
-      title="Just a Scratch (JaS): Ignore damage from an attack die, choosing whichever die saves the most damage."
-      checked={def.has(Ability.JustAScratch)}
-      onChange={() => singleHandler(Ability.JustAScratch)(def.has(Ability.JustAScratch) ? 'X' : '✔')}
-    />
-  );
-
-  const justAScratchNormsCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label="JaS (Normals)"
-      title="Just a Scratch (JaS): Ignore damage from a normal hit only (cannot ignore crits)."
-      checked={def.has(Ability.JustAScratchNorms)}
-      onChange={() => singleHandler(Ability.JustAScratchNorms)(def.has(Ability.JustAScratchNorms) ? 'X' : '✔')}
-    />
-  );
   return (
     <Container style={{width: '150px', maxWidth: '100%'}}>
       <Row>
@@ -129,10 +150,17 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
         </Col>
       </Row>
       <Row>
-        <Col>{indomitusCheckbox}</Col>
-        <Col>{obscuredCheckbox}</Col>
-        <Col>{justAScratchCheckbox}</Col>
-        <Col>{justAScratchNormsCheckbox}</Col>
+        {defenderBasicCheckboxes.map(box => (
+          <Col key={box.note.name}>
+            <Form.Check
+              type="checkbox"
+              label={box.label ?? box.note.name}
+              title={box.note.description}
+              checked={def.has(box.ability)}
+              onChange={() => singleHandler(box.ability)(def.has(box.ability) ? 'X' : '✔')}
+            />
+          </Col>
+        ))}
       </Row>
     </Container>
   );
