@@ -383,12 +383,12 @@ export function resolveDieChoice(
     }
     let maxPendingDmg = 0;
     if(pendingCrits > 0) {
-      // Durable shaves only the first crit that lands. That crit is still pending when no
-      // crit has been struck yet and this strike is a normal — a crit strike spends Durable
-      // on itself, so anything still pending after it is full critDmg. A second pending crit
-      // is full damage too, so only a lone unstruck crit is priced at the reduced value.
-      const loneFirstCritStillPending = !chooser.hasCritStruck && isNorm && pendingCrits === 1;
-      const pendingCritDmg = loneFirstCritStillPending
+      // Durable shaves only one crit. When this strike is a normal and a lone crit is pending,
+      // that crit gets the shave if Durable is still unspent (nextCritDmgWithDurable... decides
+      // that). A crit strike spends Durable on itself, and a second pending crit is full
+      // damage, so every other pending crit is priced at full critDmg.
+      const loneCritPendingAfterNormal = isNorm && pendingCrits === 1;
+      const pendingCritDmg = loneCritPendingAfterNormal
         ? chooser.nextCritDmgWithDurableAndWithoutHammerhand(enemy)
         : chooser.profile.critDmg;
       maxPendingDmg = Math.max(maxPendingDmg, pendingCritDmg);
