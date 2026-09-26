@@ -15,9 +15,9 @@ describe('WEAPON_RULES Shock text', () => {
     );
   });
 
-  it('table row matches the section: one unresolved normal, or a crit if none', () => {
+  it("table row matches the section: one of the opponent's unresolved normals, or a crit if none", () => {
     expect(doc).toMatch(
-      /\| \*\*Shock\*\* \| First crit strike discards one unresolved normal \(or a crit if none\) \|/,
+      /\| \*\*Shock\*\* \| First crit strike discards one of the opponent's unresolved normal successes \(or a crit if none\) \|/,
     );
     expect(doc).not.toMatch(/\| \*\*Shock\*\* \| First crit strike cancels enemy success \|/);
   });
