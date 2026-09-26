@@ -217,8 +217,10 @@ export function preferredStrikeChoice(chooser: FighterState, enemy: FighterState
   // unless norm-first is strictly better.
   const normalOutDamagesCrit = chooser.profile.normDmg
     > chooser.nextCritDmgWithDurableAndWithoutHammerhand(enemy);
-  const firstStrikeIsPunished = enemy.profile.has(Ability.JustAScratch)
-    || enemy.profile.has(Ability.HalfDamageFirstStrike);
+  // Only this fighter's first strike is zeroed or halved; once it has struck, order no longer
+  // dodges the penalty, and re-running the simulation at every later strike would compound.
+  const firstStrikeIsPunished = !chooser.hasStruck
+    && (enemy.profile.has(Ability.JustAScratch) || enemy.profile.has(Ability.HalfDamageFirstStrike));
   if(!(chooser.crits > 0 && chooser.norms > 0
     && (enemy.crits === 0 || firstStrikeIsPunished || normalOutDamagesCrit))) {
     return critFirst;
