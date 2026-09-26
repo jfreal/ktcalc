@@ -20,18 +20,18 @@ describe('fight calculator path', () => {
     expect(getCalculatorView('/rules/fight', null)).toBe(CalculatorViewChoice.KtShoot);
   });
 
-  it('canonicalizes fight to /fight and shoot to /', () => {
-    expect(calculatorCanonicalPath(CalculatorViewChoice.KtFight)).toBe('/fight');
+  it('canonicalizes fight to /fight/ and shoot to /', () => {
+    expect(calculatorCanonicalPath(CalculatorViewChoice.KtFight)).toBe('/fight/');
     expect(calculatorCanonicalPath(CalculatorViewChoice.KtShoot)).toBe('/');
     expect(calculatorCanonicalPath(CalculatorViewChoice.KtShootMassAnalysis)).toBe('/?view=mass');
   });
 
-  it.each(['fight', 'KtFight', 'ktfight'])('redirects /?view=%s to /fight', (view) => {
-    expect(legacyFightViewRedirect('/', `?view=${view}`)).toBe('/fight');
+  it.each(['fight', 'KtFight', 'ktfight'])('redirects /?view=%s to /fight/', (view) => {
+    expect(legacyFightViewRedirect('/', `?view=${view}`)).toBe('/fight/');
   });
 
   it('keeps fight share params and drops view', () => {
-    expect(legacyFightViewRedirect('/', '?view=fight&fa=12%3A4&fb=8&fo=1')).toBe('/fight?fa=12%3A4&fb=8&fo=1');
+    expect(legacyFightViewRedirect('/', '?view=fight&fa=12%3A4&fb=8&fo=1')).toBe('/fight/?fa=12%3A4&fb=8&fo=1');
   });
 
   it('does not redirect shoot, mass, or non-root paths', () => {
@@ -43,9 +43,9 @@ describe('fight calculator path', () => {
     expect(legacyFightViewRedirect('/help', '?view=fight')).toBeNull();
   });
 
-  it('sends the fight header to /fight and other views to /?view=', () => {
+  it('sends the fight header to /fight/ and other views to /?view=', () => {
     expect(calculatorViewLocation(CalculatorViewChoice.KtFight, '?view=shoot&a1=4%3A3&fa=12%3A4')).toEqual({
-      pathname: '/fight',
+      pathname: '/fight/',
       search: '?a1=4%3A3&fa=12%3A4',
     });
     expect(calculatorViewLocation(CalculatorViewChoice.KtShoot, '?a1=4%3A3&fa=12%3A4')).toEqual({
@@ -60,6 +60,7 @@ describe('fight calculator path', () => {
 
   it('react-snap snapshots /fight so a fight link is not the shoot page', () => {
     const pkg = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf8'));
-    expect(pkg.reactSnap.include).toContain(FIGHT_CALCULATOR_PATH);
+    // react-snap routes are listed without the trailing slash; it still writes fight/index.html.
+    expect(pkg.reactSnap.include).toContain(FIGHT_CALCULATOR_PATH.replace(/\/$/, ''));
   });
 });

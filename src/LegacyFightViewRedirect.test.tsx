@@ -25,9 +25,9 @@ function renderAt(entry: string) {
   );
 }
 
-it('sends a legacy fight link to /fight and keeps the share params', () => {
+it('sends a legacy fight link to /fight/ and keeps the share params', () => {
   renderAt('/?view=fight&fa=12%3A4&fb=8&fo=1');
-  expect(screen.getByTestId('location').textContent).toBe('/fight?fa=12%3A4&fb=8&fo=1');
+  expect(screen.getByTestId('location').textContent).toBe('/fight/?fa=12%3A4&fb=8&fo=1');
 });
 
 it('leaves the shoot calculator on /', () => {

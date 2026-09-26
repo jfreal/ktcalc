@@ -6,8 +6,10 @@ export enum CalculatorViewChoice {
 
 // Path react-snap can snapshot. Fight share links and the fight canonical use
 // this instead of `/?view=fight`, which is served as the `/` (shoot) snapshot
-// and unfurls as the shooting calculator. Keep this in package.json `reactSnap.include`.
-export const FIGHT_CALCULATOR_PATH = '/fight';
+// and unfurls as the shooting calculator. Keep `/fight` in package.json
+// `reactSnap.include`. The trailing slash matters: Netlify serves the snapshot
+// (fight/index.html) at `/fight/` and 301-redirects `/fight` there, like /help/.
+export const FIGHT_CALCULATOR_PATH = '/fight/';
 
 // The canonical ?view= text for each view, and the single source of truth for
 // resolving a raw ?view= param back to a view. Anything that needs to read or
@@ -35,7 +37,7 @@ export function getViewFromUrlText(raw: string | null): CalculatorViewChoice {
 }
 
 export function isFightCalculatorPath(pathname: string): boolean {
-  return pathname === FIGHT_CALCULATOR_PATH || pathname === `${FIGHT_CALCULATOR_PATH}/`;
+  return pathname === FIGHT_CALCULATOR_PATH || pathname === '/fight';
 }
 
 // `/fight` is the fight calculator even with no ?view= param (that's the
