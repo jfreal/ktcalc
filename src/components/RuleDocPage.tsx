@@ -208,6 +208,21 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
     return () => controller.abort();
   }, [file]);
 
+  // The markdown arrives after first paint, so the browser's own hash scroll
+  // has already missed. Once the headings exist, scroll to one if the URL has it.
+  useEffect(() => {
+    if (state.status !== 'ok') return;
+    const hash = window.location.hash;
+    if (hash.length < 2) return;
+    let id: string;
+    try {
+      id = decodeURIComponent(hash.slice(1));
+    } catch {
+      return;
+    }
+    document.getElementById(id)?.scrollIntoView();
+  }, [state]);
+
   // Fall back to a generic rules-reference head for any unknown file so a new or
   // mistyped doc never leaves the previous route's title/canonical/meta in place
   // on client-side navigation.

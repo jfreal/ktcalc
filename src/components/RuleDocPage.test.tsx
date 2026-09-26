@@ -149,6 +149,27 @@ describe('RuleDocPage', () => {
     });
   });
 
+  it('scrolls to the url hash once the document has loaded', async () => {
+    window.location.hash = '#reproducing-this';
+    const el = document.createElement('h2');
+    el.id = 'reproducing-this';
+    const scrollIntoView = jest.fn();
+    el.scrollIntoView = scrollIntoView;
+    document.body.appendChild(el);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: () => Promise.resolve('## Reproducing this'),
+    }) as unknown as typeof fetch;
+
+    renderDoc('WEAPON_BALANCE.md');
+    await screen.findByTestId('md');
+    expect(scrollIntoView).toHaveBeenCalled();
+
+    document.body.removeChild(el);
+    window.location.hash = '';
+  });
+
   it('always offers a back link to the help hub', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
