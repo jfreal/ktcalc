@@ -1,14 +1,12 @@
 # ktcalc — Kill Team 2024 Calculator
 
 > Free web calculator for Kill Team 2024 (KT24) that computes shooting and
-> fighting attack probabilities, compares weapons against defensive profiles,
-> and runs mass matchup analysis. Maintained by John Farrell throughout the
-> edition.
+> fighting attack probabilities and compares weapons against defensive profiles.
+> Maintained by John Farrell throughout the edition.
 
 ## Calculators
 - [Shooting calculator](https://ktcalc.com/?view=shoot): odds for ranged attacks given BS, attacks, weapon rules, cover, and target save/wounds.
 - [Fighting calculator](https://ktcalc.com/?view=fight): odds for melee combat resolution between two fighters.
-- [Mass analysis matrix](https://ktcalc.com/?view=mass): compare one attacker across many defensive profiles at once.
 
 ## Reference
 - [How it works](https://ktcalc.com/help/): guide to using the calculators and reading results.
