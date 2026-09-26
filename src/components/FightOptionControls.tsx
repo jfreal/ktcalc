@@ -19,6 +19,7 @@ import IncDecSelect, { Props as IncProps } from 'src/components/IncDecSelect';
 export interface Props {
   fightOptions: FightOptions;
   changeHandler: Accepter<FightOptions>;
+  idPrefix: string;
 }
 
 const FightOptionControls: React.FC<Props> = (props: Props) => {
@@ -40,7 +41,7 @@ const FightOptionControls: React.FC<Props> = (props: Props) => {
   ];
 
   const paramCols = params.map(p =>
-    <Col key={p.id} className='pr-0 col-auto'><IncDecSelect {...p}/></Col>);
+    <Col key={p.id} className='pr-0 col-auto'><IncDecSelect {...p} idPrefix={props.idPrefix}/></Col>);
 
   return (
     <Container style={{width: '600px'}}>

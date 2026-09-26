@@ -91,12 +91,12 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
       <Row>
         <Col xs={12} lg={6} className={Util.centerHoriz + ' p-1'}>
           <Panel title="Fighter A" fullWidth bodyScrollX>
-            <FighterControls attacker={fighterA} changeHandler={setFighterA} />
+            <FighterControls idPrefix="fa" attacker={fighterA} changeHandler={setFighterA} />
           </Panel>
         </Col>
         <Col xs={12} lg={6} className={Util.centerHoriz + ' p-1'}>
           <Panel title="Fighter B" fullWidth bodyScrollX>
-            <FighterControls attacker={fighterB} changeHandler={setFighterB} />
+            <FighterControls idPrefix="fb" attacker={fighterB} changeHandler={setFighterB} />
           </Panel>
         </Col>
       </Row>
@@ -104,6 +104,7 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
         <Col className='p-1'>
           <Panel title="Fight Options" fullWidth bodyScrollX>
             <FightOptionControls
+              idPrefix="fo"
               fightOptions={fightOptions}
               changeHandler={setFightOptions}
             />

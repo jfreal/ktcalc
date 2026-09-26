@@ -8,6 +8,11 @@ import AdvancedMarker from 'src/components/AdvancedMarker';
 
 export interface IProps {
   id: string;
+  // Stable instance key. The same stat name is mounted more than once (two shoot
+  // situations, attacker and defender, two fighters, fight options, and the
+  // calculator that is hidden with display:none). The DOM id must be unique or
+  // a label focuses the first match.
+  idPrefix?: string;
   hoverText?: string;
   label?: string;
   values: string[];
@@ -45,8 +50,13 @@ export class Props implements IProps {
   }
 }
 
+function controlDomId(props: IProps): string {
+  return props.idPrefix ? `${props.idPrefix}-${props.id}` : props.id;
+}
+
 const IncDecSelect: React.FC<IProps> = (props: IProps) => {
   let selectedText = props.selectedValue.toString();
+  const domId = controlDomId(props);
   const options = props.values.map(x => <option key={x} value={x}>{x}</option>);
 
   function handleIncDec(delta: number) {
@@ -63,7 +73,7 @@ const IncDecSelect: React.FC<IProps> = (props: IProps) => {
   return (
     <div>
       <label
-        htmlFor={props.id}
+        htmlFor={domId}
         title={props.hoverText}
         style={{ fontSize: '11px', display: 'inline', verticalAlign: 'middle' }}
       >
@@ -74,7 +84,7 @@ const IncDecSelect: React.FC<IProps> = (props: IProps) => {
         <Button variant='danger' onClick={() => handleIncDec(-1)}>-</Button>
         <select
           name={props.id}
-          id={props.id}
+          id={domId}
           value={selectedText}
           onChange={handleUserSelect}
           style={{maxWidth: '70px'}}
@@ -87,12 +97,10 @@ const IncDecSelect: React.FC<IProps> = (props: IProps) => {
   );
 }
 
-export function propsToRow(props: Props): JSX.Element {
-  return <Row key={props.id}><Col className='pr-0'><IncDecSelect {...props}/></Col></Row>;
-}
-
-export function propsToRows(props: Props[]): JSX.Element[] {
-  return props.map(p => <Row key={p.id}><Col className='pr-0'><IncDecSelect {...p}/></Col></Row>);
+// idPrefix is required: every caller renders alongside another panel that
+// uses the same stat names, so an unprefixed id would collide.
+export function propsToRows(props: Props[], idPrefix: string): JSX.Element[] {
+  return props.map(p => <Row key={p.id}><Col className='pr-0'><IncDecSelect {...p} idPrefix={idPrefix}/></Col></Row>);
 }
 
 export default IncDecSelect;
