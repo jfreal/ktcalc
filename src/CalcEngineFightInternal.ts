@@ -271,10 +271,18 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
     return strategyStrike(chooser, enemy);
   }
 
-  // ALWAYS strike if you can kill enemy with a single strike;
-  // also, if enemy has brutal and you have no crits, then you must strike;
-  if(chooser.nextDmg(enemy) >= enemy.currentWounds
-    || (enemy.profile.has(Ability.Brutal) && chooser.crits === 0)) {
+  // Brutal leaves no legal parry when we have no crits.
+  if(enemy.profile.has(Ability.Brutal) && chooser.crits === 0) {
+    return chooser.nextStrike();
+  }
+
+  // Check the next strike through the real damage-resolution path: raw damage can
+  // look lethal even when Just a Scratch cancels it or first-strike effects reduce it.
+  // As with the other lookaheads, clones keep live state/rng untouched and estimate
+  // random prevention by its expectation (this is not a guaranteed-kill test).
+  const struckEnemy = enemy.asEstimate();
+  resolveDieChoice(chooser.nextStrike(), chooser.asEstimate(), struckEnemy);
+  if(struckEnemy.currentWounds <= 0) {
     return chooser.nextStrike();
   }
 

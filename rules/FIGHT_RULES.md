@@ -89,7 +89,10 @@ Min Dmg), defaulting to crit-first on a tie.
 On each turn, `calcDieChoice` decides in this order. The first rule that applies wins:
 
 1. **Enemy has no successes** → **strike** (a parry would cancel nothing).
-2. **Lethal strike** → **strike** if this strike's damage would kill the enemy outright.
+2. **Lethal strike estimate** → resolve the next strike on copies of both fighters, including
+   Just a Scratch and other damage prevention, and **strike** if the target reaches zero wounds.
+   Random prevention (FNP / Saintly Relics) uses expected values, so this remains a heuristic,
+   not a guarantee of a kill. The estimate changes neither the live fighters nor their RNG streams.
    Also forced to strike if the enemy weapon is **Brutal** and you have no crits (your
    normals can't parry it, so they may as well strike).
 3. **Shock strike** → if you have **Shock**, haven't crit-struck yet, have a crit, and the
@@ -111,7 +114,7 @@ Whenever a rule above resolves to **strike** under the **Strike**, **Max Dmg**, 
 strategies, the actual die is chosen by `preferredStrikeChoice` (crit-first by default,
 norm-first to deny a normal parry or to feed an enemy's first-strike negation — see
 [Strike order](#strike-order-crit-first-except-to-deny-a-normal-parry)). The one exception is the
-**lethal-strike** rule (#2), which always strikes crit-first to land the killing blow.
+**lethal-strike** rule (#2), which strikes crit-first when that strike is estimated to kill.
 
 ---
 

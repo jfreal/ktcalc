@@ -369,6 +369,79 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
   });
 });
 
+describe(calcDieChoice.name + ', lethal strike respects damage prevention', () => {
+  function scratchMatchup(strategy = FightStrategy.MaxDmgToEnemy) {
+    const chooser = new FighterState(
+      new Model(3, 6, 3, 4).setProp('wounds', 3), 2, 1, strategy);
+    const enemy = new FighterState(
+      new Model(1, 6, 3, 4).setProp('wounds', 4).setAbility(Ability.JustAScratch),
+      0, 1, FightStrategy.Strike);
+    return { chooser, enemy };
+  }
+
+  it.each([FightStrategy.MaxDmgToEnemy, FightStrategy.MinDmgToSelf])(
+    '%s: parries instead of wasting an apparently lethal crit on Just a Scratch', strategy => {
+      // A: 3 wounds, 2 crits + 1 norm, damage 3/4. B: 4 wounds, 1 norm, JaS.
+      // Striking first gets scratched, then B kills A. Parrying the normal instead
+      // removes B's only attack; A's first crit is scratched and its second kills B.
+      const { chooser, enemy } = scratchMatchup(strategy);
+      expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormParry);
+      resolveFight(chooser, enemy);
+      expect(chooser.currentWounds).toBe(3);
+      expect(enemy.currentWounds).toBe(0);
+    });
+
+  it('changes the full simulation distribution for guaranteed retained dice', () => {
+    const { chooser, enemy } = scratchMatchup();
+    chooser.profile.setProp('autoCrits', 2).setProp('autoNorms', 1);
+    enemy.profile.setProp('autoNorms', 1);
+    const outcomes = calcRemainingWoundPairProbs(
+      chooser.profile, enemy.profile, chooser.strategy, enemy.strategy, 1, 8, 12345);
+    expect(outcomes).toEqual(new Map([[toWoundPairKey(3, 0), 1]]));
+  });
+
+  // Positive controls: a real killing blow must still override the Parry strategy.
+  it.each([false, true])('still strikes when Just a Scratch is absent or spent (spent=%s)', spent => {
+    const { chooser, enemy } = scratchMatchup(FightStrategy.Parry);
+    if (spent) chooser.hasStruck = true;
+    else enemy.profile.setAbility(Ability.JustAScratch, false);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+    resolveFight(chooser, enemy);
+    expect(chooser.currentWounds).toBe(3);
+    expect(enemy.currentWounds).toBe(0);
+  });
+
+  it('does not treat a scratched normal as a killing blow', () => {
+    const chooser = newFighterState(0, 2, 3, FightStrategy.Parry);
+    const enemy = newFighterState(0, 2, 1);
+    enemy.profile.setAbility(Ability.JustAScratchNorms);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormParry);
+  });
+
+  it('accounts for halving the first strike before taking the lethal shortcut', () => {
+    const chooser = newFighterState(1, 1, 10, FightStrategy.Parry);
+    chooser.profile.critDmg = 4;
+    const enemy = newFighterState(2, 0, 4);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+  });
+
+  it('estimates a potentially lethal strike without consuming rng or changing live state', () => {
+    const chooser = newFighterState(1, 0, 10, FightStrategy.Parry);
+    const enemy = newFighterState(2, 0, 2);
+    enemy.profile.fnp = 4;
+    const rng = jest.fn(() => 0.5);
+    chooser.rng = rng;
+    enemy.rng = rng;
+    const beforeChooser = chooser.clone();
+    const beforeEnemy = enemy.clone();
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+    expect(rng).not.toHaveBeenCalled();
+    expect(chooser).toEqual(beforeChooser);
+    expect(enemy).toEqual(beforeEnemy);
+  });
+});
+
 describe(calcDieChoice.name + ', norm-first to deny a normal parry', () => {
   // A normal parry can cancel only a normal (it can't touch a crit). So when we hold both a
   // crit and a norm and the enemy has no crits, striking the NORM first forces it through
