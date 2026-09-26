@@ -17,6 +17,9 @@ export interface Props {
   shootOptions: ShootOptions;
   setShootOptions: Util.Accepter<ShootOptions>;
   saveToDmgToProb: Map<number,Map<number,number>>;
+  // Situation key (s1, s2). Attacker, defender, and rounds each get a role
+  // suffix because they share stat names such as Reroll.
+  idPrefix: string;
 }
 
 // The three blocks (attacker+rounds, defender, results) flow as wrapping flex
@@ -44,11 +47,11 @@ export const ShootSituation: React.FC<Props> = (props: Props) => {
           in a bare div makes the div the flex item; the inner container's auto
           margins then just center it harmlessly within the wrapper. */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <AttackerControls attacker={props.attacker} changeHandler={props.setAttacker} />
-        <ShootOptionControls shootOptions={props.shootOptions} changeHandler={props.setShootOptions} />
+        <AttackerControls idPrefix={`${props.idPrefix}-atk`} attacker={props.attacker} changeHandler={props.setAttacker} />
+        <ShootOptionControls idPrefix={`${props.idPrefix}-opt`} shootOptions={props.shootOptions} changeHandler={props.setShootOptions} />
       </div>
       <div>
-        <DefenderControls defender={props.defender} changeHandler={props.setDefender} />
+        <DefenderControls idPrefix={`${props.idPrefix}-def`} defender={props.defender} changeHandler={props.setDefender} />
       </div>
       <div style={{ flex: '1 1 320px', minWidth: '280px', maxWidth: '560px' }}>
         <ShootResultsDisplay saveToDmgToProb={props.saveToDmgToProb} defender={props.defender} />

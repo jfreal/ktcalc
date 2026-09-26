@@ -14,6 +14,7 @@ import IncDecSelect, { Props as IncProps } from 'src/components/IncDecSelect';
 export interface Props {
   shootOptions: ShootOptions;
   changeHandler: Accepter<ShootOptions>;
+  idPrefix: string;
 }
 
 const ShootOptionControls: React.FC<Props> = (props: Props) => {
@@ -26,7 +27,7 @@ const ShootOptionControls: React.FC<Props> = (props: Props) => {
   ];
 
   const paramElems = params.map(p =>
-    <Row key={p.id}><Col className='pr-0'><IncDecSelect {...p}/></Col></Row>);
+    <Row key={p.id}><Col className='pr-0'><IncDecSelect {...p} idPrefix={props.idPrefix}/></Col></Row>);
 
   return (
     <Container style={{width: '310px', maxWidth: '100%'}}>

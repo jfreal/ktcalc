@@ -30,6 +30,7 @@ import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 export interface Props {
   attacker: Model;
   changeHandler: Accepter<Model>;
+  idPrefix: string;
 }
 
 const AttackerControls: React.FC<Props> = (props: Props) => {
@@ -83,8 +84,8 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   const [paramsCol0, paramsCol1] = requiredAndOptionalItemsToTwoCols(
     basicParams, advancedParamsToShow);
 
-  const elemsCol0 = propsToRows(paramsCol0);
-  const elemsCol1 = propsToRows(paramsCol1);
+  const elemsCol0 = propsToRows(paramsCol0, props.idPrefix);
+  const elemsCol1 = propsToRows(paramsCol1, props.idPrefix);
 
   const rendingCheckbox = (
     <Form.Check
