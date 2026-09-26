@@ -6,20 +6,24 @@ import {
 } from 'react-bootstrap';
 import Panel from 'src/components/Panel';
 import * as Util from "src/Util";
-import FighterControls from 'src/components/FighterControls';
+import FighterControls, { fighterNotedControls } from 'src/components/FighterControls';
 import Model from 'src/Model';
 import FightOptionControls from 'src/components/FightOptionControls';
 import { calcRemainingWounds } from 'src/CalcEngineFight';
 import FightResultsDisplay from 'src/components/FightResultsDisplay';
 import FightOptions from 'src/FightOptions';
-import Note, * as N from 'src/Notes';
 import NotesList from 'src/components/NotesList';
+import { notesFromControls } from 'src/components/controlNotes';
 import { getFightStateFromUrl, useFightUrlState } from 'src/hooks/useUrlState';
 import { useShareContext } from 'src/context/ShareContext';
 
 interface FightSectionProps {
   isActive: boolean;
 }
+
+// Built from the same catalogs FighterControls renders, so the panel cannot list a rule the card
+// does not have (or omit one it does). Close Assault and Waaagh are NicheAbility dropdown values.
+const { notes, advancedNotes } = notesFromControls(fighterNotedControls);
 
 const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
   // Load initial state from URL if present
@@ -51,34 +55,6 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
     [fighterA, fighterB, fightOptions, aFirst]);
   const fighterAWoundProbs = aFirst ? fighter1WoundProbs : fighter2WoundProbs;
   const fighterBWoundProbs = aFirst ? fighter2WoundProbs : fighter1WoundProbs;
-
-  const notes: Note[] = [
-    N.Reroll,
-    N.Rending,
-    N.Severe,
-    N.Brutal,
-    N.Shock,
-    N.NicheAbility,
-    N.AutoNorms,
-    N.PuritySeal,
-    N.MysticScryBuff,
-    N.CloseAssault2021,
-    N.Waaagh2021,
-    N.SaintlyRelics,
-  ];
-  // Rules whose control only appears under a fighter's "Advanced" checkbox.
-  // Keep in sync with FighterControls.advancedParams and FighterControls.advancedCheckboxes
-  // (the niche-ability dropdown holds CloseAssault2021 and Waaagh2021).
-  const advancedNotes = new Set<Note>([
-    N.Shock,
-    N.NicheAbility,
-    N.AutoNorms,
-    N.PuritySeal,
-    N.MysticScryBuff,
-    N.CloseAssault2021,
-    N.Waaagh2021,
-    N.SaintlyRelics,
-  ]);
 
   return (
     <Container style={{maxWidth: '1000px', margin: '0 auto'}}>

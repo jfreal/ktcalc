@@ -23,8 +23,14 @@ import Model from 'src/Model';
 import Ability, {
   rerollAbilities as rerolls,
 } from 'src/Ability';
-import * as N from 'src/Notes';
+import Note, * as N from 'src/Notes';
 import AdvancedMarker from 'src/components/AdvancedMarker';
+import {
+  NotedControl,
+  ParamSpec,
+  noteOf,
+  notedControlsFromParams,
+} from 'src/components/controlNotes';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 
 export interface Props {
@@ -32,12 +38,68 @@ export interface Props {
   changeHandler: Accepter<Model>;
 }
 
+interface AbilityCheckbox {
+  note: Note;
+  ability: Ability;
+}
+
+export type AttackerParamId =
+  | 'attacks'
+  | 'bs'
+  | 'normDmg'
+  | 'critDmg'
+  | 'devastating'
+  | 'piercing'
+  | 'piercingCrits'
+  | 'reroll'
+  | 'lethal'
+  | 'autoNorms'
+  | 'autoCrits'
+  | 'failsToNorms'
+  | 'normsToCrits'
+  | 'puritySeal';
+
+// Same list the Shoot notes panel reads. Punishing is an always-visible checkbox; FailsToNorms is
+// an advanced param. Both therefore belong in Notes.
+export const attackerParamSpecs: readonly ParamSpec<AttackerParamId>[] = [
+  { id: 'attacks', advanced: false },
+  { id: 'bs', advanced: false },
+  { id: 'normDmg', advanced: false },
+  { id: 'critDmg', advanced: false },
+  { id: 'devastating', advanced: false },
+  { id: 'piercing', advanced: false },
+  { id: 'piercingCrits', advanced: false },
+  { id: 'reroll', note: N.Reroll, advanced: false },
+  { id: 'lethal', advanced: false },
+  { id: 'autoNorms', note: N.AutoNorms, advanced: false },
+  { id: 'autoCrits', note: N.AutoCrits, advanced: true },
+  { id: 'failsToNorms', note: N.FailsToNorms, advanced: true },
+  { id: 'normsToCrits', note: N.NormsToCrits, advanced: true },
+  { id: 'puritySeal', note: N.PuritySeal, advanced: true },
+];
+
+export const attackerBasicCheckboxes: readonly AbilityCheckbox[] = [
+  { note: N.Rending, ability: Ability.Rending },
+  { note: N.Severe, ability: Ability.Severe },
+  { note: N.Punishing, ability: Ability.Punishing },
+];
+
+export const attackerAdvancedCheckboxes: readonly AbilityCheckbox[] = [
+  { note: N.MysticScryBuff, ability: Ability.MysticScryBuff },
+  { note: N.CloseAssault2021, ability: Ability.FailToNormIfAtLeastTwoSuccesses },
+];
+
+export const attackerNotedControls: readonly NotedControl[] = [
+  ...notedControlsFromParams(attackerParamSpecs),
+  ...attackerBasicCheckboxes.map(box => ({ note: box.note, advanced: false })),
+  ...attackerAdvancedCheckboxes.map(box => ({ note: box.note, advanced: true })),
+];
+
 const AttackerControls: React.FC<Props> = (props: Props) => {
   const atk = props.attacker;
   const textHandler = makeTextChangeHandler(atk, props.changeHandler);
   const numHandler = makeNumChangeHandler(atk, props.changeHandler);
   const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
-  //const noCoverChoices = Object.values(NoCoverType);
 
   function singleHandler(ability: Ability) {
     return makeSetChangeHandlerForSingle<Model,Ability>(
@@ -52,26 +114,45 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     return boolToCheckX(atk.has(ability));
   }
 
-  const basicParams: IncProps[] = [
-    //           id/label,       selectedValue,         values,                valueChangeHandler
-    new IncProps('Attacks',      atk.numDice,           span(1, 9),       numHandler('numDice')),
-    new IncProps('BS',           atk.diceStat + '+',    rollSpan,         numHandler('diceStat')),
-    new IncProps('Normal Dmg',   atk.normDmg,           span(0, 9),       numHandler('normDmg')),
-    new IncProps('Crit Dmg',     atk.critDmg,           span(0, 10),      numHandler('critDmg')),
-    new IncProps('Devastating',  atk.mwx,           xspan(1, 9),      numHandler('mwx')),
-    new IncProps('Piercing',     atk.apx,           xspan(1, 4),      numHandler('apx')),
-    new IncProps('Piercing Crits', atk.px,            xspan(1, 4),      numHandler('px')),
-    new IncProps(N.Reroll,       atk.reroll,            preX(rerolls),    textHandler('reroll')),
-    new IncProps('Lethal',       atk.lethal + '+',      xspan(5, 2, '+'), numHandler('lethal')),
-    new IncProps(N.AutoNorms,    atk.autoNorms,         xspan(1, 3),      numHandler('autoNorms')),
-  ];
-  const advancedParams: IncProps[] = [
-    new IncProps(N.AutoCrits,    atk.autoCrits,         xspan(1, 9),      numHandler('autoCrits')),
-    new IncProps(N.FailsToNorms, atk.failsToNorms,      xspan(1, 9),      numHandler('failsToNorms')),
-    new IncProps(N.NormsToCrits, atk.normsToCrits,      xspan(1, 9),      numHandler('normsToCrits')),
-    new IncProps(N.PuritySeal, toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal)),
-    //new IncProps(N.NoCover,      atk.noCover,            noCoverChoices,        textHandler('noCover')),
-  ];
+  function buildParam(spec: ParamSpec<AttackerParamId>): IncProps {
+    switch (spec.id) {
+      case 'attacks':
+        return new IncProps('Attacks', atk.numDice, span(1, 9), numHandler('numDice'));
+      case 'bs':
+        return new IncProps('BS', atk.diceStat + '+', rollSpan, numHandler('diceStat'));
+      case 'normDmg':
+        return new IncProps('Normal Dmg', atk.normDmg, span(0, 9), numHandler('normDmg'));
+      case 'critDmg':
+        return new IncProps('Crit Dmg', atk.critDmg, span(0, 10), numHandler('critDmg'));
+      case 'devastating':
+        return new IncProps('Devastating', atk.mwx, xspan(1, 9), numHandler('mwx'));
+      case 'piercing':
+        return new IncProps('Piercing', atk.apx, xspan(1, 4), numHandler('apx'));
+      case 'piercingCrits':
+        return new IncProps('Piercing Crits', atk.px, xspan(1, 4), numHandler('px'));
+      case 'reroll':
+        return new IncProps(noteOf(spec), atk.reroll, preX(rerolls), textHandler('reroll'));
+      case 'lethal':
+        return new IncProps('Lethal', atk.lethal + '+', xspan(5, 2, '+'), numHandler('lethal'));
+      case 'autoNorms':
+        return new IncProps(noteOf(spec), atk.autoNorms, xspan(1, 3), numHandler('autoNorms'));
+      case 'autoCrits':
+        return new IncProps(noteOf(spec), atk.autoCrits, xspan(1, 9), numHandler('autoCrits'));
+      case 'failsToNorms':
+        return new IncProps(noteOf(spec), atk.failsToNorms, xspan(1, 9), numHandler('failsToNorms'));
+      case 'normsToCrits':
+        return new IncProps(noteOf(spec), atk.normsToCrits, xspan(1, 9), numHandler('normsToCrits'));
+      case 'puritySeal':
+        return new IncProps(noteOf(spec), toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal));
+      default: {
+        const unexpected: never = spec.id;
+        throw new Error(`unknown attacker control '${unexpected}'`);
+      }
+    }
+  }
+
+  const basicParams = attackerParamSpecs.filter(spec => !spec.advanced).map(buildParam);
+  const advancedParams = attackerParamSpecs.filter(spec => spec.advanced).map(buildParam);
   // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
   advancedParams.forEach(p => { p.advanced = true; });
 
@@ -86,59 +167,17 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   const elemsCol0 = propsToRows(paramsCol0);
   const elemsCol1 = propsToRows(paramsCol1);
 
-  const rendingCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label={N.Rending.name}
-      title={N.Rending.description}
-      checked={atk.has(Ability.Rending)}
-      onChange={() => singleHandler(Ability.Rending)(atk.has(Ability.Rending) ? 'X' : '✔')}
-    />
-  );
-
-  const severeCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label={N.Severe.name}
-      title={N.Severe.description}
-      checked={atk.has(Ability.Severe)}
-      onChange={() => singleHandler(Ability.Severe)(atk.has(Ability.Severe) ? 'X' : '✔')}
-    />
-  );
-
-  const punishingCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label="Punishing"
-      title={N.Punishing.description}
-      checked={atk.has(Ability.Punishing)}
-      onChange={() => singleHandler(Ability.Punishing)(atk.has(Ability.Punishing) ? 'X' : '✔')}
-    />
-  );
-
-  // Advanced ability, so only shown when Advanced is on (or it is already enabled). The title is the
-  // same N.MysticScryBuff helper text that is listed in the Notes panel below the calculator.
-  const showMysticScryBuff = wantShowAdvanced || atk.has(Ability.MysticScryBuff);
-  const mysticScryBuffCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label={<>{N.MysticScryBuff.name} <AdvancedMarker /></>}
-      title={N.MysticScryBuff.description}
-      checked={atk.has(Ability.MysticScryBuff)}
-      onChange={() => singleHandler(Ability.MysticScryBuff)(atk.has(Ability.MysticScryBuff) ? 'X' : '✔')}
-    />
-  );
-
-  const showCloseAssault = wantShowAdvanced || atk.has(Ability.FailToNormIfAtLeastTwoSuccesses);
-  const closeAssaultCheckbox = (
-    <Form.Check
-      type="checkbox"
-      label={<>{N.CloseAssault2021.name} <AdvancedMarker /></>}
-      title={N.CloseAssault2021.description}
-      checked={atk.has(Ability.FailToNormIfAtLeastTwoSuccesses)}
-      onChange={() => singleHandler(Ability.FailToNormIfAtLeastTwoSuccesses)(atk.has(Ability.FailToNormIfAtLeastTwoSuccesses) ? 'X' : '✔')}
-    />
-  );
+  function abilityCheckbox(box: AbilityCheckbox, advanced: boolean) {
+    return (
+      <Form.Check
+        type="checkbox"
+        label={advanced ? <>{box.note.name} <AdvancedMarker /></> : box.note.name}
+        title={box.note.description}
+        checked={atk.has(box.ability)}
+        onChange={() => singleHandler(box.ability)(atk.has(box.ability) ? 'X' : '✔')}
+      />
+    );
+  }
 
   return (
     <Container style={{width: '310px', maxWidth: '100%'}}>
@@ -159,20 +198,18 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
         </Col>
       </Row>
       <Row>
-        <Col>{rendingCheckbox}</Col>
-        <Col>{severeCheckbox}</Col>
-        <Col>{punishingCheckbox}</Col>
+        {attackerBasicCheckboxes.map(box => (
+          <Col key={box.note.name}>{abilityCheckbox(box, false)}</Col>
+        ))}
       </Row>
-      {showMysticScryBuff &&
-        <Row>
-          <Col>{mysticScryBuffCheckbox}</Col>
-        </Row>
-      }
-      {showCloseAssault &&
-        <Row>
-          <Col>{closeAssaultCheckbox}</Col>
-        </Row>
-      }
+      {attackerAdvancedCheckboxes.map(box => {
+        const show = wantShowAdvanced || atk.has(box.ability);
+        return show ? (
+          <Row key={box.note.name}>
+            <Col>{abilityCheckbox(box, true)}</Col>
+          </Row>
+        ) : null;
+      })}
     </Container>
   );
 }

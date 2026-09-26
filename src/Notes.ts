@@ -149,9 +149,11 @@ export const Shock = new Note(
 );
 export const NicheAbility = new Note(
   `NicheAbility`,
-  `Dueller2021 is Intercession Squad chapter tactic; each crit parry discards additional 1 norm success of opponent.`
+  `CloseAssault2021 is Imperial Navy Breachers strategic ploy; if you have two or more successes, promote a fail to a normal success.`
+    + `  Dueller2021 is Intercession Squad chapter tactic; each crit parry discards additional 1 norm success of opponent.`
     + `  Hammerhand2021 is Grey Knights psychic power; first strike deals +1 dmg.`
     + `  StormShield2021 is a Custodes ability; each parry discards two successes of opponent instead of 1.`
+    + `  Waaagh2021 is Kommandos strategic ploy; if you have two or more normal successes, promote a norm to a crit.`
     + `  MurderousEntrance2021 is a Void Troupe tactical ploy to strike again after a crit strike.`
 );
 export const Duelist = new Note(

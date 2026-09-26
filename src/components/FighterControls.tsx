@@ -30,6 +30,12 @@ import {
 } from 'src/Util';
 import { relicModeToLabel } from 'src/SaintlyRelics';
 import AdvancedMarker from 'src/components/AdvancedMarker';
+import {
+  NotedControl,
+  ParamSpec,
+  noteOf,
+  notedControlsFromParams,
+} from 'src/components/controlNotes';
 import { Props as IncProps, propsToRows } from 'src/components/IncDecSelect';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 
@@ -38,6 +44,69 @@ export interface Props {
   attacker: Model;
   changeHandler: Accepter<Model>;
 }
+
+interface AbilityCheckbox {
+  note: Note;
+  ability: Ability;
+}
+
+export type FighterParamId =
+  | 'wounds'
+  | 'attacks'
+  | 'ws'
+  | 'normDmg'
+  | 'critDmg'
+  | 'reroll'
+  | 'lethal'
+  | 'niche'
+  | 'autoNorms'
+  | 'normsToCrits'
+  | 'failsToNorms'
+  | 'fnp'
+  | 'relics';
+
+// Order is the control order (params, then checkboxes). The Fight notes panel is built from this
+// same list, so a rule appears in Notes exactly when a fighter card has a control for it.
+// Close Assault and Waaagh are values of the NicheAbility dropdown, not their own controls.
+export const fighterParamSpecs: readonly ParamSpec<FighterParamId>[] = [
+  { id: 'wounds', advanced: false },
+  { id: 'attacks', advanced: false },
+  { id: 'ws', advanced: false },
+  { id: 'normDmg', advanced: false },
+  { id: 'critDmg', advanced: false },
+  { id: 'reroll', note: N.Reroll, advanced: false },
+  { id: 'lethal', advanced: false },
+  { id: 'niche', note: N.NicheAbility, advanced: true },
+  { id: 'autoNorms', note: N.AutoNorms, advanced: true },
+  { id: 'normsToCrits', note: N.NormsToCrits, advanced: true },
+  { id: 'failsToNorms', note: N.FailsToNorms, advanced: true },
+  { id: 'fnp', note: N.FeelNoPain, advanced: true },
+  { id: 'relics', note: N.SaintlyRelics, advanced: true },
+];
+
+export const fighterBasicCheckboxes: readonly AbilityCheckbox[] = [
+  { note: N.Rending, ability: Ability.Rending },
+  { note: N.Severe, ability: Ability.Severe },
+  { note: N.Brutal, ability: Ability.Brutal },
+];
+
+export const fighterAdvancedCheckboxes: readonly AbilityCheckbox[] = [
+  { note: N.Shock, ability: Ability.Shock },
+  { note: N.Punishing, ability: Ability.Punishing },
+  { note: N.PuritySeal, ability: Ability.PuritySeal },
+  { note: N.MysticScryBuff, ability: Ability.MysticScryBuff },
+  { note: N.Duelist, ability: Ability.Duelist },
+  { note: N.JustAScratch2021, ability: Ability.JustAScratch },
+  { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
+  { note: N.Durable2021, ability: Ability.Durable },
+  { note: N.HalfDamageFirstStrike, ability: Ability.HalfDamageFirstStrike },
+];
+
+export const fighterNotedControls: readonly NotedControl[] = [
+  ...notedControlsFromParams(fighterParamSpecs),
+  ...fighterBasicCheckboxes.map(box => ({ note: box.note, advanced: false })),
+  ...fighterAdvancedCheckboxes.map(box => ({ note: box.note, advanced: true })),
+];
 
 const FighterControls: React.FC<Props> = (props: Props) => {
   const atk = props.attacker;
@@ -64,58 +133,58 @@ const FighterControls: React.FC<Props> = (props: Props) => {
 
   const nicheAbility = extractFromSet(nicheAbilities, Ability.None, atk.abilities)!;
 
-  function abilityCheckbox(note: Note, ability: Ability, advanced: boolean) {
+  function abilityCheckbox(box: AbilityCheckbox, advanced: boolean) {
     return (
       <Form.Check
-        key={note.name}
+        key={box.note.name}
         type="checkbox"
-        label={advanced ? <>{note.name} <AdvancedMarker /></> : note.name}
-        title={note.description}
-        checked={atk.has(ability)}
-        onChange={() => singleHandler(ability)(atk.has(ability) ? 'X' : '✔')}
+        label={advanced ? <>{box.note.name} <AdvancedMarker /></> : box.note.name}
+        title={box.note.description}
+        checked={atk.has(box.ability)}
+        onChange={() => singleHandler(box.ability)(atk.has(box.ability) ? 'X' : '✔')}
       />
     );
   }
 
-  const basicParams: IncProps[] = [
-    //           id/label,           selectedValue,         values,           valueChangeHandler
-    new IncProps('Wounds',           atk.wounds,            span(1, MaxWounds),      numHandler('wounds')),
-    new IncProps('Attacks',          atk.numDice,           span(1, 8),       numHandler('numDice')),
-    new IncProps('WS',               atk.diceStat + '+',    rollSpan,         numHandler('diceStat')),
-    new IncProps('Normal Dmg',       atk.normDmg,           span(1, 9),       numHandler('normDmg')),
-    new IncProps('Critical Dmg',     atk.critDmg,           span(1, 9),       numHandler('critDmg')),
-    new IncProps(N.Reroll,           atk.reroll,            preX(rerolls),    textHandler('reroll')),
-    new IncProps('Lethal',           atk.lethal + '+',      xspan(5, 2, '+'), numHandler('lethal')),
-  ];
+  function buildParam(spec: ParamSpec<FighterParamId>): IncProps {
+    switch (spec.id) {
+      case 'wounds':
+        return new IncProps('Wounds', atk.wounds, span(1, MaxWounds), numHandler('wounds'));
+      case 'attacks':
+        return new IncProps('Attacks', atk.numDice, span(1, 8), numHandler('numDice'));
+      case 'ws':
+        return new IncProps('WS', atk.diceStat + '+', rollSpan, numHandler('diceStat'));
+      case 'normDmg':
+        return new IncProps('Normal Dmg', atk.normDmg, span(1, 9), numHandler('normDmg'));
+      case 'critDmg':
+        return new IncProps('Critical Dmg', atk.critDmg, span(1, 9), numHandler('critDmg'));
+      case 'reroll':
+        return new IncProps(noteOf(spec), atk.reroll, preX(rerolls), textHandler('reroll'));
+      case 'lethal':
+        return new IncProps('Lethal', atk.lethal + '+', xspan(5, 2, '+'), numHandler('lethal'));
+      case 'niche':
+        return new IncProps(noteOf(spec), nicheAbility, nicheAbilities, subsetHandler(nicheAbilities));
+      case 'autoNorms':
+        return new IncProps(noteOf(spec), atk.autoNorms, xspan(1, 9), numHandler('autoNorms'));
+      case 'normsToCrits':
+        return new IncProps(noteOf(spec), atk.normsToCrits, xspan(1, 9), numHandler('normsToCrits'));
+      case 'failsToNorms':
+        return new IncProps(noteOf(spec), atk.failsToNorms, xspan(1, 9), numHandler('failsToNorms'));
+      case 'fnp':
+        return new IncProps(noteOf(spec), atk.fnp + '+', xspan(6, 2, '+'), numHandler('fnp'));
+      case 'relics':
+        return makeIncDecPropsFromLookup(noteOf(spec), atk, props.changeHandler, 'saintlyRelics', relicModeToLabel);
+      default: {
+        const unexpected: never = spec.id;
+        throw new Error(`unknown fighter control '${unexpected}'`);
+      }
+    }
+  }
 
-  const basicCheckboxes: { note: Note, ability: Ability }[] = [
-    { note: N.Rending, ability: Ability.Rending },
-    { note: N.Severe, ability: Ability.Severe },
-    { note: N.Brutal, ability: Ability.Brutal },
-  ];
-
-  const advancedParams: IncProps[] = [
-    new IncProps(N.NicheAbility,     nicheAbility,               nicheAbilities, subsetHandler(nicheAbilities)),
-    new IncProps(N.AutoNorms,        atk.autoNorms,              xspan(1, 9),    numHandler('autoNorms')),
-    new IncProps(N.NormsToCrits,     atk.normsToCrits,           xspan(1, 9),    numHandler('normsToCrits')),
-    new IncProps(N.FailsToNorms,     atk.failsToNorms,           xspan(1, 9),    numHandler('failsToNorms')),
-    new IncProps(N.FeelNoPain,       atk.fnp + '+',              xspan(6, 2, '+'), numHandler('fnp')),
-    makeIncDecPropsFromLookup(N.SaintlyRelics, atk, props.changeHandler, 'saintlyRelics', relicModeToLabel),
-  ];
+  const basicParams: IncProps[] = fighterParamSpecs.filter(spec => !spec.advanced).map(buildParam);
+  const advancedParams: IncProps[] = fighterParamSpecs.filter(spec => spec.advanced).map(buildParam);
   // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
   advancedParams.forEach(p => { p.advanced = true; });
-
-  const advancedCheckboxes: { note: Note, ability: Ability }[] = [
-    { note: N.Shock, ability: Ability.Shock },
-    { note: N.Punishing, ability: Ability.Punishing },
-    { note: N.PuritySeal, ability: Ability.PuritySeal },
-    { note: N.MysticScryBuff, ability: Ability.MysticScryBuff },
-    { note: N.Duelist, ability: Ability.Duelist },
-    { note: N.JustAScratch2021, ability: Ability.JustAScratch },
-    { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
-    { note: N.Durable2021, ability: Ability.Durable },
-    { note: N.HalfDamageFirstStrike, ability: Ability.HalfDamageFirstStrike },
-  ];
 
   const advancedParamsToShow
     = wantShowAdvanced
@@ -124,8 +193,8 @@ const FighterControls: React.FC<Props> = (props: Props) => {
 
   const advancedCheckboxesToShow
     = wantShowAdvanced
-    ? advancedCheckboxes
-    : advancedCheckboxes.filter(c => atk.has(c.ability));
+    ? fighterAdvancedCheckboxes
+    : fighterAdvancedCheckboxes.filter(c => atk.has(c.ability));
 
   const [paramsCol0, paramsCol1] = requiredAndOptionalItemsToTwoCols(
     basicParams, advancedParamsToShow);
@@ -133,8 +202,8 @@ const FighterControls: React.FC<Props> = (props: Props) => {
   const elemsCol1 = propsToRows(paramsCol1);
 
   const allCheckboxes = [
-    ...basicCheckboxes.map(c => ({ ...c, advanced: false })),
-    ...advancedCheckboxesToShow.map(c => ({ ...c, advanced: true })),
+    ...fighterBasicCheckboxes.map(box => ({ box, advanced: false })),
+    ...advancedCheckboxesToShow.map(box => ({ box, advanced: true })),
   ];
 
   return (
@@ -156,10 +225,10 @@ const FighterControls: React.FC<Props> = (props: Props) => {
       </Row>
       <Row>
         <Col>
-          {allCheckboxes.filter((_, i) => i % 2 === 0).map(c => abilityCheckbox(c.note, c.ability, c.advanced))}
+          {allCheckboxes.filter((_, i) => i % 2 === 0).map(c => abilityCheckbox(c.box, c.advanced))}
         </Col>
         <Col>
-          {allCheckboxes.filter((_, i) => i % 2 === 1).map(c => abilityCheckbox(c.note, c.ability, c.advanced))}
+          {allCheckboxes.filter((_, i) => i % 2 === 1).map(c => abilityCheckbox(c.box, c.advanced))}
         </Col>
       </Row>
     </Container>
