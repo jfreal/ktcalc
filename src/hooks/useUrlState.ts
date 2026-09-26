@@ -245,8 +245,11 @@ function decodeFighter(param: string): Model {
   // appended after abilities; absent in older URLs and sanitized to off for unrecognized values
   f.saintlyRelics = parseRelicMode(parts[13]);
   // Append FNP so older links retain their field positions and default to off.
+  // Legal thresholds match Shoot and the rules: 4+, 5+, and 6+. A 2+ or 3+
+  // from an older fight link degrades to off rather than a value the control
+  // no longer offers.
   const fnp = Number(parts[14]);
-  f.fnp = Number.isInteger(fnp) && fnp >= 2 && fnp <= 6 ? fnp : 0;
+  f.fnp = Number.isInteger(fnp) && fnp >= 4 && fnp <= 6 ? fnp : 0;
 
   return f;
 }

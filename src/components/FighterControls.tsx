@@ -99,7 +99,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.AutoNorms,        atk.autoNorms,              xspan(1, 9),    numHandler('autoNorms')),
     new IncProps(N.NormsToCrits,     atk.normsToCrits,           xspan(1, 9),    numHandler('normsToCrits')),
     new IncProps(N.FailsToNorms,     atk.failsToNorms,           xspan(1, 9),    numHandler('failsToNorms')),
-    new IncProps(N.FeelNoPain,       atk.fnp + '+',              xspan(6, 2, '+'), numHandler('fnp')),
+    new IncProps(N.FeelNoPain,       atk.fnp + '+',              xspan(6, 4, '+'), numHandler('fnp')),
     makeIncDecPropsFromLookup(N.SaintlyRelics, atk, props.changeHandler, 'saintlyRelics', relicModeToLabel),
   ];
   // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
