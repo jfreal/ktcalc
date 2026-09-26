@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { FIGHT_CALCULATOR_PATH } from 'src/CalculatorViewChoice';
 import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
 import FightOptions from 'src/FightOptions';
@@ -364,14 +365,16 @@ export function useFightUrlState(
     const fa = encodeFighter(fighterA);
     const fb = encodeFighter(fighterB);
     const fo = encodeFightOptions(fightOptions);
-    return `${window.location.origin}${window.location.pathname}?view=fight&fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
+    // Always /fight, not the current path. `/?view=fight` is served as the
+    // shoot snapshot, so a fight link unfurls as the shooting calculator.
+    return `${window.location.origin}${FIGHT_CALCULATOR_PATH}?fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
   }, [fighterA, fighterB, fightOptions]);
 
   const addParamsToUrl = useCallback(() => {
     const fa = encodeFighter(fighterA);
     const fb = encodeFighter(fighterB);
     const fo = encodeFightOptions(fightOptions);
-    const newUrl = `${window.location.pathname}?view=fight&fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
+    const newUrl = `${FIGHT_CALCULATOR_PATH}?fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
     window.history.replaceState({}, '', newUrl);
   }, [fighterA, fighterB, fightOptions]);
 
