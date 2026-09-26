@@ -1,12 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import RuleDocPage, {
-  HeadingSluggerProvider,
-  MarkdownHeading,
-  MarkdownLink,
-} from 'src/components/RuleDocPage';
-import { HeadingSlugger } from 'src/components/headingSlug';
+import RuleDocPage, { MarkdownLink } from 'src/components/RuleDocPage';
 
 // react-markdown / remark-gfm are ESM and are not transformed by CRA's Jest, so
 // stub them. The stub renders the raw children, which is enough to assert the
@@ -20,9 +15,9 @@ jest.mock('remark-gfm', () => ({ __esModule: true, default: () => {} }));
 
 // Smoke tests for the /rules/* pages. fetch is mocked so we exercise the
 // loading -> ok and loading -> error transitions without hitting public/rules/.
-function renderDoc(file = 'COMBAT_RULES.md') {
+function renderDoc(file = 'COMBAT_RULES.md', url = '/') {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[url]}>
       <RuleDocPage file={file} />
     </MemoryRouter>,
   );
@@ -100,74 +95,25 @@ describe('RuleDocPage', () => {
     });
   });
 
-  describe('MarkdownHeading', () => {
-    function renderHeading(node: React.ReactElement) {
-      return render(
-        <HeadingSluggerProvider slugger={new HeadingSlugger()}>{node}</HeadingSluggerProvider>,
-      );
-    }
-
-    it('sets the GitHub id used by the fight-rules strike-order link', () => {
-      renderHeading(
-        <MarkdownHeading level={2} node={{ position: { start: { offset: 0 } } }}>
-          Strike order: crit-first, except to deny a normal parry
-        </MarkdownHeading>,
-      );
-      expect(screen.getByRole('heading').id).toBe(
-        'strike-order-crit-first-except-to-deny-a-normal-parry',
-      );
-    });
-
-    it('slugs the visible text, ignoring emphasis', () => {
-      renderHeading(
-        <MarkdownHeading level={3} node={{ position: { start: { offset: 60 } } }}>
-          Scenario C — when order does <strong>not</strong> matter
-        </MarkdownHeading>,
-      );
-      expect(screen.getByRole('heading').id).toBe('scenario-c--when-order-does-not-matter');
-    });
-
-    it('keeps unique ids when Strict Mode renders each heading twice', () => {
-      const slugger = new HeadingSlugger();
-      render(
-        <React.StrictMode>
-          <HeadingSluggerProvider slugger={slugger}>
-            <MarkdownHeading level={3} node={{ position: { start: { offset: 1 } } }}>
-              Reroll Targeting Strategy
-            </MarkdownHeading>
-            <MarkdownHeading level={3} node={{ position: { start: { offset: 2 } } }}>
-              Reroll Targeting Strategy
-            </MarkdownHeading>
-          </HeadingSluggerProvider>
-        </React.StrictMode>,
-      );
-      const headings = screen.getAllByRole('heading');
-      expect(headings.map((h) => h.id)).toEqual([
-        'reroll-targeting-strategy',
-        'reroll-targeting-strategy-1',
-      ]);
-    });
-  });
-
   it('scrolls to the url hash once the document has loaded', async () => {
-    window.location.hash = '#reproducing-this';
     const el = document.createElement('h2');
     el.id = 'reproducing-this';
     const scrollIntoView = jest.fn();
     el.scrollIntoView = scrollIntoView;
     document.body.appendChild(el);
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      text: () => Promise.resolve('## Reproducing this'),
-    }) as unknown as typeof fetch;
+    try {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve('## Reproducing this'),
+      }) as unknown as typeof fetch;
 
-    renderDoc('WEAPON_BALANCE.md');
-    await screen.findByTestId('md');
-    expect(scrollIntoView).toHaveBeenCalled();
-
-    document.body.removeChild(el);
-    window.location.hash = '';
+      renderDoc('WEAPON_BALANCE.md', '/rules/weapon-balance#reproducing-this');
+      await screen.findByTestId('md');
+      expect(scrollIntoView).toHaveBeenCalled();
+    } finally {
+      document.body.removeChild(el);
+    }
   });
 
   it('always offers a back link to the help hub', async () => {

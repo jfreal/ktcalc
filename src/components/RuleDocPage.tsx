@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import 'src/components/RuleDocPage.css';
-import { HeadingSlugger } from 'src/components/headingSlug';
+import { rehypeHeadingIds } from 'src/components/headingSlug';
 import Seo from 'src/components/Seo';
 import * as T from 'src/theme';
 
@@ -66,97 +66,6 @@ export function MarkdownLink({ href, children }: React.ComponentPropsWithoutRef<
   );
 }
 
-// Visible heading text, with inline markup (emphasis, code) flattened away.
-// That plain string is what GitHub slugs, so "#strike-order-…" matches.
-export function headingChildrenToText(children: React.ReactNode): string {
-  if (children == null || typeof children === 'boolean') return '';
-  if (typeof children === 'string' || typeof children === 'number') return String(children);
-  if (Array.isArray(children)) return children.map(headingChildrenToText).join('');
-  if (React.isValidElement(children)) {
-    const props = children.props as { children?: React.ReactNode };
-    return headingChildrenToText(props.children);
-  }
-  return '';
-}
-
-type HeadingSourceNode = {
-  position?: {
-    start?: {
-      offset?: number | null;
-      line?: number | null;
-      column?: number | null;
-    };
-  };
-};
-
-function headingPositionKey(node: HeadingSourceNode | undefined): string | null {
-  const start = node?.position?.start;
-  if (!start) return null;
-  if (typeof start.offset === 'number') return String(start.offset);
-  if (typeof start.line === 'number') return `${start.line}:${start.column ?? 0}`;
-  return null;
-}
-
-const HeadingSluggerContext = React.createContext<HeadingSlugger | null>(null);
-
-export function HeadingSluggerProvider({
-  slugger,
-  children,
-}: {
-  slugger: HeadingSlugger;
-  children: React.ReactNode;
-}) {
-  return <HeadingSluggerContext.Provider value={slugger}>{children}</HeadingSluggerContext.Provider>;
-}
-
-type MarkdownHeadingProps = React.ComponentPropsWithoutRef<'h1'> & {
-  level?: number;
-  node?: HeadingSourceNode;
-  // react-markdown also passes these. They are not DOM attributes.
-  sourcePosition?: unknown;
-  index?: number;
-  siblingCount?: number;
-};
-
-const HEADING_TAG = {
-  1: 'h1',
-  2: 'h2',
-  3: 'h3',
-  4: 'h4',
-  5: 'h5',
-  6: 'h6',
-} as const;
-
-// One renderer for every heading level. react-markdown passes `level`.
-export function MarkdownHeading({
-  level = 1,
-  children,
-  node,
-  sourcePosition: _sourcePosition,
-  index: _index,
-  siblingCount: _siblingCount,
-  ...props
-}: MarkdownHeadingProps) {
-  const slugger = React.useContext(HeadingSluggerContext);
-  const text = headingChildrenToText(children);
-  const id = slugger ? slugger.slug(text, headingPositionKey(node)) : undefined;
-  const Tag = HEADING_TAG[level as keyof typeof HEADING_TAG] ?? 'h1';
-  return (
-    <Tag {...props} id={id}>
-      {children}
-    </Tag>
-  );
-}
-
-const markdownHeadingComponents = {
-  h1: MarkdownHeading,
-  h2: MarkdownHeading,
-  h3: MarkdownHeading,
-  h4: MarkdownHeading,
-  h5: MarkdownHeading,
-  h6: MarkdownHeading,
-};
-
 // Plain CSS can't import theme.ts, so the handful of theme colors this
 // stylesheet needs are threaded in as custom properties instead of being
 // hardcoded a second time in RuleDocPage.css.
@@ -180,15 +89,7 @@ type LoadState =
 
 const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
-  // Fresh ids on every render, in heading order. Cleared here, before the
-  // markdown children render and call slug().
-  const sluggerRef = useRef<HeadingSlugger | null>(null);
-  let slugger = sluggerRef.current;
-  if (slugger === null) {
-    slugger = new HeadingSlugger();
-    sluggerRef.current = slugger;
-  }
-  slugger.reset();
+  const { hash } = useLocation();
 
   useEffect(() => {
     // Reset to loading so a file change never leaves stale content on screen.
@@ -209,10 +110,10 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
   }, [file]);
 
   // The markdown arrives after first paint, so the browser's own hash scroll
-  // has already missed. Once the headings exist, scroll to one if the URL has it.
+  // has already missed. Once the headings exist, scroll to one if the URL has it,
+  // and again when an in-app link changes only the hash.
   useEffect(() => {
     if (state.status !== 'ok') return;
-    const hash = window.location.hash;
     if (hash.length < 2) return;
     let id: string;
     try {
@@ -221,7 +122,7 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
       return;
     }
     document.getElementById(id)?.scrollIntoView();
-  }, [state]);
+  }, [state, hash]);
 
   // Fall back to a generic rules-reference head for any unknown file so a new or
   // mistyped doc never leaves the previous route's title/canonical/meta in place
@@ -233,33 +134,32 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
   };
 
   return (
-    <HeadingSluggerProvider slugger={slugger}>
-      <Container className="RuleDoc" style={themeVars}>
-        <Seo title={seo.title} description={seo.description} path={seo.path} />
-        <p>
-          <Link to="/help">&larr; Back to How it works</Link>
-        </p>
+    <Container className="RuleDoc" style={themeVars}>
+      <Seo title={seo.title} description={seo.description} path={seo.path} />
+      <p>
+        <Link to="/help">&larr; Back to How it works</Link>
+      </p>
 
-        {state.status === 'loading' && <p className="RuleDoc-status">Loading&hellip;</p>}
-        {state.status === 'error' && (
-          <p className="RuleDoc-status RuleDoc-error">Could not load this document ({state.message}).</p>
-        )}
-        {state.status === 'ok' && (
-          <div className="RuleDoc-body">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{ a: MarkdownLink, ...markdownHeadingComponents }}
-            >
-              {state.text}
-            </ReactMarkdown>
-          </div>
-        )}
+      {state.status === 'loading' && <p className="RuleDoc-status">Loading&hellip;</p>}
+      {state.status === 'error' && (
+        <p className="RuleDoc-status RuleDoc-error">Could not load this document ({state.message}).</p>
+      )}
+      {state.status === 'ok' && (
+        <div className="RuleDoc-body">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHeadingIds]}
+            components={{ a: MarkdownLink }}
+          >
+            {state.text}
+          </ReactMarkdown>
+        </div>
+      )}
 
-        <p className="RuleDoc-backBottom">
-          <Link to="/help">&larr; Back to How it works</Link>
-        </p>
-      </Container>
-    </HeadingSluggerProvider>
+      <p className="RuleDoc-backBottom">
+        <Link to="/help">&larr; Back to How it works</Link>
+      </p>
+    </Container>
   );
 };
 

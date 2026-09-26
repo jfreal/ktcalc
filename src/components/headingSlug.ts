@@ -1,53 +1,67 @@
 // GitHub heading anchors, matching github-slugger (what GitHub and the links in
-// rules/*.md already use): lowercase, punctuation removed, spaces to hyphens.
-// A repeated heading in the same document gets -1, -2, and so on.
+// rules/*.md already use): lowercase, punctuation and symbols removed, spaces to
+// hyphens. A repeated heading in the same document gets -1, -2, and so on.
 //
-// The character class is the ASCII punctuation GitHub strips (hyphen and
-// underscore stay) plus the dashes and quotes that show up in these docs.
-// Em dashes are deleted, not turned into a single hyphen, so
+// github-slugger keeps letters, combining marks, decimal/letter numbers,
+// connector punctuation (underscore), hyphen and space, and drops everything
+// else. Em dashes are deleted, not turned into a single hyphen, so
 // "Scenario A — normal…" becomes scenario-a--normal-…
-
-const GITHUB_HEADING_PUNCTUATION =
-  // Control characters (\u0000-\u001F, \u007F) are part of the set GitHub strips.
-  // eslint-disable-next-line no-control-regex
-  /[\u0000-\u001F!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~\u007F\u2010-\u2015\u2018-\u201F]/g;
+const GITHUB_HEADING_STRIP = /[^\p{L}\p{M}\p{Nd}\p{Nl}\p{Pc} -]/gu;
 
 export function githubHeadingSlug(value: string): string {
-  return value.toLowerCase().replace(GITHUB_HEADING_PUNCTUATION, '').replace(/ /g, '-');
+  return value.toLowerCase().replace(GITHUB_HEADING_STRIP, '').replace(/ /g, '-');
 }
 
-type PositionCache = { text: string; id: string };
-
-// Assigns ids in document order. `position` is the heading's source offset:
-// React Strict Mode renders twice, and a second call for the same position must
-// return the id already chosen instead of consuming the next -1/-2 suffix.
+// Assigns ids in document order. Use one instance per document.
 export class HeadingSlugger {
   private used: { [slug: string]: number } = Object.create(null);
-  private byPosition = new Map<string, PositionCache>();
 
-  reset(): void {
-    this.used = Object.create(null);
-    this.byPosition.clear();
-  }
-
-  slug(value: string, position?: string | null): string {
-    if (position) {
-      const cached = this.byPosition.get(position);
-      if (cached && cached.text === value) return cached.id;
-    }
-    const id = this.allocate(value);
-    if (position) this.byPosition.set(position, { text: value, id });
-    return id;
-  }
-
-  private allocate(value: string): string {
+  slug(value: string): string {
     const original = githubHeadingSlug(value);
     let result = original;
     while (Object.prototype.hasOwnProperty.call(this.used, result)) {
-      this.used[original] = (this.used[original] ?? 0) + 1;
+      this.used[original] += 1;
       result = `${original}-${this.used[original]}`;
     }
     this.used[result] = 0;
     return result;
   }
+}
+
+// Minimal hast shape: what react-markdown hands a rehype plugin.
+export type HastNode = {
+  type: string;
+  tagName?: string;
+  value?: string;
+  properties?: { [key: string]: unknown };
+  children?: HastNode[];
+};
+
+// Visible text of a heading, with inline markup (emphasis, code, links) flattened
+// away. Image alt text counts, as it does for GitHub.
+function hastText(node: HastNode): string {
+  if (node.type === 'text') return node.value ?? '';
+  if (node.type === 'element' && node.tagName === 'img') {
+    const alt = node.properties?.alt;
+    return typeof alt === 'string' ? alt : '';
+  }
+  return (node.children ?? []).map(hastText).join('');
+}
+
+const HEADING_TAG = /^h[1-6]$/;
+
+// rehype plugin: give every heading a GitHub-style id. Runs once per parse with
+// a fresh slugger, so ids depend only on the document, never on render order.
+export function rehypeHeadingIds() {
+  return (tree: HastNode) => {
+    const slugger = new HeadingSlugger();
+    const visit = (node: HastNode) => {
+      if (node.type === 'element' && HEADING_TAG.test(node.tagName ?? '')) {
+        node.properties = { ...node.properties, id: slugger.slug(hastText(node)) };
+        return;
+      }
+      node.children?.forEach(visit);
+    };
+    visit(tree);
+  };
 }
