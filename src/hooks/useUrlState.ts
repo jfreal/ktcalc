@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
 import FightOptions from 'src/FightOptions';
@@ -320,6 +321,21 @@ export function getStateFromUrl(): { s1?: SituationState; s2?: SituationState } 
   return result;
 }
 
+// Merge into the router's current query and replace the history entry.
+// history.replaceState updates the address bar without updating useSearchParams,
+// so the next Shoot/Fight toggle rebuilds the query from stale router state and
+// drops these params, including the other calculator's.
+function useMergeIntoSearch() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  return useCallback((updates: Record<string, string>) => {
+    const next = new URLSearchParams(searchParams);
+    for (const [key, value] of Object.entries(updates)) {
+      next.set(key, value);
+    }
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+}
+
 export function useUrlState(
   attacker1: Model,
   defender1: Model,
@@ -338,16 +354,18 @@ export function useUrlState(
     return `${window.location.origin}${window.location.pathname}?view=shoot&a1=${encodeURIComponent(a1)}&d1=${encodeURIComponent(d1)}&so1=${encodeURIComponent(so1)}&a2=${encodeURIComponent(a2)}&d2=${encodeURIComponent(d2)}&so2=${encodeURIComponent(so2)}`;
   }, [attacker1, defender1, shootOptions1, attacker2, defender2, shootOptions2]);
 
+  const mergeIntoSearch = useMergeIntoSearch();
   const addParamsToUrl = useCallback(() => {
-    const a1 = encodeAttacker(attacker1);
-    const d1 = encodeDefender(defender1);
-    const so1 = encodeShootOptions(shootOptions1);
-    const a2 = encodeAttacker(attacker2);
-    const d2 = encodeDefender(defender2);
-    const so2 = encodeShootOptions(shootOptions2);
-    const newUrl = `${window.location.pathname}?view=shoot&a1=${encodeURIComponent(a1)}&d1=${encodeURIComponent(d1)}&so1=${encodeURIComponent(so1)}&a2=${encodeURIComponent(a2)}&d2=${encodeURIComponent(d2)}&so2=${encodeURIComponent(so2)}`;
-    window.history.replaceState({}, '', newUrl);
-  }, [attacker1, defender1, shootOptions1, attacker2, defender2, shootOptions2]);
+    mergeIntoSearch({
+      view: 'shoot',
+      a1: encodeAttacker(attacker1),
+      d1: encodeDefender(defender1),
+      so1: encodeShootOptions(shootOptions1),
+      a2: encodeAttacker(attacker2),
+      d2: encodeDefender(defender2),
+      so2: encodeShootOptions(shootOptions2),
+    });
+  }, [mergeIntoSearch, attacker1, defender1, shootOptions1, attacker2, defender2, shootOptions2]);
 
   return { getShareUrl, addParamsToUrl };
 }
@@ -364,13 +382,15 @@ export function useFightUrlState(
     return `${window.location.origin}${window.location.pathname}?view=fight&fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
   }, [fighterA, fighterB, fightOptions]);
 
+  const mergeIntoSearch = useMergeIntoSearch();
   const addParamsToUrl = useCallback(() => {
-    const fa = encodeFighter(fighterA);
-    const fb = encodeFighter(fighterB);
-    const fo = encodeFightOptions(fightOptions);
-    const newUrl = `${window.location.pathname}?view=fight&fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
-    window.history.replaceState({}, '', newUrl);
-  }, [fighterA, fighterB, fightOptions]);
+    mergeIntoSearch({
+      view: 'fight',
+      fa: encodeFighter(fighterA),
+      fb: encodeFighter(fighterB),
+      fo: encodeFightOptions(fightOptions),
+    });
+  }, [mergeIntoSearch, fighterA, fighterB, fightOptions]);
 
   return { getShareUrl, addParamsToUrl };
 }
