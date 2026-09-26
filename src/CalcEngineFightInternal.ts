@@ -278,13 +278,17 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
     return chooser.nextStrike();
   }
 
-  // if can shock enemy (crit strike that also cancels an enemy NORM success),
-  // and enemy doesn't have any crit successes, then a shocking crit strike is usually right.
-  // BUT when we also hold a norm and are trying to maximize damage, striking the norm first can
-  // be better: the enemy's normal parry can't touch our crit, so leading with the norm pushes it
-  // past the parry while the crit (and its shock) still lands on a later turn. Defer to
-  // preferredStrikeChoice in that mixed-dice case; otherwise take the crit strike now.
-  if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0 && enemy.crits === 0) {
+  // Shock's first crit strike discards one unresolved enemy normal, or a crit if they have
+  // no normals. Force that strike when the discard removes a success they would otherwise
+  // keep: no enemy crits (the discard hits a normal) or no enemy normals (the discard hits
+  // a crit). A Parry fighter would otherwise keep parrying a crit-only opponent and never
+  // land the discard. When we also hold a norm and are maximizing damage against a norms-only
+  // enemy, striking the norm first can still be better — the enemy's normal parry can't touch
+  // our crit — so strategyStrike defers to preferredStrikeChoice in that mixed-dice case.
+  // When the enemy still holds both crits and normals, Shock would only discard a normal, so
+  // this shortcut does not override a crit parry.
+  if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0
+    && (enemy.crits === 0 || enemy.norms === 0)) {
     return strategyStrike(chooser, enemy);
   }
 
@@ -397,7 +401,12 @@ export function resolveDieChoice(
     chooser.crits--;
 
     if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck) {
-      enemy.norms = Math.max(0, enemy.norms - 1); // shock ability cancels an enemy norm success
+      // First crit strike discards one unresolved normal, or a crit if there are none.
+      if(enemy.norms > 0) {
+        enemy.norms--;
+      } else if(enemy.crits > 0) {
+        enemy.crits--;
+      }
     }
 
     if (
