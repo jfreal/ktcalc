@@ -723,6 +723,26 @@ describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, duel
     resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds - 2);
   });
+  it('HalfDamageFirstStrike leaves a 1-damage strike at 1', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('normDmg', 1); // ceil(1/2) = 1; the floor must not lift it to 2
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 1);
+  });
+  it('HalfDamageFirstStrike leaves a 0-damage strike at 0', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('normDmg', 0);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+  });
   it('HalfDamageFirstStrike with hammerhand: hammerhand applies then halved', () => {
     const initialWounds = 100;
     const normDmg = 3;
