@@ -43,6 +43,16 @@ function assertLabelsPointAtTheirOwnSelect(container: HTMLElement) {
   }
 }
 
+// Both ids must exist and be different elements. A bare
+// expect(a).not.toBe(b) passes when either lookup returns null.
+function expectDistinctControls(idA: string, idB: string) {
+  const a = document.getElementById(idA);
+  const b = document.getElementById(idB);
+  expect(a).not.toBeNull();
+  expect(b).not.toBeNull();
+  expect(a).not.toBe(b);
+}
+
 function showAdvanced(container: HTMLElement) {
   // The Advanced toggle is a react-bootstrap checkbox. Its label is a sibling
   // of the input and has no htmlFor, so click the input next to that label.
@@ -65,16 +75,13 @@ describe('mounted IncDecSelect ids', () => {
 
     const shoot = getByTestId('shoot');
     const fight = getByTestId('fight');
-    expect(document.getElementById('s1-atk-Attacks')).not.toBeNull();
-    expect(document.getElementById('s2-atk-Attacks')).not.toBe(document.getElementById('s1-atk-Attacks'));
+    expectDistinctControls('s1-atk-Attacks', 's2-atk-Attacks');
     expect(document.getElementById('s1-atk-Normal Dmg')).not.toBeNull();
-    expect(document.getElementById('s2-def-Wounds')).not.toBe(document.getElementById('s1-def-Wounds'));
-    expect(document.getElementById('s1-opt-Rounds')).not.toBeNull();
-    expect(document.getElementById('s2-opt-Rounds')).not.toBeNull();
-    expect(document.getElementById('fa-Attacks')).not.toBeNull();
-    expect(document.getElementById('fb-Attacks')).not.toBe(document.getElementById('fa-Attacks'));
-    expect(document.getElementById('fa-Wounds')).not.toBe(document.getElementById('s1-def-Wounds'));
-    expect(document.getElementById('fo-Rounds')).not.toBe(document.getElementById('s1-opt-Rounds'));
+    expectDistinctControls('s1-def-Wounds', 's2-def-Wounds');
+    expectDistinctControls('s1-opt-Rounds', 's2-opt-Rounds');
+    expectDistinctControls('fa-Attacks', 'fb-Attacks');
+    expectDistinctControls('fa-Wounds', 's1-def-Wounds');
+    expectDistinctControls('fo-Rounds', 's1-opt-Rounds');
     expect(document.getElementById('fo-Fighter A Strategy')).not.toBeNull();
 
     const fightAttacks = document.getElementById('fa-Attacks');
@@ -82,18 +89,14 @@ describe('mounted IncDecSelect ids', () => {
     expect(shoot.contains(fightAttacks)).toBe(false);
     expect(fight.querySelector('label[for="fa-Attacks"]')?.getAttribute('for')).toBe('fa-Attacks');
 
-    const situation2Attacks = shoot.querySelector('label[for="s2-atk-Attacks"]');
-    expect(document.getElementById(situation2Attacks?.getAttribute('for') ?? '')?.id).toBe('s2-atk-Attacks');
-    expect(shoot.querySelector('label[for="s1-atk-Attacks"]')?.getAttribute('for')).not.toBe(
-      situation2Attacks?.getAttribute('for'),
-    );
+    expect(shoot.querySelector('label[for="s1-atk-Attacks"]')).not.toBeNull();
+    expect(shoot.querySelector('label[for="s2-atk-Attacks"]')).not.toBeNull();
 
     showAdvanced(container);
     assertLabelsPointAtTheirOwnSelect(container);
-    expect(document.getElementById('s1-atk-Reroll')).not.toBe(document.getElementById('s1-def-Reroll'));
-    expect(document.getElementById('s1-def-Reroll')).not.toBeNull();
-    expect(document.getElementById('s2-atk-FailsToNorms')).not.toBe(document.getElementById('s2-def-FailsToNorms'));
-    expect(document.getElementById('fa-FailsToNorms')).not.toBe(document.getElementById('fb-FailsToNorms'));
-    expect(document.getElementById('s1-def-NormsToCrits')).not.toBe(document.getElementById('fa-NormsToCrits'));
+    expectDistinctControls('s1-atk-Reroll', 's1-def-Reroll');
+    expectDistinctControls('s2-atk-FailsToNorms', 's2-def-FailsToNorms');
+    expectDistinctControls('fa-FailsToNorms', 'fb-FailsToNorms');
+    expectDistinctControls('s1-def-NormsToCrits', 'fa-NormsToCrits');
   });
 });

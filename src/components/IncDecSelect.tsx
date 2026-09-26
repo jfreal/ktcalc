@@ -97,11 +97,9 @@ const IncDecSelect: React.FC<IProps> = (props: IProps) => {
   );
 }
 
-export function propsToRow(props: Props): JSX.Element {
-  return <Row key={props.id}><Col className='pr-0'><IncDecSelect {...props}/></Col></Row>;
-}
-
-export function propsToRows(props: Props[], idPrefix?: string): JSX.Element[] {
+// idPrefix is required: every caller renders alongside another panel that
+// uses the same stat names, so an unprefixed id would collide.
+export function propsToRows(props: Props[], idPrefix: string): JSX.Element[] {
   return props.map(p => <Row key={p.id}><Col className='pr-0'><IncDecSelect {...p} idPrefix={idPrefix}/></Col></Row>);
 }
 
