@@ -568,6 +568,13 @@ export function handleDuelist(
     return;
   }
 
+  // A normal success cannot cancel a critical success. With no crit of our own
+  // and no enemy normal, NormParry would spend a die and cancel nothing. Return
+  // before the once-per-fight flag is set so the free parry stays available.
+  if (guy1State.crits === 0 && guy2State.norms === 0) {
+    return;
+  }
+
   // Duelist's free parry happens once per fight. Mark it spent now so re-entrant resolveFight
   // calls (e.g. the lookahead simulations in calcDieChoice / preferredStrikeChoice, which clone
   // mid-fight state) don't grant it a second time and corrupt the estimate.
