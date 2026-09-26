@@ -1,7 +1,12 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import RuleDocPage, { MarkdownLink } from 'src/components/RuleDocPage';
+import RuleDocPage, {
+  HeadingSluggerProvider,
+  MarkdownHeading,
+  MarkdownLink,
+} from 'src/components/RuleDocPage';
+import { HeadingSlugger } from 'src/components/headingSlug';
 
 // react-markdown / remark-gfm are ESM and are not transformed by CRA's Jest, so
 // stub them. The stub renders the raw children, which is enough to assert the
@@ -85,6 +90,62 @@ describe('RuleDocPage', () => {
     it('treats protocol-relative URLs as external, not in-app', () => {
       renderLink('//example.com/x');
       expect(screen.getByRole('link').getAttribute('target')).toBeNull();
+    });
+
+    it('leaves an in-page hash as a plain anchor', () => {
+      renderLink('#reproducing-this');
+      const a = screen.getByRole('link');
+      expect(a.getAttribute('href')).toBe('#reproducing-this');
+      expect(a.getAttribute('target')).toBeNull();
+    });
+  });
+
+  describe('MarkdownHeading', () => {
+    function renderHeading(node: React.ReactElement) {
+      return render(
+        <HeadingSluggerProvider slugger={new HeadingSlugger()}>{node}</HeadingSluggerProvider>,
+      );
+    }
+
+    it('sets the GitHub id used by the fight-rules strike-order link', () => {
+      renderHeading(
+        <MarkdownHeading level={2} node={{ position: { start: { offset: 0 } } }}>
+          Strike order: crit-first, except to deny a normal parry
+        </MarkdownHeading>,
+      );
+      expect(screen.getByRole('heading').id).toBe(
+        'strike-order-crit-first-except-to-deny-a-normal-parry',
+      );
+    });
+
+    it('slugs the visible text, ignoring emphasis', () => {
+      renderHeading(
+        <MarkdownHeading level={3} node={{ position: { start: { offset: 60 } } }}>
+          Scenario C — when order does <strong>not</strong> matter
+        </MarkdownHeading>,
+      );
+      expect(screen.getByRole('heading').id).toBe('scenario-c--when-order-does-not-matter');
+    });
+
+    it('keeps unique ids when Strict Mode renders each heading twice', () => {
+      const slugger = new HeadingSlugger();
+      render(
+        <React.StrictMode>
+          <HeadingSluggerProvider slugger={slugger}>
+            <MarkdownHeading level={3} node={{ position: { start: { offset: 1 } } }}>
+              Reroll Targeting Strategy
+            </MarkdownHeading>
+            <MarkdownHeading level={3} node={{ position: { start: { offset: 2 } } }}>
+              Reroll Targeting Strategy
+            </MarkdownHeading>
+          </HeadingSluggerProvider>
+        </React.StrictMode>,
+      );
+      const headings = screen.getAllByRole('heading');
+      expect(headings.map((h) => h.id)).toEqual([
+        'reroll-targeting-strategy',
+        'reroll-targeting-strategy-1',
+      ]);
     });
   });
 
