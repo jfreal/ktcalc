@@ -1175,4 +1175,47 @@ describe('SaintlyRelics (fight)', () => {
     expect(state.relicIgnoresUsed).toBe(2);
     expect(state.currentWounds).toBe(27);
   });
+
+  it('spends the relic on a 4-damage normal when Durable makes the pending crit a 4', () => {
+    // critDmg 5 is still the first crit, so Durable makes it 4 — equal to the normal.
+    // Pricing the pending crit at 5 holds the relic. The counter then kills the attacker
+    // before that crit is struck, so the relic never rolls and the 4 goes through.
+    const attackerProfile = new Model(2, 3, 4, 5).setProp('wounds', 4);
+    const defenderProfile = new Model(1, 3, 4, 5)
+      .setProp('wounds', 12)
+      .setAbility(Ability.Durable)
+      .setProp('saintlyRelics', SaintlyRelicsNormal);
+    const always6 = () => 0.9; // Math.floor(0.9*6)+1 === 6, so the relic ignores when rolled
+    const attacker = new FighterState(attackerProfile, 1, 1, FightStrategy.Strike, 4);
+    const defender = new FighterState(
+      defenderProfile, 0, 1, FightStrategy.Strike, 12, false, false, always6);
+
+    resolveDieChoice(FightChoice.NormStrike, attacker, defender);
+    resolveFight(defender, attacker); // defender's counter; attacker dies holding the crit
+
+    expect(attacker.currentWounds).toBe(0);
+    expect(attacker.crits).toBe(1);
+    expect(defender.relicUsed).toBe(true);
+    expect(defender.currentWounds).toBe(12);
+  });
+
+  it('still saves the relic when a later pending crit stays at full damage after Durable', () => {
+    // Two unstruck crits: Durable shaves only the first (5 → 4). The other is still 5,
+    // so a 4-damage normal is not the biggest strike and the relic is held.
+    const attackerProfile = new Model(3, 3, 4, 5).setProp('wounds', 10);
+    const defenderProfile = new Model(1, 3, 4, 5)
+      .setProp('wounds', 20)
+      .setAbility(Ability.Durable)
+      .setProp('saintlyRelics', SaintlyRelicsNormal);
+    const always6 = () => 0.9;
+    const attacker = new FighterState(attackerProfile, 2, 1, FightStrategy.Strike, 10);
+    const defender = new FighterState(
+      defenderProfile, 0, 0, FightStrategy.Strike, 20, false, false, always6);
+
+    resolveDieChoice(FightChoice.NormStrike, attacker, defender);
+
+    expect(attacker.crits).toBe(2);
+    expect(defender.relicUsed).toBe(false);
+    expect(defender.currentWounds).toBe(16);
+  });
 });
