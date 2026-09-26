@@ -1,5 +1,10 @@
 # Changelog
 
+## September 2026 - Durable removed
+
+- Durable no longer takes 1 damage off the first critical hit, so the calculator no longer models it. The Fight calculator's Durable checkbox is gone, and neither Shoot nor Fight applies the reduction.
+- Share links that still carry Durable (`dur`) load without it. Every other ability in the link is unchanged.
+
 ## September 2026 - Fight Feel No Pain thresholds match Shoot
 
 - Limited the Fight calculator's Feel No Pain options to 4+, 5+, and 6+ (plus off), matching the shooting defender and `rules/COMBAT_RULES.md`. Previously Fight also offered 2+ and 3+.

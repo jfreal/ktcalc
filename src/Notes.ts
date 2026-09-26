@@ -118,10 +118,6 @@ export const HardyX = new Note(
   `HardyX`,
   `HardyX is like Lethal (changes what values give you a critical success), but for defense. Name comes from Intercession Squad chapter tactic Hardy.`,
 );
-export const Durable2021 = new Note(
-  `Durable2021`,
-  `Durable: in the Resolve Successful Hits step of a combat or shooting attack, one critical hit inflicts one less damage on this operative (to a minimum of 3).`,
-);
 export const FeelNoPain = new Note(
   `FeelNoPain`,
   `FNP is the category of abilities where just before damage is actually resolved, you roll a die for each successful hit (strike). On a roll at or above the threshold, that hit's damage is reduced by 1. Even MWx damage can be prevented via FNP.`,
