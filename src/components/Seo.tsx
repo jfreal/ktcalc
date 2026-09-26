@@ -33,7 +33,7 @@ interface SeoProps {
   // Full <title> text (include the brand suffix).
   title: string;
   description: string;
-  // Canonical path beginning with '/', e.g. '/help' or '/?view=fight'.
+  // Canonical path beginning with '/', e.g. '/help' or '/fight'.
   path: string;
 }
 

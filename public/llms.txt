@@ -7,7 +7,7 @@
 
 ## Calculators
 - [Shooting calculator](https://ktcalc.com/?view=shoot): odds for ranged attacks given BS, attacks, weapon rules, cover, and target save/wounds.
-- [Fighting calculator](https://ktcalc.com/?view=fight): odds for melee combat resolution between two fighters.
+- [Fighting calculator](https://ktcalc.com/fight): odds for melee combat resolution between two fighters.
 - [Mass analysis matrix](https://ktcalc.com/?view=mass): compare one attacker across many defensive profiles at once.
 
 ## Reference
