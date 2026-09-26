@@ -5,7 +5,9 @@ import path from 'path';
 // opponent has no unresolved normals. The section states that; the quick-reference
 // table must say the same thing. See rules/WEAPON_RULES.md.
 describe('WEAPON_RULES Shock text', () => {
-  const doc = fs.readFileSync(path.join(process.cwd(), 'rules/WEAPON_RULES.md'), 'utf8');
+  // Normalize line endings: a Windows checkout (core.autocrlf) has CRLF, and the section
+  // regex below spans a line break.
+  const doc = fs.readFileSync(path.join(process.cwd(), 'rules/WEAPON_RULES.md'), 'utf8').replace(/\r\n/g, '\n');
 
   it('keeps the crit fallback in the Shock section', () => {
     expect(doc).toMatch(
