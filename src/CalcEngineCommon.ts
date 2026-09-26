@@ -19,6 +19,17 @@ export function calcFinalDiceProbsForAttacker(
     abilities.add(Ability.ObscuredTarget);
   }
 
+  // Mystic Scry and Punishing choose after the attack roll, before defence dice are
+  // rolled. When this defender is known, score each candidate by the damage it deals
+  // against that defender's saves, cover, and Piercing — not by raw hit damage.
+  // Defence dice and callers with no defender never reach this, and keep the raw
+  // fallback. Accurate's pre-roll choice is separate and still ranks pre-save damage.
+  const scoreHits = defender !== undefined
+    && canRankByDamage(attacker.normDmg, attacker.critDmg + attacker.mwx)
+    && (abilities.has(Ability.MysticScryBuff) || abilities.has(Ability.Punishing))
+    ? hitScorerFor(attacker, defender)
+    : undefined;
+
   return calcFinalDiceProbs(
     attacker.toAttackerDieProbs(),
     attacker.numDice,
@@ -30,7 +41,20 @@ export function calcFinalDiceProbsForAttacker(
     abilities,
     attacker.normDmg,
     attacker.critDmg + attacker.mwx,
+    scoreHits,
   );
+}
+
+// CalcEngineShootInternal imports this module. A top-level import of it would cycle
+// under CRA's CJS transform, which copies named bindings before the other module
+// has finished exporting. The scorer is only needed once a shot is actually ranked.
+function hitScorerFor(
+  attacker: Model,
+  defender: Model,
+): (crits: number, norms: number) => number {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const shoot = require('./CalcEngineShootInternal') as typeof import('./CalcEngineShootInternal');
+  return shoot.hitScorerForDefender(attacker, defender);
 }
 
 export function calcFinalDiceProbs(
@@ -44,11 +68,12 @@ export function calcFinalDiceProbs(
   abilities: Set<Ability> = new Set<Ability>(),
   normDmg: number = 0,
   critDmgPlusMwx: number = 0,
+  scoreHits?: (crits: number, norms: number) => number,
 ): FinalDiceProb[]
 {
   return bestAutoNormPlan(
     singleDieProbs, numDice, reroll, autoCrits, autoNorms,
-    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx).probs;
+    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, scoreHits).probs;
 }
 
 // Builds the distribution for an exact number of retained Accurate/cover dice.
@@ -63,6 +88,7 @@ function buildFinalDiceProbs(
   abilities: Set<Ability>,
   normDmg: number,
   critDmgPlusMwx: number,
+  scoreHits?: (crits: number, norms: number) => number,
 ): FinalDiceProb[] {
   const finalDiceProbs: FinalDiceProb[] = [];
 
@@ -83,6 +109,7 @@ function buildFinalDiceProbs(
         abilities,
         normDmg,
         critDmgPlusMwx,
+        scoreHits,
       );
 
       if (finalDiceProb.prob > 0) {
@@ -118,6 +145,7 @@ function bestAutoNormPlan(
   abilities: Set<Ability>,
   normDmg: number,
   critDmgPlusMwx: number,
+  scoreHits?: (crits: number, norms: number) => number,
 ): { used: number; probs: FinalDiceProb[] } {
   const cappedAutoCrits = Math.min(autoCrits, numDice);
   const diceAfterAutoCrits = numDice - cappedAutoCrits;
@@ -125,7 +153,7 @@ function bestAutoNormPlan(
 
   const build = (used: number) => buildFinalDiceProbs(
     singleDieProbs, diceAfterAutoCrits - used, reroll, cappedAutoCrits, used,
-    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx);
+    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, scoreHits);
 
   if (maxAutoNorms === 0 || !canRankByDamage(normDmg, critDmgPlusMwx)) {
     return { used: maxAutoNorms, probs: build(maxAutoNorms) };
@@ -150,8 +178,9 @@ export function canRankByDamage(normDmg: number, critDmgPlusMwx: number): boolea
   return normDmg > 0 || critDmgPlusMwx > 0;
 }
 
-// Expected pre-save damage of a final-dice distribution. Saves and Piercing are not weighed —
-// the same attack-only, damage-first simplification Mystic Scry's choice already uses.
+// Expected pre-save damage of a final-dice distribution. Accurate decides how many dice to
+// retain before the roll, so this comparison does not weigh saves or Piercing. Mystic Scry and
+// Punishing are ranked per roll instead, and on a shoot they use the defender scorer.
 function expectedDiceValue(
   finalDiceProbs: FinalDiceProb[],
   normDmg: number,
@@ -198,6 +227,7 @@ export function calcFinalDiceProb(
   abilities: Set<Ability> = new Set<Ability>(),
   normDmg: number = 0,
   critDmgPlusMwx: number = 0,
+  scoreHits?: (crits: number, norms: number) => number,
 ): FinalDiceProb
 {
   let prob = 0
@@ -266,6 +296,7 @@ export function calcFinalDiceProb(
     abilities,
     normDmg,
     critDmgPlusMwx,
+    scoreHits,
   );
 
   return new FinalDiceProb(prob, modified.crits, modified.norms);
@@ -685,6 +716,7 @@ export function applyPostRollModifications(
   abilities: Set<Ability>,
   normDmg: number = 0,
   critDmgPlusMwx: number = 0,
+  scoreHits?: (crits: number, norms: number) => number,
 ): { crits: number; norms: number } {
   crits += additionalCrits;
   // A dice can only be *retained* once. Dice retained without rolling (cover saves on defence,
@@ -707,7 +739,7 @@ export function applyPostRollModifications(
     && fails > 0;
 
   const resolve = (c: number, n: number, f: number, retained: number) => resolveAfterPunishing(
-    c, n, f, retained, failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx);
+    c, n, f, retained, failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, scoreHits);
 
   if (!punishingAvailable) {
     return resolve(crits, norms, fails, retainedNorms);
@@ -716,7 +748,7 @@ export function applyPostRollModifications(
   const taken = resolve(crits, norms + 1, fails - 1, retainedNorms + 1);
   const declined = resolve(crits, norms, fails, retainedNorms);
   // Ties keep the retention, which is the historical behavior and never worse in dice terms.
-  return outcomeValue(declined, normDmg, critDmgPlusMwx) > outcomeValue(taken, normDmg, critDmgPlusMwx)
+  return outcomeValue(declined, normDmg, critDmgPlusMwx, scoreHits) > outcomeValue(taken, normDmg, critDmgPlusMwx, scoreHits)
     ? declined
     : taken;
 }
@@ -728,7 +760,11 @@ function outcomeValue(
   outcome: { crits: number; norms: number },
   normDmg: number,
   critDmgPlusMwx: number,
+  scoreHits?: (crits: number, norms: number) => number,
 ): number {
+  if (scoreHits) {
+    return scoreHits(outcome.crits, outcome.norms);
+  }
   const useFallback = !canRankByDamage(normDmg, critDmgPlusMwx);
   const critValue = useFallback ? 2 : critDmgPlusMwx;
   const normValue = useFallback ? 1 : normDmg;
@@ -746,6 +782,7 @@ function resolveAfterPunishing(
   abilities: Set<Ability>,
   normDmg: number,
   critDmgPlusMwx: number,
+  scoreHits?: (crits: number, norms: number) => number,
 ): { crits: number; norms: number } {
   if (abilities.has(Ability.PuritySeal) || abilities.has(Ability.Indomitus)) {
     if (fails >= 2) {
@@ -796,9 +833,11 @@ function resolveAfterPunishing(
   // damage-dependent and interacts with Rending (a fresh crit can seed a Rending upgrade; conversely
   // an added norm gives Rending more to promote), so rather than a fixed rule we resolve each option
   // through the remaining steps (Rending, then Obscured) and keep whichever yields the most damage.
-  // Saves/Px are not modeled here, matching the attack-only, damage-first heuristics used elsewhere.
+  // On a shoot, scoreHits is expected damage after that defender's saves, cover, and Piercing.
+  // With no defender (and on defence dice) it falls back to raw pre-save damage.
   if (abilities.has(Ability.MysticScryBuff)) {
-    const dmgOf = (c: number, n: number) => c * critDmgPlusMwx + n * normDmg;
+    const dmgOf = (c: number, n: number) =>
+      scoreHits ? scoreHits(c, n) : c * critDmgPlusMwx + n * normDmg;
     // Candidates in preference order; the strict-greater pick below keeps the first on ties. Order the
     // crit upgrade ahead of the fail upgrade so a damage tie resolves to the crit, which is strictly
     // better against any real defender (its Devastating/mwx portion bypasses saves, it triggers Piercing,
