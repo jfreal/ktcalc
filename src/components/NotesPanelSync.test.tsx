@@ -2,6 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 
 import Note, * as N from 'src/Notes';
+import Ability, { mutuallyExclusiveFightAbilities } from 'src/Ability';
 import Model from 'src/Model';
 import { advancedMarkerTooltip } from 'src/components/AdvancedMarker';
 import AttackerControls, { attackerNotedControls } from 'src/components/AttackerControls';
@@ -85,8 +86,7 @@ describe('notes panels follow the controls', () => {
     );
     expect(boldNoteNames(container)).toEqual(namesInPanelOrder(notes, advancedNotes));
     expect(notes).not.toContain(N.CloseAssault2021);
-    expect(notes).not.toContain(N.Waaagh2021);
-    expect(N.NicheAbility.description).toContain('CloseAssault2021');
+    expect(N.NicheAbility.description).toContain('CloseAssault is');
     expect(N.NicheAbility.description).toContain('Waaagh2021');
     for (const note of [
       N.Punishing,
@@ -101,6 +101,13 @@ describe('notes panels follow the controls', () => {
     ]) {
       expect(notes).toContain(note);
       expect(advancedNotes.has(note)).toBe(true);
+    }
+  });
+
+  it('NicheAbility note names every dropdown value exactly as the dropdown shows it', () => {
+    for (const value of mutuallyExclusiveFightAbilities) {
+      if (value === Ability.None) continue;
+      expect(N.NicheAbility.description).toContain(`${value} is `);
     }
   });
 
@@ -125,8 +132,8 @@ describe('notes panels follow the controls', () => {
     const fightDerived = notesFromControls(fighterNotedControls);
     expect(boldNoteNames(fightNotes)).toEqual(namesInPanelOrder(fightDerived.notes, fightDerived.advancedNotes));
     expect(boldNoteNames(fightNotes)).not.toContain(N.CloseAssault2021.name);
-    expect(boldNoteNames(fightNotes)).not.toContain(N.Waaagh2021.name);
-    expect(fightNotes.textContent).toContain('CloseAssault2021 is Imperial Navy');
+    expect(boldNoteNames(fightNotes)).not.toContain('Waaagh2021');
+    expect(fightNotes.textContent).toContain('CloseAssault is Imperial Navy');
     expect(fightNotes.textContent).toContain('Waaagh2021 is Kommandos');
     expect(fightNotes.textContent).toContain('All strategies will do certain no-downside actions');
     fight.unmount();

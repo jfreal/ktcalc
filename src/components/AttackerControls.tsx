@@ -23,12 +23,14 @@ import Model from 'src/Model';
 import Ability, {
   rerollAbilities as rerolls,
 } from 'src/Ability';
-import Note, * as N from 'src/Notes';
+import * as N from 'src/Notes';
 import AdvancedMarker from 'src/components/AdvancedMarker';
 import {
+  AbilityCheckbox,
   NotedControl,
   ParamSpec,
-  noteOf,
+  buildParams,
+  notedControlsFromCheckboxes,
   notedControlsFromParams,
 } from 'src/components/controlNotes';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
@@ -36,11 +38,6 @@ import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 export interface Props {
   attacker: Model;
   changeHandler: Accepter<Model>;
-}
-
-interface AbilityCheckbox {
-  note: Note;
-  ability: Ability;
 }
 
 export type AttackerParamId =
@@ -62,20 +59,20 @@ export type AttackerParamId =
 // Same list the Shoot notes panel reads. Punishing is an always-visible checkbox; FailsToNorms is
 // an advanced param. Both therefore belong in Notes.
 export const attackerParamSpecs: readonly ParamSpec<AttackerParamId>[] = [
-  { id: 'attacks', advanced: false },
-  { id: 'bs', advanced: false },
-  { id: 'normDmg', advanced: false },
-  { id: 'critDmg', advanced: false },
-  { id: 'devastating', advanced: false },
-  { id: 'piercing', advanced: false },
-  { id: 'piercingCrits', advanced: false },
-  { id: 'reroll', note: N.Reroll, advanced: false },
-  { id: 'lethal', advanced: false },
-  { id: 'autoNorms', note: N.AutoNorms, advanced: false },
-  { id: 'autoCrits', note: N.AutoCrits, advanced: true },
-  { id: 'failsToNorms', note: N.FailsToNorms, advanced: true },
-  { id: 'normsToCrits', note: N.NormsToCrits, advanced: true },
-  { id: 'puritySeal', note: N.PuritySeal, advanced: true },
+  { id: 'attacks', label: 'Attacks', advanced: false },
+  { id: 'bs', label: 'BS', advanced: false },
+  { id: 'normDmg', label: 'Normal Dmg', advanced: false },
+  { id: 'critDmg', label: 'Crit Dmg', advanced: false },
+  { id: 'devastating', label: 'Devastating', advanced: false },
+  { id: 'piercing', label: 'Piercing', advanced: false },
+  { id: 'piercingCrits', label: 'Piercing Crits', advanced: false },
+  { id: 'reroll', label: N.Reroll, advanced: false },
+  { id: 'lethal', label: 'Lethal', advanced: false },
+  { id: 'autoNorms', label: N.AutoNorms, advanced: false },
+  { id: 'autoCrits', label: N.AutoCrits, advanced: true },
+  { id: 'failsToNorms', label: N.FailsToNorms, advanced: true },
+  { id: 'normsToCrits', label: N.NormsToCrits, advanced: true },
+  { id: 'puritySeal', label: N.PuritySeal, advanced: true },
 ];
 
 export const attackerBasicCheckboxes: readonly AbilityCheckbox[] = [
@@ -91,8 +88,8 @@ export const attackerAdvancedCheckboxes: readonly AbilityCheckbox[] = [
 
 export const attackerNotedControls: readonly NotedControl[] = [
   ...notedControlsFromParams(attackerParamSpecs),
-  ...attackerBasicCheckboxes.map(box => ({ note: box.note, advanced: false })),
-  ...attackerAdvancedCheckboxes.map(box => ({ note: box.note, advanced: true })),
+  ...notedControlsFromCheckboxes(attackerBasicCheckboxes, false),
+  ...notedControlsFromCheckboxes(attackerAdvancedCheckboxes, true),
 ];
 
 const AttackerControls: React.FC<Props> = (props: Props) => {
@@ -117,33 +114,33 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   function buildParam(spec: ParamSpec<AttackerParamId>): IncProps {
     switch (spec.id) {
       case 'attacks':
-        return new IncProps('Attacks', atk.numDice, span(1, 9), numHandler('numDice'));
+        return new IncProps(spec.label, atk.numDice, span(1, 9), numHandler('numDice'));
       case 'bs':
-        return new IncProps('BS', atk.diceStat + '+', rollSpan, numHandler('diceStat'));
+        return new IncProps(spec.label, atk.diceStat + '+', rollSpan, numHandler('diceStat'));
       case 'normDmg':
-        return new IncProps('Normal Dmg', atk.normDmg, span(0, 9), numHandler('normDmg'));
+        return new IncProps(spec.label, atk.normDmg, span(0, 9), numHandler('normDmg'));
       case 'critDmg':
-        return new IncProps('Crit Dmg', atk.critDmg, span(0, 10), numHandler('critDmg'));
+        return new IncProps(spec.label, atk.critDmg, span(0, 10), numHandler('critDmg'));
       case 'devastating':
-        return new IncProps('Devastating', atk.mwx, xspan(1, 9), numHandler('mwx'));
+        return new IncProps(spec.label, atk.mwx, xspan(1, 9), numHandler('mwx'));
       case 'piercing':
-        return new IncProps('Piercing', atk.apx, xspan(1, 4), numHandler('apx'));
+        return new IncProps(spec.label, atk.apx, xspan(1, 4), numHandler('apx'));
       case 'piercingCrits':
-        return new IncProps('Piercing Crits', atk.px, xspan(1, 4), numHandler('px'));
+        return new IncProps(spec.label, atk.px, xspan(1, 4), numHandler('px'));
       case 'reroll':
-        return new IncProps(noteOf(spec), atk.reroll, preX(rerolls), textHandler('reroll'));
+        return new IncProps(spec.label, atk.reroll, preX(rerolls), textHandler('reroll'));
       case 'lethal':
-        return new IncProps('Lethal', atk.lethal + '+', xspan(5, 2, '+'), numHandler('lethal'));
+        return new IncProps(spec.label, atk.lethal + '+', xspan(5, 2, '+'), numHandler('lethal'));
       case 'autoNorms':
-        return new IncProps(noteOf(spec), atk.autoNorms, xspan(1, 3), numHandler('autoNorms'));
+        return new IncProps(spec.label, atk.autoNorms, xspan(1, 3), numHandler('autoNorms'));
       case 'autoCrits':
-        return new IncProps(noteOf(spec), atk.autoCrits, xspan(1, 9), numHandler('autoCrits'));
+        return new IncProps(spec.label, atk.autoCrits, xspan(1, 9), numHandler('autoCrits'));
       case 'failsToNorms':
-        return new IncProps(noteOf(spec), atk.failsToNorms, xspan(1, 9), numHandler('failsToNorms'));
+        return new IncProps(spec.label, atk.failsToNorms, xspan(1, 9), numHandler('failsToNorms'));
       case 'normsToCrits':
-        return new IncProps(noteOf(spec), atk.normsToCrits, xspan(1, 9), numHandler('normsToCrits'));
+        return new IncProps(spec.label, atk.normsToCrits, xspan(1, 9), numHandler('normsToCrits'));
       case 'puritySeal':
-        return new IncProps(noteOf(spec), toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal));
+        return new IncProps(spec.label, toYN(Ability.PuritySeal), xAndCheck, singleHandler(Ability.PuritySeal));
       default: {
         const unexpected: never = spec.id;
         throw new Error(`unknown attacker control '${unexpected}'`);
@@ -151,10 +148,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
     }
   }
 
-  const basicParams = attackerParamSpecs.filter(spec => !spec.advanced).map(buildParam);
-  const advancedParams = attackerParamSpecs.filter(spec => spec.advanced).map(buildParam);
-  // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
-  advancedParams.forEach(p => { p.advanced = true; });
+  const { basicParams, advancedParams } = buildParams(attackerParamSpecs, buildParam);
 
   const advancedParamsToShow
     = wantShowAdvanced

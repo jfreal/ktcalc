@@ -12,7 +12,7 @@ import Ability, {
 } from 'src/Ability';
 import { MaxWounds } from 'src/KtMisc';
 import Model from 'src/Model';
-import Note, * as N from 'src/Notes';
+import * as N from 'src/Notes';
 import {
   Accepter,
   extractFromSet,
@@ -31,9 +31,11 @@ import {
 import { relicModeToLabel } from 'src/SaintlyRelics';
 import AdvancedMarker from 'src/components/AdvancedMarker';
 import {
+  AbilityCheckbox,
   NotedControl,
   ParamSpec,
-  noteOf,
+  buildParams,
+  notedControlsFromCheckboxes,
   notedControlsFromParams,
 } from 'src/components/controlNotes';
 import { Props as IncProps, propsToRows } from 'src/components/IncDecSelect';
@@ -43,11 +45,6 @@ import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 export interface Props {
   attacker: Model;
   changeHandler: Accepter<Model>;
-}
-
-interface AbilityCheckbox {
-  note: Note;
-  ability: Ability;
 }
 
 export type FighterParamId =
@@ -69,19 +66,19 @@ export type FighterParamId =
 // same list, so a rule appears in Notes exactly when a fighter card has a control for it.
 // Close Assault and Waaagh are values of the NicheAbility dropdown, not their own controls.
 export const fighterParamSpecs: readonly ParamSpec<FighterParamId>[] = [
-  { id: 'wounds', advanced: false },
-  { id: 'attacks', advanced: false },
-  { id: 'ws', advanced: false },
-  { id: 'normDmg', advanced: false },
-  { id: 'critDmg', advanced: false },
-  { id: 'reroll', note: N.Reroll, advanced: false },
-  { id: 'lethal', advanced: false },
-  { id: 'niche', note: N.NicheAbility, advanced: true },
-  { id: 'autoNorms', note: N.AutoNorms, advanced: true },
-  { id: 'normsToCrits', note: N.NormsToCrits, advanced: true },
-  { id: 'failsToNorms', note: N.FailsToNorms, advanced: true },
-  { id: 'fnp', note: N.FeelNoPain, advanced: true },
-  { id: 'relics', note: N.SaintlyRelics, advanced: true },
+  { id: 'wounds', label: 'Wounds', advanced: false },
+  { id: 'attacks', label: 'Attacks', advanced: false },
+  { id: 'ws', label: 'WS', advanced: false },
+  { id: 'normDmg', label: 'Normal Dmg', advanced: false },
+  { id: 'critDmg', label: 'Critical Dmg', advanced: false },
+  { id: 'reroll', label: N.Reroll, advanced: false },
+  { id: 'lethal', label: 'Lethal', advanced: false },
+  { id: 'niche', label: N.NicheAbility, advanced: true },
+  { id: 'autoNorms', label: N.AutoNorms, advanced: true },
+  { id: 'normsToCrits', label: N.NormsToCrits, advanced: true },
+  { id: 'failsToNorms', label: N.FailsToNorms, advanced: true },
+  { id: 'fnp', label: N.FeelNoPain, advanced: true },
+  { id: 'relics', label: N.SaintlyRelics, advanced: true },
 ];
 
 export const fighterBasicCheckboxes: readonly AbilityCheckbox[] = [
@@ -104,8 +101,8 @@ export const fighterAdvancedCheckboxes: readonly AbilityCheckbox[] = [
 
 export const fighterNotedControls: readonly NotedControl[] = [
   ...notedControlsFromParams(fighterParamSpecs),
-  ...fighterBasicCheckboxes.map(box => ({ note: box.note, advanced: false })),
-  ...fighterAdvancedCheckboxes.map(box => ({ note: box.note, advanced: true })),
+  ...notedControlsFromCheckboxes(fighterBasicCheckboxes, false),
+  ...notedControlsFromCheckboxes(fighterAdvancedCheckboxes, true),
 ];
 
 const FighterControls: React.FC<Props> = (props: Props) => {
@@ -149,31 +146,31 @@ const FighterControls: React.FC<Props> = (props: Props) => {
   function buildParam(spec: ParamSpec<FighterParamId>): IncProps {
     switch (spec.id) {
       case 'wounds':
-        return new IncProps('Wounds', atk.wounds, span(1, MaxWounds), numHandler('wounds'));
+        return new IncProps(spec.label, atk.wounds, span(1, MaxWounds), numHandler('wounds'));
       case 'attacks':
-        return new IncProps('Attacks', atk.numDice, span(1, 8), numHandler('numDice'));
+        return new IncProps(spec.label, atk.numDice, span(1, 8), numHandler('numDice'));
       case 'ws':
-        return new IncProps('WS', atk.diceStat + '+', rollSpan, numHandler('diceStat'));
+        return new IncProps(spec.label, atk.diceStat + '+', rollSpan, numHandler('diceStat'));
       case 'normDmg':
-        return new IncProps('Normal Dmg', atk.normDmg, span(1, 9), numHandler('normDmg'));
+        return new IncProps(spec.label, atk.normDmg, span(1, 9), numHandler('normDmg'));
       case 'critDmg':
-        return new IncProps('Critical Dmg', atk.critDmg, span(1, 9), numHandler('critDmg'));
+        return new IncProps(spec.label, atk.critDmg, span(1, 9), numHandler('critDmg'));
       case 'reroll':
-        return new IncProps(noteOf(spec), atk.reroll, preX(rerolls), textHandler('reroll'));
+        return new IncProps(spec.label, atk.reroll, preX(rerolls), textHandler('reroll'));
       case 'lethal':
-        return new IncProps('Lethal', atk.lethal + '+', xspan(5, 2, '+'), numHandler('lethal'));
+        return new IncProps(spec.label, atk.lethal + '+', xspan(5, 2, '+'), numHandler('lethal'));
       case 'niche':
-        return new IncProps(noteOf(spec), nicheAbility, nicheAbilities, subsetHandler(nicheAbilities));
+        return new IncProps(spec.label, nicheAbility, nicheAbilities, subsetHandler(nicheAbilities));
       case 'autoNorms':
-        return new IncProps(noteOf(spec), atk.autoNorms, xspan(1, 9), numHandler('autoNorms'));
+        return new IncProps(spec.label, atk.autoNorms, xspan(1, 9), numHandler('autoNorms'));
       case 'normsToCrits':
-        return new IncProps(noteOf(spec), atk.normsToCrits, xspan(1, 9), numHandler('normsToCrits'));
+        return new IncProps(spec.label, atk.normsToCrits, xspan(1, 9), numHandler('normsToCrits'));
       case 'failsToNorms':
-        return new IncProps(noteOf(spec), atk.failsToNorms, xspan(1, 9), numHandler('failsToNorms'));
+        return new IncProps(spec.label, atk.failsToNorms, xspan(1, 9), numHandler('failsToNorms'));
       case 'fnp':
-        return new IncProps(noteOf(spec), atk.fnp + '+', xspan(6, 2, '+'), numHandler('fnp'));
+        return new IncProps(spec.label, atk.fnp + '+', xspan(6, 2, '+'), numHandler('fnp'));
       case 'relics':
-        return makeIncDecPropsFromLookup(noteOf(spec), atk, props.changeHandler, 'saintlyRelics', relicModeToLabel);
+        return makeIncDecPropsFromLookup(spec.label, atk, props.changeHandler, 'saintlyRelics', relicModeToLabel);
       default: {
         const unexpected: never = spec.id;
         throw new Error(`unknown fighter control '${unexpected}'`);
@@ -181,10 +178,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     }
   }
 
-  const basicParams: IncProps[] = fighterParamSpecs.filter(spec => !spec.advanced).map(buildParam);
-  const advancedParams: IncProps[] = fighterParamSpecs.filter(spec => spec.advanced).map(buildParam);
-  // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
-  advancedParams.forEach(p => { p.advanced = true; });
+  const { basicParams, advancedParams } = buildParams(fighterParamSpecs, buildParam);
 
   const advancedParamsToShow
     = wantShowAdvanced
