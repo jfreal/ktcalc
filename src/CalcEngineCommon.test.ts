@@ -194,10 +194,10 @@ describe(Common.calcFinalDiceProb.name, () => {
     const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 0, Ability.None, 0, 0, 0, 0, justRending);
     expectClose(actual, pc * pn * 2, 2, 0);
   });
-  it('rending {3c,3n,3f} => {4c, 3n, 2f}', () => {
-    const actual = Common.calcFinalDiceProb(dieProbs, 3, 3, 0, Ability.None, 0, 0, 0, 0, justRending);
-    expect(actual.crits).toBe(4);
-    expect(actual.norms).toBe(2);
+  it('rending {3c,3n,3f} => {4c,2n,3f}', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 3, 3, 3, Ability.None, 0, 0, 0, 0, justRending);
+    const ways = 9 * 8 * 7 * 6 * 5 * 4 / (3 * 2 * 1) / (3 * 2 * 1); // 9!/(3!3!3!)
+    expectClose(actual, ways * Math.pow(pc, 3) * Math.pow(pn, 3) * Math.pow(pf, 3), 4, 2);
   });
   it('starfire {0c,1n,1f} => {0c,1n,1f}', () => {
     const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 1, Ability.None, 0, 0, 0, 0, justPunishing);
