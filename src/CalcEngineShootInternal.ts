@@ -78,6 +78,12 @@ export function calcDefenderFinalDiceStuff(
   );
 }
 
+// The defence-dice distribution a hit profile faces: Piercing Crits only applies when a crit
+// was retained.
+export function defenceDiceFor(stuff: DefenderFinalDiceStuff, crits: number): FinalDiceProb[] {
+  return (stuff.pxIsRelevant && crits > 0) ? stuff.finalDiceProbsWithPx : stuff.finalDiceProbs;
+}
+
 // Expected damage of one already-retained hit profile against this defender.
 // Cover and both Piercing rules come from the same defence-dice distributions the
 // shot uses afterwards, so a retain choice ranked with this scorer is ranking the
@@ -99,10 +105,7 @@ export function hitScorerForDefender(
     }
     let total = 0;
     if (crits + norms > 0) {
-      const defs = (stuff.pxIsRelevant && crits > 0)
-        ? stuff.finalDiceProbsWithPx
-        : stuff.finalDiceProbs;
-      for (const def of defs) {
+      for (const def of defenceDiceFor(stuff, crits)) {
         total += def.prob * calcDamage(attacker, defender, crits, norms, def.crits, def.norms).damage;
       }
     }

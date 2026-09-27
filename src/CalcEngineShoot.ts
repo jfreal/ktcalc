@@ -9,6 +9,7 @@ import {
   calcDefenderFinalDiceStuff,
   calcPostFnpDamages,
   calcRelicsOutcomes,
+  defenceDiceFor,
   hitScorerForDefender,
 } from 'src/CalcEngineShootInternal'
 
@@ -33,10 +34,7 @@ export function calcDmgProbs(
       if (atk.crits + atk.norms <= 0) {
         continue;
       }
-      const defs = (defenderStuff.pxIsRelevant && atk.crits > 0)
-        ? defenderStuff.finalDiceProbsWithPx
-        : defenderStuff.finalDiceProbs;
-      for (const def of defs) {
+      for (const def of defenceDiceFor(defenderStuff, atk.crits)) {
         const result = calcDamage(attacker, defender, atk.crits, atk.norms, def.crits, def.norms);
         visit(result, atk.prob * def.prob);
       }
