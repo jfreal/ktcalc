@@ -41,14 +41,16 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
 
   const aFirst = fightOptions.firstFighter === 'A';
   const [fighter1WoundProbs, fighter2WoundProbs] = React.useMemo(
-    () => calcRemainingWounds(
-      aFirst ? fighterA : fighterB,
-      aFirst ? fighterB : fighterA,
-      aFirst ? fightOptions.strategyFighterA : fightOptions.strategyFighterB,
-      aFirst ? fightOptions.strategyFighterB : fightOptions.strategyFighterA,
-      fightOptions.numRounds,
-    ),
-    [fighterA, fighterB, fightOptions, aFirst]);
+    () => isActive
+      ? calcRemainingWounds(
+          aFirst ? fighterA : fighterB,
+          aFirst ? fighterB : fighterA,
+          aFirst ? fightOptions.strategyFighterA : fightOptions.strategyFighterB,
+          aFirst ? fightOptions.strategyFighterB : fightOptions.strategyFighterA,
+          fightOptions.numRounds,
+        )
+      : [new Map<number, number>(), new Map<number, number>()],
+    [fighterA, fighterB, fightOptions, aFirst, isActive]);
   const fighterAWoundProbs = aFirst ? fighter1WoundProbs : fighter2WoundProbs;
   const fighterBWoundProbs = aFirst ? fighter2WoundProbs : fighter1WoundProbs;
 

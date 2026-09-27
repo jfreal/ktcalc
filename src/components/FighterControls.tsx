@@ -100,7 +100,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     new IncProps(N.AutoNorms,        atk.autoNorms,              xspan(1, 9),    numHandler('autoNorms')),
     new IncProps(N.NormsToCrits,     atk.normsToCrits,           xspan(1, 9),    numHandler('normsToCrits')),
     new IncProps(N.FailsToNorms,     atk.failsToNorms,           xspan(1, 9),    numHandler('failsToNorms')),
-    new IncProps(N.FeelNoPain,       atk.fnp + '+',              xspan(6, 2, '+'), numHandler('fnp')),
+    new IncProps(N.FeelNoPain,       atk.fnp + '+',              xspan(6, 4, '+'), numHandler('fnp')),
     makeIncDecPropsFromLookup(N.SaintlyRelics, atk, props.changeHandler, 'saintlyRelics', relicModeToLabel),
   ];
   // Every advanced param is hidden unless "Advanced" is ticked, so flag them to show the gear marker.
@@ -114,7 +114,6 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     { note: N.Duelist, ability: Ability.Duelist },
     { note: N.JustAScratch2021, ability: Ability.JustAScratch },
     { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
-    { note: N.Durable2021, ability: Ability.Durable },
     { note: N.HalfDamageFirstStrike, ability: Ability.HalfDamageFirstStrike },
   ];
 
