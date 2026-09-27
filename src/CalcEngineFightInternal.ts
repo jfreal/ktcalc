@@ -194,7 +194,7 @@ export function resolveFight(
   }
 
   if(guy1State.crits < 0 || guy1State.norms < 0
-    || guy2State.crits < 0 || guy1State.norms < 0)
+    || guy2State.crits < 0 || guy2State.norms < 0)
   {
     throw new Error("bug: ended up with negative successes")
   }
