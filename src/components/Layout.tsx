@@ -31,7 +31,8 @@ const ShareButtons: React.FC = () => {
 
 // Routes that are NOT the calculator — everything else falls through App.tsx's
 // wildcard route to the calculator, so "on calculator" is defined as "not one
-// of these" rather than an exact-match on '/' (which would miss that fallback).
+// of these" rather than an exact-match on '/' (which would miss that fallback
+// and the /fight calculator path).
 const NON_CALCULATOR_PATH_PREFIXES = ['/help', '/notes', '/rules'];
 
 // One header (plus the Auspex Fatalis promo strip) + footer wrapped around every route via <Outlet />.

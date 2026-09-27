@@ -207,59 +207,66 @@ describe(calcDamage.name + ', JustAScratch cancels the higher-damage hit', () =>
   });
 });
 
-describe(calcDamage.name + ', save allocation', () => {
-  const def = new Model();
-
-  // Brute force: every legal use of the saves (including wasteful ones) and every JaS choice.
-  function bruteForceMinDamage(atker: Model, defender: Model, ch: number, nh: number, cs: number, ns: number) {
-    const jasChoices: [number, number][] = [[ch, nh]];
-    if (defender.has(Ability.JustAScratch)) {
-      jasChoices.length = 0;
-      if (ch > 0) jasChoices.push([ch - 1, nh]);
-      if (nh > 0) jasChoices.push([ch, nh - 1]);
-      if (ch + nh === 0) jasChoices.push([0, 0]);
-    }
-    let best = Infinity;
-    for (const [c0, n0] of jasChoices) {
-      for (let a = 0; a <= Math.min(cs, c0); a++) {
-        for (let b = 0; b <= Math.min(cs - a, n0); b++) {
-          for (let c = 0; c <= Math.min(ns, n0 - b); c++) {
-            for (let d = 0; d <= Math.min(Math.floor((ns - c) / 2), c0 - a); d++) {
-              const crits = c0 - a - d;
-              const norms = n0 - b - c;
-              const dmg = ch * atker.mwx + crits * atker.critDmg + norms * atker.normDmg;
-              best = Math.min(best, dmg);
-            }
+// Brute force: every legal use of the saves (including wasteful ones) and every JaS choice.
+// JaS (Normals) then drops one normal that is still there, before any save is spent.
+function bruteForceMinDamage(atker: Model, defender: Model, ch: number, nh: number, cs: number, ns: number) {
+  const jasChoices: [number, number][] = [[ch, nh]];
+  if (defender.has(Ability.JustAScratch)) {
+    jasChoices.length = 0;
+    if (ch > 0) jasChoices.push([ch - 1, nh]);
+    if (nh > 0) jasChoices.push([ch, nh - 1]);
+    if (ch + nh === 0) jasChoices.push([0, 0]);
+  }
+  let best = Infinity;
+  for (const [c0, n1] of jasChoices) {
+    const n0 = defender.has(Ability.JustAScratchNorms) && n1 > 0 ? n1 - 1 : n1;
+    for (let a = 0; a <= Math.min(cs, c0); a++) {
+      for (let b = 0; b <= Math.min(cs - a, n0); b++) {
+        for (let c = 0; c <= Math.min(ns, n0 - b); c++) {
+          for (let d = 0; d <= Math.min(Math.floor((ns - c) / 2), c0 - a); d++) {
+            const crits = c0 - a - d;
+            const norms = n0 - b - c;
+            const dmg = ch * atker.mwx + crits * atker.critDmg + norms * atker.normDmg;
+            best = Math.min(best, dmg);
           }
         }
       }
     }
-    return best;
   }
+  return best;
+}
 
-  const profiles: [number, number][] = [[3, 4], [4, 4], [4, 5], [3, 6], [3, 7], [2, 4], [5, 4], [4, 9]];
-  for (const withJas of [false, true]) {
-    it(`matches brute force for every 0-3 hits/saves split${withJas ? ', with JaS' : ''}`, () => {
-      const defender = withJas ? new Model().setAbility(Ability.JustAScratch) : def;
-      for (const [dn, dc] of profiles) {
-        for (const mwx of [0, 2]) {
-          const atker = new Model(0, 0, dn, dc, mwx);
-          for (let ch = 0; ch <= 3; ch++) {
-            for (let nh = 0; nh <= 3; nh++) {
-              for (let cs = 0; cs <= 3; cs++) {
-                for (let ns = 0; ns <= 3; ns++) {
-                  const expected = bruteForceMinDamage(atker, defender, ch, nh, cs, ns);
-                  const actual = calcDamage(atker, defender, ch, nh, cs, ns).damage;
-                  if (actual !== expected) {
-                    throw new Error(`D=${dn}/${dc} mwx=${mwx} ${ch}ch ${nh}nh vs ${cs}cs ${ns}ns: `
-                      + `got ${actual}, brute force ${expected}`);
-                  }
-                }
+const bruteForceProfiles: [number, number][] = [[3, 4], [4, 4], [4, 5], [3, 6], [3, 7], [2, 4], [5, 4], [4, 9]];
+
+// calcDamage must match the brute force for every 0-3 hits/saves split.
+function expectMatchesBruteForce(defender: Model) {
+  for (const [dn, dc] of bruteForceProfiles) {
+    for (const mwx of [0, 2]) {
+      const atker = new Model(0, 0, dn, dc, mwx);
+      for (let ch = 0; ch <= 3; ch++) {
+        for (let nh = 0; nh <= 3; nh++) {
+          for (let cs = 0; cs <= 3; cs++) {
+            for (let ns = 0; ns <= 3; ns++) {
+              const expected = bruteForceMinDamage(atker, defender, ch, nh, cs, ns);
+              const actual = calcDamage(atker, defender, ch, nh, cs, ns).damage;
+              if (actual !== expected) {
+                throw new Error(`D=${dn}/${dc} mwx=${mwx} ${ch}ch ${nh}nh vs ${cs}cs ${ns}ns: `
+                  + `got ${actual}, brute force ${expected}`);
               }
             }
           }
         }
       }
+    }
+  }
+}
+
+describe(calcDamage.name + ', save allocation', () => {
+  const def = new Model();
+
+  for (const withJas of [false, true]) {
+    it(`matches brute force for every 0-3 hits/saves split${withJas ? ', with JaS' : ''}`, () => {
+      expectMatchesBruteForce(withJas ? new Model().setAbility(Ability.JustAScratch) : def);
     });
   }
 });
@@ -604,6 +611,33 @@ describe(calcDmgProbs.name + ', relentless', () => {
   });
 });
 
+describe(calcDmgProbs.name + ', mystic scry and punishing vs saves', () => {
+  it('mystic scry keeps the crit when one cover save and Piercing Crits 1 beat two normals', () => {
+    // 2 dice at 2+, never crit: 25/36 two norms, 10/36 one norm + one fail, 1/36 two fails.
+    // Two normals upgrade one to a crit (Piercing removes the cover) for 7.
+    // One norm and one fail: fail->norm is 6 raw but the cover leaves 3; norm->crit is 4 and
+    // Piercing Crits 1 removes the cover die, so 4 gets through. Two fails become one saved norm.
+    const atk = new Model(2, 2, 3, 4).setProp('lethal', 7).setProp('px', 1)
+      .setAbility(Ability.MysticScryBuff, true);
+    const def = new Model(1, 6).setProp('autoNorms', 1);
+
+    expect(avgDmg(atk, def)).toBeCloseTo((25 * 7 + 10 * 4) / 36, requiredPrecision);
+  });
+
+  it('punishing declines the locked norm when one normal save makes the crit line better', () => {
+    // 2 dice at 6+: 1/36 two crits, 10/36 one crit + one fail, 25/36 two fails.
+    // Norm 6 / crit 2, Rending, FailsToNorms 1, one always-normal save.
+    // Taking on the mixed roll locks {1c,1n}: the save blocks the norm and 2 gets through.
+    // Declining lets FailsToNorms + Rending make {2c}: one normal save cannot block a crit, so 4.
+    const atk = new Model(2, 6, 6, 2).setProp('failsToNorms', 1)
+      .setAbility(Ability.Punishing, true)
+      .setAbility(Ability.Rending, true);
+    const def = new Model(1).withAlwaysNorm();
+
+    expect(avgDmg(atk, def)).toBeCloseTo((1 * 4 + 10 * 4) / 36, requiredPrecision);
+  });
+});
+
 describe(calcDmgProbs.name + ', rending & starfire', () => {
   it('rending, 2 atk dice, probability 2 crits', () => {
     const atk = newTestAttacker(2).setAbility(Ability.Rending, true);
@@ -942,6 +976,76 @@ describe(calcDmgProbs.name + ', multiple rounds', () => {
   });
 });
 
+// Indomitus (defender): two or more failed saves discard one fail and turn another
+// into a normal save. One application, on any fail faces, including the Piercing Crits path.
+describe(calcDmgProbs.name + ', defender Indomitus', () => {
+  it('two fails become one normal save', () => {
+    // 2 always-normal hits vs 2 dice, save 4+ (crit 1/6, norm 2/6, fail 3/6).
+    // A normal or critical save cancels one of those hits. 36 equally likely face-pairs.
+    // Both fail is (3/6)*(3/6) = 9/36. Off, that deals 2*normDmg. On, those two fails
+    // become one normal save, so one hit remains (normDmg) and 2*normDmg is impossible.
+    //   Off: P(0)=9/36, P(normDmg)=18/36, P(2*normDmg)=9/36
+    //   On:  P(0)=9/36, P(normDmg)=27/36, P(2*normDmg)=0
+    const atk = newTestAttacker(2).withAlwaysNorm();
+    const defOff = new Model(2, 4);
+    const defOn = new Model(2, 4).setAbility(Ability.Indomitus);
+    const dn = atk.normDmg;
+
+    const off = calcDmgProbs(atk, defOff);
+    const on = calcDmgProbs(atk, defOn);
+
+    expect(off.get(0)).toBeCloseTo(9 / 36, requiredPrecision);
+    expect(off.get(dn)).toBeCloseTo(18 / 36, requiredPrecision);
+    expect(off.get(2 * dn)).toBeCloseTo(9 / 36, requiredPrecision);
+
+    expect(on.get(0)).toBeCloseTo(9 / 36, requiredPrecision);
+    expect(on.get(dn)).toBeCloseTo(27 / 36, requiredPrecision);
+    expect(on.get(2 * dn)).toBeUndefined();
+    expect(on.size).toBe(2);
+  });
+
+  it('does nothing when fewer than two dice can fail', () => {
+    // One defence die fails at most once, so Indomitus never fires and matches the ability off.
+    // Same 2 always-normal hits, save 4+: fail (3/6) leaves both hits; a save (3/6) cancels one.
+    const atk = newTestAttacker(2).withAlwaysNorm();
+    const defOff = new Model(1, 4);
+    const defOn = new Model(1, 4).setAbility(Ability.Indomitus);
+    const dn = atk.normDmg;
+
+    const off = calcDmgProbs(atk, defOff);
+    const on = calcDmgProbs(atk, defOn);
+
+    expect(on.get(2 * dn)).toBeCloseTo(3 / 6, requiredPrecision);
+    expect(on.get(dn)).toBeCloseTo(3 / 6, requiredPrecision);
+    expect(on.get(0)).toBeUndefined();
+    expect(on.size).toBe(2);
+    expect(on).toStrictEqual(off);
+  });
+
+  it('still converts two fails on the Piercing Crits save path', () => {
+    // Always-crit with Px 1 against 4 dice, save 4+. The crit takes the Px branch, which
+    // rolls 3 dice (not 4). One crit save or two normal saves cancel the hit.
+    // Indomitus adds one normal when a roll has two or more fails, so the only roll it
+    // newly saves is (0 crit, 1 norm, 2 fail): 3*(2/6)*(3/6)^2 = 54/216.
+    // Triple fail becomes one normal and still lets the crit through: 3^3/216 = 27/216.
+    //   Off: P(critDmg)=81/216. On: P(critDmg)=27/216.
+    // The non-Px branch (all 4 dice, Indomitus on) would be 3^4/1296 = 1/16, not 1/8.
+    const atk = newTestAttacker(1).withAlwaysCrit().setProp('px', 1);
+    const defOff = new Model(4, 4);
+    const defOn = new Model(4, 4).setAbility(Ability.Indomitus);
+    const dc = atk.critDmg;
+
+    const off = calcDmgProbs(atk, defOff);
+    const on = calcDmgProbs(atk, defOn);
+
+    expect(off.get(dc)).toBeCloseTo(81 / 216, requiredPrecision);
+    expect(off.get(0)).toBeCloseTo(1 - 81 / 216, requiredPrecision);
+    expect(on.get(dc)).toBeCloseTo(27 / 216, requiredPrecision);
+    expect(on.get(0)).toBeCloseTo(1 - 27 / 216, requiredPrecision);
+    expect(on.size).toBe(2);
+  });
+});
+
 /*
 describe('q', () => {
   it('x', () => {
@@ -949,3 +1053,58 @@ describe('q', () => {
   });
 });
 */
+
+// JaS (Normals) cancels one normal hit before saves. JaS (Crits), when also on, has already
+// chosen which single hit to cancel; this scratch then takes one normal that is still there.
+describe(calcDamage.name + ', JustAScratchNorms drops one normal before saves', () => {
+  const norms = new Model().setAbility(Ability.JustAScratchNorms);
+  const both = new Model().setAbility(Ability.JustAScratch).setAbility(Ability.JustAScratchNorms);
+
+  it('normals only: one normal is removed', () => {
+    // 0 crit, 2 normal, no saves. One normal cancelled, one left: 1 * 3 = 3.
+    const atker = new Model(0, 0, 3, 5, 0);
+    const r = calcDamage(atker, norms, 0, 2, 0, 0);
+    expect(r.damage).toBe(3);
+    expect(r.survivingCritHits).toBe(0);
+    expect(r.survivingNormHits).toBe(1);
+  });
+
+  it('crits only: unchanged', () => {
+    // 2 crit, 0 normal. No normal to cancel: 2 * 5 = 10.
+    const atker = new Model(0, 0, 3, 5, 0);
+    const r = calcDamage(atker, norms, 2, 0, 0, 0);
+    expect(r.damage).toBe(10);
+    expect(r.survivingCritHits).toBe(2);
+    expect(r.survivingNormHits).toBe(0);
+  });
+
+  it('both scratches on 1 crit + 1 normal cancel both hits', () => {
+    // JaS (Crits) tries each hit. Cancelling the crit leaves the normal for JaS (Normals): 0.
+    // Cancelling the normal first leaves the crit: 5. The lower result is 0.
+    const atker = new Model(0, 0, 3, 5, 0);
+    const r = calcDamage(atker, both, 1, 1, 0, 0);
+    expect(r.damage).toBe(0);
+    expect(r.survivingCritHits).toBe(0);
+    expect(r.survivingNormHits).toBe(0);
+  });
+
+  it('1 normal hit + 1 normal save is 0', () => {
+    // The only normal is cancelled before the save is spent, so nothing remains: 0.
+    const atker = new Model(0, 0, 3, 5, 0);
+    expect(calcDamage(atker, norms, 0, 1, 0, 1).damage).toBe(0);
+  });
+
+  it('drops the normal before saves, so two normal saves can still cancel a crit', () => {
+    // crit 2 < norm 5. 1 crit + 1 normal vs 2 normal saves.
+    // Cancel the normal first and the two saves cancel the crit: 0.
+    // Spending the saves first would use one on the normal and leave the crit for 2.
+    const atker = new Model(0, 0, 5, 2, 0);
+    expect(calcDamage(atker, norms, 1, 1, 0, 2).damage).toBe(0);
+  });
+
+  for (const withJas of [false, true]) {
+    it(`matches brute force for every 0-3 hits/saves split, JaS (Normals)${withJas ? ' and JaS (Crits)' : ''}`, () => {
+      expectMatchesBruteForce(withJas ? both : norms);
+    });
+  }
+});

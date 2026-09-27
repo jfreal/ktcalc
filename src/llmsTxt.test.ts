@@ -18,6 +18,17 @@ describe('public/llms.txt', () => {
     // The fight calculator is linked either as /?view=fight or its own /fight/ path.
     expect(llmsTxt).toMatch(/https:\/\/ktcalc\.com\/(\?view=fight|fight\/?)\)/);
   });
+
+  it('lists every /notes/ URL from the sitemap', () => {
+    const sitemap = fs.readFileSync(path.join(process.cwd(), 'public/sitemap.xml'), 'utf8');
+    const notesLocs = [...sitemap.matchAll(/<loc>(https:\/\/ktcalc\.com\/notes\/[^<]*)<\/loc>/g)].map(
+      (match) => match[1],
+    );
+    expect(notesLocs.length).toBeGreaterThan(0);
+    notesLocs.forEach((loc) => {
+      expect(llmsTxt).toContain(loc);
+    });
+  });
 });
 
 describe('public/index.html', () => {
