@@ -562,6 +562,32 @@ describe(handleDuelist.name + ' fires only once per fight', () => {
     handleDuelist(clonedDuelist, enemy.clone());
     expect(clonedDuelist.crits).toBe(1); // still no second parry
   });
+  it('only normals vs only crits does not spend a die or the once-per-fight flag', () => {
+    // A normal cannot cancel a crit. NormParry would still decrement chooser.norms
+    // and cancel nothing (enemy.norms is already 0), and the flag is set before the
+    // choice, so the free parry would be gone. Skip both.
+    const duelist = newFighterState(0, 2, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(2, 0, 99);
+
+    handleDuelist(duelist, enemy);
+
+    expect(duelist.norms).toBe(2);
+    expect(duelist.crits).toBe(0);
+    expect(enemy.crits).toBe(2);
+    expect(enemy.norms).toBe(0);
+    expect(duelist.hasDuelistParried).toBe(false);
+  });
+  it('only normals vs a Brutal enemy does not spend a die or the once-per-fight flag', () => {
+    // Brutal can only be parried by a crit, so normals-only has no legal parry.
+    const duelist = newFighterState(0, 2, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Strike, new Set<Ability>([Ability.Brutal]));
+
+    handleDuelist(duelist, enemy);
+
+    expect(duelist.norms).toBe(2);
+    expect(enemy.norms).toBe(2);
+    expect(duelist.hasDuelistParried).toBe(false);
+  });
 });
 
 describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, dueller', () => {
