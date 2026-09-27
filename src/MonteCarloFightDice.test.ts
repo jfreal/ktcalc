@@ -1,5 +1,6 @@
 import Model from 'src/Model';
 import Ability from 'src/Ability';
+import { calcFinalDiceProbs } from 'src/CalcEngineCommon';
 import { simulateFighterDice, mulberry32 } from 'src/MonteCarloFightDice';
 
 const numTrials = 100_000;
@@ -20,6 +21,19 @@ function averageDiceResults(model: Model, trials: number = numTrials, seed: numb
     avgCrits: totalCrits / trials,
     avgNorms: totalNorms / trials,
   };
+}
+
+function expectedFromExact(model: Model) {
+  const rows = calcFinalDiceProbs(model.toAttackerDieProbs(), model.numDice, model.reroll);
+  let mass = 0;
+  let expCrits = 0;
+  let expNorms = 0;
+  for (const row of rows) {
+    mass += row.prob;
+    expCrits += row.prob * row.crits;
+    expNorms += row.prob * row.norms;
+  }
+  return { rows, mass, expCrits, expNorms };
 }
 
 describe('simulateFighterDice basic dice probabilities', () => {
@@ -81,6 +95,35 @@ describe('simulateFighterDice rerolls', () => {
     const { avgCrits: avgCritsRel, avgNorms: avgNormsRel } = averageDiceResults(modelRel);
 
     expect(avgCritsRel + avgNormsRel).toBeGreaterThan(avgCritsBal + avgNormsBal - tolerance);
+  });
+
+  it('RerollOnes on a 1+ stat stays all successes and matches the exact engine', () => {
+    // withAlwaysNorm: every face succeeds and none crit, so rerolling a 1 stays a norm.
+    const alwaysNorm = new Model(2, 4, 3, 4).withAlwaysNorm().setProp('reroll', Ability.RerollOnes);
+    const alwaysNormBoth = alwaysNorm.withProp('reroll', Ability.RerollOnesPlusBalanced);
+    for (const model of [alwaysNorm, alwaysNormBoth]) {
+      const exact = expectedFromExact(model);
+      expect(exact.mass).toBeCloseTo(1, 12);
+      expect(exact.expCrits).toBeCloseTo(0, 12);
+      expect(exact.expNorms).toBeCloseTo(model.numDice, 12);
+      expect(exact.rows.every(row => Number.isFinite(row.prob) && row.prob > 0)).toBe(true);
+
+      for (let seed = 0; seed < 20; seed++) {
+        expect(simulateFighterDice(model, undefined, mulberry32(seed)))
+          .toStrictEqual({ crits: 0, norms: model.numDice });
+      }
+    }
+
+    // Crit on 6, hit on 1+: the rerolled 1 (a normal success) crits 1/6 of the time.
+    const critOnSix = new Model(6, 1, 1, 2).setProp('reroll', Ability.RerollOnes);
+    const exact = expectedFromExact(critOnSix);
+    expect(exact.mass).toBeCloseTo(1, 12);
+    expect(exact.expCrits).toBeCloseTo(6 * (7 / 36), 12);
+    expect(exact.expNorms).toBeCloseTo(6 * (29 / 36), 12);
+
+    const { avgCrits, avgNorms } = averageDiceResults(critOnSix);
+    expect(avgCrits).toBeCloseTo(6 * (7 / 36), 1);
+    expect(avgNorms).toBeCloseTo(6 * (29 / 36), 1);
   });
 
   it('RerollOnes rerolls only 1s', () => {

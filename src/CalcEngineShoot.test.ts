@@ -604,6 +604,33 @@ describe(calcDmgProbs.name + ', relentless', () => {
   });
 });
 
+describe(calcDmgProbs.name + ', mystic scry and punishing vs saves', () => {
+  it('mystic scry keeps the crit when one cover save and Piercing Crits 1 beat two normals', () => {
+    // 2 dice at 2+, never crit: 25/36 two norms, 10/36 one norm + one fail, 1/36 two fails.
+    // Two normals upgrade one to a crit (Piercing removes the cover) for 7.
+    // One norm and one fail: fail->norm is 6 raw but the cover leaves 3; norm->crit is 4 and
+    // Piercing Crits 1 removes the cover die, so 4 gets through. Two fails become one saved norm.
+    const atk = new Model(2, 2, 3, 4).setProp('lethal', 7).setProp('px', 1)
+      .setAbility(Ability.MysticScryBuff, true);
+    const def = new Model(1, 6).setProp('autoNorms', 1);
+
+    expect(avgDmg(atk, def)).toBeCloseTo((25 * 7 + 10 * 4) / 36, requiredPrecision);
+  });
+
+  it('punishing declines the locked norm when one normal save makes the crit line better', () => {
+    // 2 dice at 6+: 1/36 two crits, 10/36 one crit + one fail, 25/36 two fails.
+    // Norm 6 / crit 2, Rending, FailsToNorms 1, one always-normal save.
+    // Taking on the mixed roll locks {1c,1n}: the save blocks the norm and 2 gets through.
+    // Declining lets FailsToNorms + Rending make {2c}: one normal save cannot block a crit, so 4.
+    const atk = new Model(2, 6, 6, 2).setProp('failsToNorms', 1)
+      .setAbility(Ability.Punishing, true)
+      .setAbility(Ability.Rending, true);
+    const def = new Model(1).withAlwaysNorm();
+
+    expect(avgDmg(atk, def)).toBeCloseTo((1 * 4 + 10 * 4) / 36, requiredPrecision);
+  });
+});
+
 describe(calcDmgProbs.name + ', rending & starfire', () => {
   it('rending, 2 atk dice, probability 2 crits', () => {
     const atk = newTestAttacker(2).setAbility(Ability.Rending, true);
@@ -939,6 +966,76 @@ describe(calcDmgProbs.name + ', multiple rounds', () => {
       dmgHist.push(avgDmg(atk, def, numRounds));
       expect(dmgHist[dmgHist.length - 1]).toBeCloseTo(dmgHist[0] * numRounds, requiredPrecision);
     }
+  });
+});
+
+// Indomitus (defender): two or more failed saves discard one fail and turn another
+// into a normal save. One application, on any fail faces, including the Piercing Crits path.
+describe(calcDmgProbs.name + ', defender Indomitus', () => {
+  it('two fails become one normal save', () => {
+    // 2 always-normal hits vs 2 dice, save 4+ (crit 1/6, norm 2/6, fail 3/6).
+    // A normal or critical save cancels one of those hits. 36 equally likely face-pairs.
+    // Both fail is (3/6)*(3/6) = 9/36. Off, that deals 2*normDmg. On, those two fails
+    // become one normal save, so one hit remains (normDmg) and 2*normDmg is impossible.
+    //   Off: P(0)=9/36, P(normDmg)=18/36, P(2*normDmg)=9/36
+    //   On:  P(0)=9/36, P(normDmg)=27/36, P(2*normDmg)=0
+    const atk = newTestAttacker(2).withAlwaysNorm();
+    const defOff = new Model(2, 4);
+    const defOn = new Model(2, 4).setAbility(Ability.Indomitus);
+    const dn = atk.normDmg;
+
+    const off = calcDmgProbs(atk, defOff);
+    const on = calcDmgProbs(atk, defOn);
+
+    expect(off.get(0)).toBeCloseTo(9 / 36, requiredPrecision);
+    expect(off.get(dn)).toBeCloseTo(18 / 36, requiredPrecision);
+    expect(off.get(2 * dn)).toBeCloseTo(9 / 36, requiredPrecision);
+
+    expect(on.get(0)).toBeCloseTo(9 / 36, requiredPrecision);
+    expect(on.get(dn)).toBeCloseTo(27 / 36, requiredPrecision);
+    expect(on.get(2 * dn)).toBeUndefined();
+    expect(on.size).toBe(2);
+  });
+
+  it('does nothing when fewer than two dice can fail', () => {
+    // One defence die fails at most once, so Indomitus never fires and matches the ability off.
+    // Same 2 always-normal hits, save 4+: fail (3/6) leaves both hits; a save (3/6) cancels one.
+    const atk = newTestAttacker(2).withAlwaysNorm();
+    const defOff = new Model(1, 4);
+    const defOn = new Model(1, 4).setAbility(Ability.Indomitus);
+    const dn = atk.normDmg;
+
+    const off = calcDmgProbs(atk, defOff);
+    const on = calcDmgProbs(atk, defOn);
+
+    expect(on.get(2 * dn)).toBeCloseTo(3 / 6, requiredPrecision);
+    expect(on.get(dn)).toBeCloseTo(3 / 6, requiredPrecision);
+    expect(on.get(0)).toBeUndefined();
+    expect(on.size).toBe(2);
+    expect(on).toStrictEqual(off);
+  });
+
+  it('still converts two fails on the Piercing Crits save path', () => {
+    // Always-crit with Px 1 against 4 dice, save 4+. The crit takes the Px branch, which
+    // rolls 3 dice (not 4). One crit save or two normal saves cancel the hit.
+    // Indomitus adds one normal when a roll has two or more fails, so the only roll it
+    // newly saves is (0 crit, 1 norm, 2 fail): 3*(2/6)*(3/6)^2 = 54/216.
+    // Triple fail becomes one normal and still lets the crit through: 3^3/216 = 27/216.
+    //   Off: P(critDmg)=81/216. On: P(critDmg)=27/216.
+    // The non-Px branch (all 4 dice, Indomitus on) would be 3^4/1296 = 1/16, not 1/8.
+    const atk = newTestAttacker(1).withAlwaysCrit().setProp('px', 1);
+    const defOff = new Model(4, 4);
+    const defOn = new Model(4, 4).setAbility(Ability.Indomitus);
+    const dc = atk.critDmg;
+
+    const off = calcDmgProbs(atk, defOff);
+    const on = calcDmgProbs(atk, defOn);
+
+    expect(off.get(dc)).toBeCloseTo(81 / 216, requiredPrecision);
+    expect(off.get(0)).toBeCloseTo(1 - 81 / 216, requiredPrecision);
+    expect(on.get(dc)).toBeCloseTo(27 / 216, requiredPrecision);
+    expect(on.get(0)).toBeCloseTo(1 - 27 / 216, requiredPrecision);
+    expect(on.size).toBe(2);
   });
 });
 

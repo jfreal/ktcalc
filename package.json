@@ -40,6 +40,7 @@
     "source": "build",
     "include": [
       "/",
+      "/fight",
       "/help",
       "/rules/combat",
       "/rules/fight",

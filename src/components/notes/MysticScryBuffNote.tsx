@@ -161,9 +161,11 @@ const MysticScryBuffNote: React.FC = () => (
         a defender&apos;s Obscured if present;
       </li>
       <li>
-        scores each finished outcome by pre-save damage
-        (<code>crits &times; (critDmg + Devastating) + norms &times; normDmg</code>) and keeps the
-        highest, breaking ties toward the crit.
+        on a shoot, scores each finished outcome by its expected damage against that defender&apos;s
+        saves, cover, and Piercing, and keeps the highest. With no defender profile to score against
+        (and in a fight, which resolves by strikes and parries), it falls back to pre-save damage
+        (<code>crits &times; (critDmg + Devastating) + norms &times; normDmg</code>). Ties break toward
+        the crit.
       </li>
     </ol>
 
@@ -174,25 +176,21 @@ const MysticScryBuffNote: React.FC = () => (
       nothing, so the comparison naturally prefers adding a hit.
     </p>
 
+    <p>
+      Saves can flip the isolated table. Norm 3 / crit 4, one rolled normal and one fail: fail&rarr;norm
+      is 6 raw and norm&rarr;crit is 4, so raw damage keeps two normals. Against one cover save and
+      Piercing Crits 1, the cover blocks one of those normals (3 gets through). The crit line turns
+      Piercing Crits on, the cover die is removed with the defence dice, and 4 gets through. The
+      calculator takes the crit.
+    </p>
+
     <h3>What the choice does <em>not</em> weigh</h3>
 
     <p>
-      The comparison is pre-save damage, so two things are deliberately left out:
+      Feel No Pain is still left out. Concentrating damage into one crit loses less to FNP than
+      spreading it across two norms. The calculator does not account for that, beyond breaking an
+      exact pre-FNP tie toward the crit.
     </p>
-
-    <ul>
-      <li>
-        <strong>Defender saves and Piercing (Px).</strong> A crit is genuinely harder to cancel than a
-        norm, and crits trigger Piercing &mdash; advantages the raw damage score ignores. The
-        tie-break-toward-crit rule recovers part of this for free, but the calculator will not, say,
-        prefer a crit purely because the target has an excellent save.
-      </li>
-      <li>
-        <strong>Feel No Pain shape.</strong> Concentrating damage into one crit loses less to FNP than
-        spreading it across two norms, which again nudges toward crits on a tie but is not modeled
-        beyond that.
-      </li>
-    </ul>
 
     <p>
       <strong>Devastating (mwx) is</strong> counted &mdash; it is folded into the crit&apos;s value, so a
@@ -216,8 +214,8 @@ const MysticScryBuffNote: React.FC = () => (
         the most damage, so Rending and Obscured interactions are handled without a fixed rule.
       </li>
       <li>
-        The choice maximizes pre-save damage; saves and Piercing are not weighed, beyond breaking exact
-        ties toward the crit.
+        On a shoot, that damage is the expected total after the defender&apos;s saves, cover, and
+        Piercing. Feel No Pain is not weighed, beyond breaking exact ties toward the crit.
       </li>
     </ol>
 

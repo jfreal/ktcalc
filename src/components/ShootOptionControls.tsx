@@ -9,11 +9,12 @@ import {
   makeNumChangeHandler,
   span,
 } from 'src/Util';
-import IncDecSelect, { Props as IncProps } from 'src/components/IncDecSelect';
+import { Props as IncProps, propsToRows } from 'src/components/IncDecSelect';
 
 export interface Props {
   shootOptions: ShootOptions;
   changeHandler: Accepter<ShootOptions>;
+  idPrefix: string;
 }
 
 const ShootOptionControls: React.FC<Props> = (props: Props) => {
@@ -25,8 +26,7 @@ const ShootOptionControls: React.FC<Props> = (props: Props) => {
     new IncProps('Rounds',        opts.numRounds,                 span(1, 9), numHandler('numRounds')),
   ];
 
-  const paramElems = params.map(p =>
-    <Row key={p.id}><Col className='pr-0'><IncDecSelect {...p}/></Col></Row>);
+  const paramElems = propsToRows(params, props.idPrefix);
 
   return (
     <Container style={{width: '310px', maxWidth: '100%'}}>
@@ -34,7 +34,7 @@ const ShootOptionControls: React.FC<Props> = (props: Props) => {
 
         <Col>
           <Container className='p-0'>
-            {paramElems.slice(paramElems.length / 2)}
+            {paramElems}
           </Container>
         </Col>
       </Row>
