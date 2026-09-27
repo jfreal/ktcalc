@@ -93,7 +93,7 @@ If you **don't retain any critical successes**, you can change **one of your nor
 
 **Important:** The Devastating and Piercing Crits weapon rules still take effect, but **Punishing and Rending don't**.
 
-**Calculator implementation:** Severe is evaluated after Punishing, so Punishing only triggers from natural crits. Rending is explicitly blocked when Severe triggers.
+**Calculator implementation:** Severe is evaluated after Punishing, so Punishing only triggers from natural crits. Rending is explicitly blocked when Severe triggers. With the KT2021 Waaagh ploy and three or more normals (no crits), Severe resolves before Waaagh so both land; with exactly two normals Waaagh goes first.
 
 ---
 

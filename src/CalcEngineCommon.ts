@@ -793,6 +793,27 @@ function resolveAfterPunishing(
     }
   }
 
+  // Severe can fire only while no crit has been retained. Waaagh promotes a normal into a
+  // crit, which spends that window. When both are on, nothing is a crit yet, and three or
+  // more normals are in hand, resolve Severe first: it leaves Waaagh two normals, so both
+  // land. With exactly two normals Severe would consume the normal Waaagh needs (and, with
+  // Rending, would also block the promotion Waaagh's crit would have seeded), so Waaagh
+  // stays first. The two orders tie when nothing else promotes afterward.
+  // Track if Severe triggered - Punishing and Rending don't work with Severe
+  let severeTriggered = false;
+  const applySevere = () => {
+    if (abilities.has(Ability.Severe) && norms > 0 && crits === 0) {
+      // Severe "changes" a normal success, so it may take an already-retained one
+      crits++;
+      norms--;
+      retainedNorms = Math.max(0, retainedNorms - 1);
+      severeTriggered = true;
+    }
+  };
+  if (abilities.has(Ability.NormToCritIfAtLeastTwoNorms) && norms >= 3) {
+    applySevere();
+  }
+
   if (abilities.has(Ability.NormToCritIfAtLeastTwoNorms)) {
     if (norms >= 2) {
       crits++;
@@ -805,17 +826,7 @@ function resolveAfterPunishing(
   norms += actualFailToNormPromotions;
   fails -= actualFailToNormPromotions;
 
-  // Track if Severe triggered - Punishing and Rending don't work with Severe
-  let severeTriggered = false;
-  if (abilities.has(Ability.Severe)) {
-    if (norms > 0 && crits === 0) {
-      // Severe "changes" a normal success, so it may take an already-retained one
-      crits++;
-      norms--;
-      retainedNorms = Math.max(0, retainedNorms - 1);
-      severeTriggered = true;
-    }
-  }
+  applySevere();
 
   // NormsToCrits models "retain a normal success as a critical success instead", so it can only
   // take a norm that came off the dice - not a cover save / Accurate / Punishing retention.
