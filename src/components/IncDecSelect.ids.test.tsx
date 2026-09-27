@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import FightSection from 'src/components/FightSection';
 import ShootSection from 'src/components/ShootSection';
 
@@ -14,15 +15,16 @@ class ResizeObserverStub {
 // with getElementById, which returns the first match, including one inside
 // display:none.
 function renderCalculators() {
+  // The share hooks inside both sections read the router, as they do in the app.
   return render(
-    <>
+    <MemoryRouter>
       <div data-testid="shoot" style={{ display: 'none' }}>
         <ShootSection isActive={false} />
       </div>
       <div data-testid="fight" style={{ display: 'block' }}>
         <FightSection isActive={false} />
       </div>
-    </>,
+    </MemoryRouter>,
   );
 }
 
