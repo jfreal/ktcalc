@@ -6,6 +6,13 @@
 - On a shoot, each candidate is scored with the shot's own damage resolution against that defender's saves, cover, and Piercing. Defence dice, fights, and callers with no defender still rank by raw damage (a critical save counting as two normal saves on defence). Accurate's pre-roll choice is unchanged. Feel No Pain is still not weighed.
 - The in-app notes and the retained-dice rules page now say so.
 
+## September 2026 - Notes panels match the controls
+
+- Fight and Shoot Notes are now built from the same control lists the cards render, so a starred or geared rule cannot be missing from the panel (or listed when it is not a control).
+- Fight Notes now include Punishing, Duelist, both Just a Scratch boxes, Half Damage, NormsToCrits, FailsToNorms, and Feel No Pain. Close Assault and Waaagh are no longer their own Fight notes: they are values of the Niche Ability dropdown, and that note now describes them.
+- Shoot Notes now include Punishing, FailsToNorms, and Indomitus. Punishing stays under Basic, because the attacker checkbox is always visible. The Average Damage note is unchanged; it explains the results figure, not a control.
+- Defender Just a Scratch hovers use the same note text as the Notes panel.
+
 ## September 2026 - Durable removed
 
 - Durable no longer takes 1 damage off the first critical hit, so the calculator no longer models it. The Fight calculator's Durable checkbox is gone, and neither Shoot nor Fight applies the reduction.
