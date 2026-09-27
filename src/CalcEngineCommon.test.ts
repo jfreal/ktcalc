@@ -2,7 +2,9 @@ import DieProbs from 'src/DieProbs';
 import FinalDiceProb from 'src/FinalDiceProb';
 import * as Common from 'src/CalcEngineCommon';
 import Ability from 'src/Ability';
+import Model from 'src/Model';
 import { calcMultiRoundDamage } from 'src/CalcEngineCommon';
+import { hitScorerForDefender } from 'src/CalcEngineShootInternal';
 import { weightedAverage } from 'src/Util';
 
 export const requiredPrecision = 10;
@@ -343,6 +345,46 @@ describe(Common.calcFinalDiceProb.name, () => {
     // have wrongly produced {2c,0n}.
     const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, rendingAndMysticScryBuff, 3, 4);
     expectClose(actual, pc * pf * 2, 1, 1);
+  });
+
+  // Raw damage keeps two normals (6 > 4). One cover save and Piercing Crits 1 invert that:
+  // the two normals lose one to the cover (3), while the crit turns Piercing on, the cover die
+  // goes with the defence dice, and 4 gets through.
+  it('mysticScryBuff {0c,1n,1f} => {1c,0n} when one cover save and Piercing Crits 1 beat two normals', () => {
+    const atk = new Model(2, 4, 3, 4).setProp('px', 1).setAbility(Ability.MysticScryBuff, true);
+    const def = new Model(1, 6).setProp('autoNorms', 1);
+    const actual = Common.calcFinalDiceProb(
+      dieProbs, 0, 1, 1, Ability.None, 0, 0, 0, 0, justMysticScryBuff, 3, 4,
+      hitScorerForDefender(atk, def),
+    );
+    expectClose(actual, pn * pf * 2, 1, 0);
+  });
+
+  it('mysticScryBuff shoot distribution keeps that crit line', () => {
+    // 2 dice at 2+, never crit. The 1-norm 1-fail roll is the only one whose raw score
+    // (two normals) disagrees with damage after the cover save and Piercing Crits.
+    const atk = new Model(2, 2, 3, 4).setProp('lethal', 7).setProp('px', 1)
+      .setAbility(Ability.MysticScryBuff, true);
+    const def = new Model(1, 6).setProp('autoNorms', 1);
+    const probs = Common.calcFinalDiceProbsForAttacker(atk, def, hitScorerForDefender(atk, def));
+    expect(probs.find(p => p.crits === 0 && p.norms === 2)).toBeUndefined();
+    const critLine = probs.find(p => p.crits === 1 && p.norms === 0);
+    expect(critLine).toBeDefined();
+    expect(critLine!.prob).toBeCloseTo(2 * (5 / 6) * (1 / 6), requiredPrecision);
+  });
+
+  // Take locks a normal: raw 6+2=8 beats decline's two crits at 4. One normal save blocks that
+  // normal and cannot block a crit, so declining deals 4 and taking deals 2.
+  it('punishing declines {1c,0n,1f} => {2c,0n} when one normal save inverts the raw scores', () => {
+    const atk = new Model(2, 6, 6, 2).setProp('failsToNorms', 1)
+      .setAbility(Ability.Punishing, true)
+      .setAbility(Ability.Rending, true);
+    const def = new Model(1).withAlwaysNorm();
+    const actual = Common.calcFinalDiceProb(
+      dieProbs, 1, 0, 1, Ability.None, 0, 0, 1, 0, punishingAndRending, 6, 2,
+      hitScorerForDefender(atk, def),
+    );
+    expectClose(actual, pc * pf * 2, 2, 0);
   });
 });
 

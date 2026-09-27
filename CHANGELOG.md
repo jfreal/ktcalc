@@ -1,5 +1,11 @@
 # Changelog
 
+## September 2026 - Mystic Scry and Punishing weigh saves and Piercing
+
+- **Mystic Scry and Punishing no longer pick the higher raw-damage line when a defender is in the shoot.** One rolled normal and one fail at 3/4 damage used to keep two normals (raw 6 beats a crit's 4). Against one cover save and Piercing Crits 1, the cover blocks one of those normals (3 through) while the crit removes the cover die and 4 gets through. Punishing's take-versus-decline choice used the same blind score, so it could lock a normal that a save made worse than declining.
+- On a shoot, each candidate is scored with the shot's own damage resolution against that defender's saves, cover, and Piercing. Defence dice, fights, and callers with no defender still rank by raw damage (a critical save counting as two normal saves on defence). Accurate's pre-roll choice is unchanged. Feel No Pain is still not weighed.
+- The in-app notes and the retained-dice rules page now say so.
+
 ## September 2026 - Notes panels match the controls
 
 - Fight and Shoot Notes are now built from the same control lists the cards render, so a starred or geared rule cannot be missing from the panel (or listed when it is not a control).
