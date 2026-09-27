@@ -156,7 +156,7 @@ export const Duelist = new Note(
 );
 export const HalfDamageFirstStrike = new Note(
   `Half Dmg 1st Strike`,
-  `First strike damage is halved (rounded up) to a minimum of 2.`,
+  `First strike damage is halved and rounded up, but never below 2 and never above the strike, so a 2 stays 2 and a 0 or 1 is unchanged.`,
 );
 export const Dummy = new Note(
   ``,
