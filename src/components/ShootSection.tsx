@@ -92,6 +92,7 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
         <Col xs={12} lg={6} className='p-1'>
           <Panel title="Situation 1" fullWidth bodyScrollX>
             <ShootSituation
+              idPrefix="s1"
               attacker={attacker1}
               setAttacker={setAttacker1}
               defender={defender1}
@@ -110,6 +111,7 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
             bodyScrollX
           >
             <ShootSituation
+              idPrefix="s2"
               attacker={attacker2}
               setAttacker={setAttacker2}
               defender={defender2}

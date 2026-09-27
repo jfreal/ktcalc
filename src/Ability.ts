@@ -21,7 +21,6 @@ export enum Ability {
     JustAScratch = "JustAScratch", // cancel one attack die just before damage; both shoot and fight; shoot picks the die that minimizes damage
     JustAScratchNorms = "JustAScratchNorms", // cancel one normal hit just before damage
     HalfDamageFirstStrike = "HalfDamageFirstStrike", // first strike damage is halved (rounded up, minimum 2)
-    Durable = "Durable2021", // one crit hit does 1 less damage, to minimun of 3
     ObscuredTarget = "ObscuredTarget", // all crits become norms; can't do crit-triggered abilities; discard a success at the end
     PuritySeal = "PuritySeal", // 2024; if at least 2 dice fail, discard one fail and change another fail to a normal success; attack only. Rule strictly requires two unmodified 1s; implementation triggers on any 2 fails.
     MysticScryBuff = "MysticScryBuff", // attack only; retain one fail as a norm OR one norm as a crit, attacker's choice (best per damage). In-game: the "Mystic Scry" ability.
@@ -29,7 +28,7 @@ export enum Ability {
 
     // fight stuff relevant to 2024
     Brutal = "Brutal", // opponent can only parry with crit
-    Shock = "Shock", // "the first time you strike with a crit, also discard one of opponent's unresolved norms"
+    Shock = "Shock", // first crit strike discards one unresolved enemy normal, or a crit if there are none
 
     // fight stuff relevant to only 2021 or I have not checked for 2024
     StormShield2021 = "StormShield2021", // each parry cancels two successes

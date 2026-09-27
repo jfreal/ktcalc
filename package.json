@@ -40,12 +40,14 @@
     "source": "build",
     "include": [
       "/",
+      "/fight",
       "/help",
       "/rules/combat",
       "/rules/fight",
       "/rules/weapon",
       "/rules/retained-vs-modified",
       "/rules/cover-saves",
+      "/rules/weapon-balance",
       "/notes/lethal-relentless",
       "/notes/mystic-scry-buff",
       "/notes/punishing"

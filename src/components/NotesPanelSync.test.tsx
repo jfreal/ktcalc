@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 import Note, * as N from 'src/Notes';
 import Ability, { mutuallyExclusiveFightAbilities } from 'src/Ability';
@@ -63,18 +64,18 @@ function namesInPanelOrder(notes: readonly Note[], advancedNotes: ReadonlySet<No
 
 describe('notes panels follow the controls', () => {
   it('fight card hovers are exactly the fighter note catalog', () => {
-    const { container } = render(<FighterControls attacker={new Model()} changeHandler={() => {}} />);
+    const { container } = render(<FighterControls idPrefix="fa" attacker={new Model()} changeHandler={() => {}} />);
     showAdvanced(container);
     expectHoversMatch(container, fighterNotedControls);
   });
 
   it('shoot attacker and defender hovers are exactly their note catalogs', () => {
-    const attacker = render(<AttackerControls attacker={new Model()} changeHandler={() => {}} />);
+    const attacker = render(<AttackerControls idPrefix="s1-atk" attacker={new Model()} changeHandler={() => {}} />);
     showAdvanced(attacker.container);
     expectHoversMatch(attacker.container, attackerNotedControls);
     attacker.unmount();
 
-    const defender = render(<DefenderControls defender={Model.basicDefender()} changeHandler={() => {}} />);
+    const defender = render(<DefenderControls idPrefix="s1-def" defender={Model.basicDefender()} changeHandler={() => {}} />);
     showAdvanced(defender.container);
     expectHoversMatch(defender.container, defenderNotedControls);
   });
@@ -93,7 +94,6 @@ describe('notes panels follow the controls', () => {
       N.Duelist,
       N.JustAScratch2021,
       N.JustAScratchNorms,
-      N.Durable2021,
       N.HalfDamageFirstStrike,
       N.NormsToCrits,
       N.FailsToNorms,
@@ -127,7 +127,7 @@ describe('notes panels follow the controls', () => {
   });
 
   it('renders the derived fight and shoot Notes panels', () => {
-    const fight = render(<FightSection isActive={false} />);
+    const fight = render(<MemoryRouter><FightSection isActive={false} /></MemoryRouter>);
     const fightNotes = notesPanelBody();
     const fightDerived = notesFromControls(fighterNotedControls);
     expect(boldNoteNames(fightNotes)).toEqual(namesInPanelOrder(fightDerived.notes, fightDerived.advancedNotes));
@@ -138,7 +138,7 @@ describe('notes panels follow the controls', () => {
     expect(fightNotes.textContent).toContain('All strategies will do certain no-downside actions');
     fight.unmount();
 
-    const shootView = render(<ShootSection isActive={false} />);
+    const shootView = render(<MemoryRouter><ShootSection isActive={false} /></MemoryRouter>);
     const shootNotes = notesPanelBody();
     const shoot = notesFromControls([...attackerNotedControls, ...defenderNotedControls]);
     expect(boldNoteNames(shootNotes)).toEqual([

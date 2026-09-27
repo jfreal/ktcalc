@@ -45,14 +45,16 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
 
   const aFirst = fightOptions.firstFighter === 'A';
   const [fighter1WoundProbs, fighter2WoundProbs] = React.useMemo(
-    () => calcRemainingWounds(
-      aFirst ? fighterA : fighterB,
-      aFirst ? fighterB : fighterA,
-      aFirst ? fightOptions.strategyFighterA : fightOptions.strategyFighterB,
-      aFirst ? fightOptions.strategyFighterB : fightOptions.strategyFighterA,
-      fightOptions.numRounds,
-    ),
-    [fighterA, fighterB, fightOptions, aFirst]);
+    () => isActive
+      ? calcRemainingWounds(
+          aFirst ? fighterA : fighterB,
+          aFirst ? fighterB : fighterA,
+          aFirst ? fightOptions.strategyFighterA : fightOptions.strategyFighterB,
+          aFirst ? fightOptions.strategyFighterB : fightOptions.strategyFighterA,
+          fightOptions.numRounds,
+        )
+      : [new Map<number, number>(), new Map<number, number>()],
+    [fighterA, fighterB, fightOptions, aFirst, isActive]);
   const fighterAWoundProbs = aFirst ? fighter1WoundProbs : fighter2WoundProbs;
   const fighterBWoundProbs = aFirst ? fighter2WoundProbs : fighter1WoundProbs;
 
@@ -67,12 +69,12 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
       <Row>
         <Col xs={12} lg={6} className={Util.centerHoriz + ' p-1'}>
           <Panel title="Fighter A" fullWidth bodyScrollX>
-            <FighterControls attacker={fighterA} changeHandler={setFighterA} />
+            <FighterControls idPrefix="fa" attacker={fighterA} changeHandler={setFighterA} />
           </Panel>
         </Col>
         <Col xs={12} lg={6} className={Util.centerHoriz + ' p-1'}>
           <Panel title="Fighter B" fullWidth bodyScrollX>
-            <FighterControls attacker={fighterB} changeHandler={setFighterB} />
+            <FighterControls idPrefix="fb" attacker={fighterB} changeHandler={setFighterB} />
           </Panel>
         </Col>
       </Row>
@@ -80,6 +82,7 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
         <Col className='p-1'>
           <Panel title="Fight Options" fullWidth bodyScrollX>
             <FightOptionControls
+              idPrefix="fo"
               fightOptions={fightOptions}
               changeHandler={setFightOptions}
             />

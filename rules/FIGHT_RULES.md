@@ -70,17 +70,23 @@ When a fighter decides to **strike**, the **default** is to spend a **crit first
 one, otherwise a normal (`FighterState.nextStrike`). Striking crit-first front-loads your
 biggest die, which matters when you might not survive to spend every success.
 
-There is one exception, handled by `preferredStrikeChoice`. When you hold **both** a crit and a
-norm **and the enemy has no crits**, the enemy can only parry your **normal** (a normal parry
-can't touch a crit). Striking the **norm first** forces it through before the enemy can parry
-it, while your crit stays unparryable — both land. Striking crit-first instead would leave a
-lone normal sitting for the enemy to parry away.
+`preferredStrikeChoice` compares **norm-first** when you hold **both** a crit and a normal and
+any of these is true:
 
-Norm-first is *not* always better, though: against a **striking** enemy in a death-race you may
-die before spending your crit, so front-loading it (crit-first) deals more. The engine
-therefore **simulates both orders** against the enemy's actual strategy and keeps the one that
-better serves the chooser's goal (less enemy health for Strike / Max Dmg, more of your own for
-Min Dmg), defaulting to crit-first on a tie.
+- the enemy has **no crits**, so a normal parry can cancel your normal but not your crit.
+  Striking the **norm first** forces it through before they can parry it, while your crit stays
+  unparryable. Crit-first would leave a lone normal for them to parry away.
+- the enemy **zeros or halves your first strike** (Just a Scratch, or Half Damage on the first
+  strike). Leading with the cheaper die can leave the bigger one intact. An enemy crit does
+  not skip this comparison: their crit may still parry yours if you lead with the normal.
+- your **normal out-damages your crit**. Hammerhand's +1 lands on whichever die is first, so
+  it keeps that gap.
+
+Norm-first is *not* always better: against a **striking** enemy in a death-race you may die
+before spending the second die, so front-loading the bigger hit deals more. The engine
+**simulates both orders** against the enemy's actual strategy and keeps the one that better
+serves the chooser's goal (less enemy health for Strike / Max Dmg, more of your own for Min
+Dmg), defaulting to crit-first on a tie.
 
 ---
 
@@ -89,14 +95,20 @@ Min Dmg), defaulting to crit-first on a tie.
 On each turn, `calcDieChoice` decides in this order. The first rule that applies wins:
 
 1. **Enemy has no successes** → **strike** (a parry would cancel nothing).
-2. **Lethal strike** → **strike** if this strike's damage would kill the enemy outright.
+2. **Lethal strike estimate** → resolve the next strike on copies of both fighters, including
+   Just a Scratch and other damage prevention, and **strike** if the target reaches zero wounds.
+   Random prevention (FNP / Saintly Relics) uses expected values, so this remains a heuristic,
+   not a guarantee of a kill. The estimate changes neither the live fighters nor their RNG streams.
    Also forced to strike if the enemy weapon is **Brutal** and you have no crits (your
    normals can't parry it, so they may as well strike).
-3. **Shock strike** → if you have **Shock**, haven't crit-struck yet, have a crit, and the
-   enemy has **no crits**, you must **strike** now (Shock cancels an enemy normal as a side
-   effect). The die order follows the strategy rule below: for a mixed crit+norm hand under
-   Strike / Max Dmg / Min Dmg, `preferredStrikeChoice` may still strike norm-first; otherwise
-   the shocking crit lands immediately.
+3. **Shock strike** → if you have **Shock**, haven't crit-struck yet, and have a crit, you must
+   **strike** now when that strike's discard removes an enemy success: the enemy has **no crits**
+   (Shock discards a normal) **or no normals** (Shock discards a crit). A Parry fighter would
+   otherwise keep parrying a crit-only opponent and never land the discard. The die order follows
+   the strategy rule below: for a mixed crit+norm hand under Strike / Max Dmg / Min Dmg,
+   `preferredStrikeChoice` may still strike norm-first against a norms-only enemy; otherwise the
+   shocking crit lands immediately. When the enemy still holds both crits and normals, Shock would
+   only discard a normal, so this shortcut does not override a crit parry.
 4. **Awesome parry** → if you can parry the enemy's **last** success and still kill the enemy
    with what remains, **parry** (`calcParryForLastEnemySuccessThenKillEnemy`).
 5. **By strategy**:
@@ -111,7 +123,7 @@ Whenever a rule above resolves to **strike** under the **Strike**, **Max Dmg**, 
 strategies, the actual die is chosen by `preferredStrikeChoice` (crit-first by default,
 norm-first to deny a normal parry or to feed an enemy's first-strike negation — see
 [Strike order](#strike-order-crit-first-except-to-deny-a-normal-parry)). The one exception is the
-**lethal-strike** rule (#2), which always strikes crit-first to land the killing blow.
+**lethal-strike** rule (#2), which strikes crit-first when that strike is estimated to kill.
 
 ---
 
@@ -175,16 +187,17 @@ This was previously a gap — the engine always struck crit-first — and is now
 - the attacker holds a **mix of crits and norms**, and
 - the defender is **parrying with normals only** (no crits to parry your crit),
 
-striking norm-first pushes more damage than crit-first (Scenario A). The engine detects this
-shape and chooses the order by **simulating both lines** against the enemy's actual strategy, so
-it picks norm-first only when it genuinely deals more — and stays crit-first in a death-race,
-where front-loading the bigger die wins (Scenario C-adjacent: the enemy is *striking*, not
-parrying). Because the decision runs through the real resolution path, first-strike effects
-(Hammerhand's +1, Just a Scratch, Durable, Murderous Entrance) are accounted for automatically.
+striking norm-first pushes more damage than crit-first (Scenario A). The same simulation also
+runs when the enemy **does** hold a crit, if they zero or halve the first strike or if the
+normal out-damages the crit. It picks norm-first only when that order genuinely deals more —
+and stays crit-first in a death-race, where front-loading the bigger die wins, or on a tie.
+Because the decision runs through the real resolution path, first-strike effects (Hammerhand's
++1, Just a Scratch, Murderous Entrance) are accounted for automatically.
 
 Regression coverage lives in `CalcEngineFight.test.ts` under
-*"calcDieChoice, norm-first to deny a normal parry"*.
+*"calcDieChoice, norm-first to deny a normal parry"* and
+*"both-orders simulation still runs when the enemy holds a crit"*.
 
 ---
 
-*Last updated: June 2026*
+*Last updated: September 2026*

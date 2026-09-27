@@ -45,6 +45,7 @@ import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 export interface Props {
   attacker: Model;
   changeHandler: Accepter<Model>;
+  idPrefix: string;
 }
 
 export type FighterParamId =
@@ -95,7 +96,6 @@ export const fighterAdvancedCheckboxes: readonly AbilityCheckbox[] = [
   { note: N.Duelist, ability: Ability.Duelist },
   { note: N.JustAScratch2021, ability: Ability.JustAScratch },
   { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
-  { note: N.Durable2021, ability: Ability.Durable },
   { note: N.HalfDamageFirstStrike, ability: Ability.HalfDamageFirstStrike },
 ];
 
@@ -168,7 +168,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
       case 'failsToNorms':
         return new IncProps(spec.label, atk.failsToNorms, xspan(1, 9), numHandler('failsToNorms'));
       case 'fnp':
-        return new IncProps(spec.label, atk.fnp + '+', xspan(6, 2, '+'), numHandler('fnp'));
+        return new IncProps(spec.label, atk.fnp + '+', xspan(6, 4, '+'), numHandler('fnp'));
       case 'relics':
         return makeIncDecPropsFromLookup(spec.label, atk, props.changeHandler, 'saintlyRelics', relicModeToLabel);
       default: {
@@ -192,8 +192,8 @@ const FighterControls: React.FC<Props> = (props: Props) => {
 
   const [paramsCol0, paramsCol1] = requiredAndOptionalItemsToTwoCols(
     basicParams, advancedParamsToShow);
-  const elemsCol0 = propsToRows(paramsCol0);
-  const elemsCol1 = propsToRows(paramsCol1);
+  const elemsCol0 = propsToRows(paramsCol0, props.idPrefix);
+  const elemsCol1 = propsToRows(paramsCol1, props.idPrefix);
 
   const allCheckboxes = [
     ...fighterBasicCheckboxes.map(box => ({ box, advanced: false })),
