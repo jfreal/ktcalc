@@ -11,6 +11,9 @@ import * as T from 'src/theme';
 import { clone } from 'lodash';
 import Note, * as N from 'src/Notes';
 import NotesList from 'src/components/NotesList';
+import { attackerNotedControls } from 'src/components/AttackerControls';
+import { defenderNotedControls } from 'src/components/DefenderControls';
+import { notesFromControls } from 'src/components/controlNotes';
 import { ShootSituation } from './ShootSituation';
 import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
@@ -24,6 +27,16 @@ import { useShareContext } from 'src/context/ShareContext';
 interface ShootSectionProps {
   isActive: boolean;
 }
+
+// Control notes come from the attacker and defender catalogs those panels render. A rule that is
+// basic on either panel stays in Basic (Punishing and Reroll are always visible on one side).
+const shootControlNotes = notesFromControls([
+  ...attackerNotedControls,
+  ...defenderNotedControls,
+]);
+// AvgDamageUnbounded explains the results "Average Damage" figure. It is not a control.
+const notes: Note[] = [N.AvgDamageUnbounded, ...shootControlNotes.notes];
+const advancedNotes = shootControlNotes.advancedNotes;
 
 const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
   // Load initial state from URL if present
@@ -66,40 +79,6 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
     setDefender2(clone(defender1));
     setShootOptions2(clone(shootOptions1));
   };
-
-  const notes: Note[] = [
-    N.AvgDamageUnbounded,
-    N.Reroll,
-    N.Rending,
-    N.Severe,
-    N.ObscuredTarget,
-    N.AutoNorms,
-    N.AutoCrits,
-    N.CoverNormSaves,
-    N.CoverCritSaves,
-    N.NormsToCrits,
-    N.PuritySeal,
-    N.MysticScryBuff,
-    N.CloseAssault2021,
-    N.HardyX,
-    N.FeelNoPain,
-    N.SaintlyRelics,
-    N.JustAScratch2021,
-    N.JustAScratchNorms,
-  ];
-  // Rules whose control only appears under the attacker's or defender's "Advanced" checkbox.
-  // Keep in sync with AttackerControls.advancedParams and DefenderControls.advancedParams.
-  const advancedNotes = new Set<Note>([
-    N.AutoCrits,
-    N.CoverCritSaves,
-    N.NormsToCrits,
-    N.PuritySeal,
-    N.MysticScryBuff,
-    N.CloseAssault2021,
-    N.HardyX,
-    N.FeelNoPain,
-    N.SaintlyRelics,
-  ]);
 
   return (
     <Container fluid style={{maxWidth: '1320px', margin: '0 auto'}}>
