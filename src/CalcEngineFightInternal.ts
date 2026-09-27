@@ -181,7 +181,7 @@ export function resolveFight(
     && currentGuy.currentWounds > 0 && nextGuy.currentWounds > 0)
   {
     // used to have a `if(oneGuy out of successes){ oneGuy.applyDmg(otherGuy.totalDmg())); }`
-    // but it would be painful to make that handle Durable and other abilities
+    // but it would be painful to make that handle first-strike and other abilities
 
     if(currentGuy.crits + currentGuy.norms > 0) {
       const choice = calcDieChoice(currentGuy, nextGuy);
@@ -286,13 +286,17 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
     return chooser.nextStrike();
   }
 
-  // if can shock enemy (crit strike that also cancels an enemy NORM success),
-  // and enemy doesn't have any crit successes, then a shocking crit strike is usually right.
-  // BUT when we also hold a norm and are trying to maximize damage, striking the norm first can
-  // be better: the enemy's normal parry can't touch our crit, so leading with the norm pushes it
-  // past the parry while the crit (and its shock) still lands on a later turn. Defer to
-  // preferredStrikeChoice in that mixed-dice case; otherwise take the crit strike now.
-  if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0 && enemy.crits === 0) {
+  // Shock's first crit strike discards one unresolved enemy normal, or a crit if they have
+  // no normals. Force that strike when the discard removes a success they would otherwise
+  // keep: no enemy crits (the discard hits a normal) or no enemy normals (the discard hits
+  // a crit). A Parry fighter would otherwise keep parrying a crit-only opponent and never
+  // land the discard. When we also hold a norm and are maximizing damage against a norms-only
+  // enemy, striking the norm first can still be better — the enemy's normal parry can't touch
+  // our crit — so strategyStrike defers to preferredStrikeChoice in that mixed-dice case.
+  // When the enemy still holds both crits and normals, Shock would only discard a normal, so
+  // this shortcut does not override a crit parry.
+  if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0
+    && (enemy.crits === 0 || enemy.norms === 0)) {
     return strategyStrike(chooser, enemy);
   }
 
@@ -367,7 +371,9 @@ export function resolveDieChoice(
           dmg++;
         }
         if(enemy.profile.abilities.has(Ability.HalfDamageFirstStrike)) {
-          dmg = Math.max(2, Math.ceil(dmg / 2));
+          // Halved and rounded up, but never below 2 and never above the strike itself.
+          // A 2 stays 2 (half would be 1). A 0 or 1 is already at or under that floor.
+          dmg = dmg <= 2 ? dmg : Math.ceil(dmg / 2);
         }
       }
       chooser.hasStruck = true;
@@ -400,12 +406,16 @@ export function resolveDieChoice(
   }
 
   if(choice === FightChoice.CritStrike) {
-    let critDmgAfterPossibleDurable = chooser.nextCritDmgWithDurableAndWithoutHammerhand(enemy);
-    applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable, false);
+    applyDmgWithFirstStrikeHandling(chooser.profile.critDmg, false);
     chooser.crits--;
 
     if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck) {
-      enemy.norms = Math.max(0, enemy.norms - 1); // shock ability cancels an enemy norm success
+      // First crit strike discards one unresolved normal, or a crit if there are none.
+      if(enemy.norms > 0) {
+        enemy.norms--;
+      } else if(enemy.crits > 0) {
+        enemy.crits--;
+      }
     }
 
     if (
@@ -517,7 +527,7 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
     // Estimate the chooser's remaining damage by cloning the fighters, applying
     // the parry, then striking out the rest through the real resolution path.
     // This keeps resolveDieChoice the single source of truth for first-strike
-    // handling (JaS Crits, JaS Normals, Hammerhand, Durable, etc.) instead of
+    // handling (JaS Crits, JaS Normals, Hammerhand, etc.) instead of
     // re-deriving it here. The clones are estimates (see asEstimate above), so
     // Feel No Pain and Saintly Relics are applied as expected values — the enemy
     // surviving on Feel No Pain is exactly what decides whether this

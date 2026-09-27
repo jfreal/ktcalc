@@ -1,5 +1,15 @@
 # Changelog
 
+## September 2026 - Durable removed
+
+- Durable no longer takes 1 damage off the first critical hit, so the calculator no longer models it. The Fight calculator's Durable checkbox is gone, and neither Shoot nor Fight applies the reduction.
+- Share links that still carry Durable (`dur`) load without it. Every other ability in the link is unchanged.
+
+## September 2026 - Fight Feel No Pain thresholds match Shoot
+
+- Limited the Fight calculator's Feel No Pain options to 4+, 5+, and 6+ (plus off), matching the shooting defender and `rules/COMBAT_RULES.md`. Previously Fight also offered 2+ and 3+.
+- Share links that still carry a Fight Feel No Pain of 2+ or 3+ now decode as off. 4+, 5+, and 6+ are unchanged.
+
 ## July 2026 - Optional rules are now optional (Punishing, Accurate), and a Fight lookahead RNG fix
 
 - **Punishing is no longer forced.** The rule is "you *can* retain one of your fails as a normal success", and taking it isn't always right: the norm it produces is retained, so it can't be promoted afterwards. With 1 crit, 1 fail, Rending and FailsToNorms 1, taking it scored 7 damage where declining scores 8 (FailsToNorms leaves the fail *promotable*, Rending promotes it). Enabling an optional ability could therefore *lower* reported damage. The engine now resolves both lines and keeps the better, the same way Mystic Scry already scored a "decline"; ties keep the retention, so every roll where nothing else wants the fail is unchanged.

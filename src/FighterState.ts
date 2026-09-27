@@ -2,7 +2,6 @@ import Model from "src/Model";
 import FightStrategy from 'src/FightStrategy';
 import FightChoice from "src/FightChoice";
 import Ability from "./Ability";
-import { MinCritDmgAfterDurable } from "./KtMisc";
 import { RngFunction } from "src/MonteCarloFightDice";
 import { maxRelicIgnoresPerBattle, relicDiceCount, relicIgnoreProb } from "src/SaintlyRelics";
 
@@ -161,24 +160,11 @@ export default class FighterState {
     return this.possibleDmg(this.crits, this.norms);
   }
 
-  public nextCritDmgWithDurableAndWithoutHammerhand(enemy: FighterState): number {
-    let critDmg = this.profile.critDmg;
-
-    if(enemy.profile.abilities.has(Ability.Durable)
-      && !this.hasCritStruck
-      && this.profile.critDmg > MinCritDmgAfterDurable
-    ) {
-      critDmg--;
-    }
-
-    return critDmg;
-  }
-
-  public nextDmg(enemy: FighterState): number {
+  public nextDmg(): number {
     let dmg = 0;
 
     if (this.crits > 0) {
-      dmg += this.nextCritDmgWithDurableAndWithoutHammerhand(enemy);
+      dmg += this.profile.critDmg;
 
       if (this.profile.has(Ability.MurderousEntrance2021) && !this.hasCritStruck) {
         dmg += this.profile.critDmg;
