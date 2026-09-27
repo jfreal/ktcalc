@@ -168,11 +168,11 @@ For a given scenario, reroll abilities should generally produce results in this 
 - **File:** `CalcEngineCommon.ts` - `calcFinalDiceProbRerollMostCommonFailPlusBalanced()`
 
 ### Severe Rule Fix
-- **Fixed** Punishing (FailToNormIfCrit) no longer triggers from Severe-created crits
+- **Fixed** Punishing no longer triggers from Severe-created crits
 - **Fixed** Rending no longer triggers from Severe-created crits
 - **Added** `severeTriggered` flag to track when Severe creates a crit
 - **Preserved** Devastating X and Piercing Crits X still work with Severe
-- **File:** `CalcEngineCommon.ts` lines 177-198
+- **File:** `CalcEngineCommon.ts` - `severeTriggered` in `resolveAfterPunishing`
 
 ### Reroll Targeting Strategy
 - **Clarified** all reroll abilities only target fails (optimal play)
