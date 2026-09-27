@@ -1250,3 +1250,15 @@ describe('SaintlyRelics (fight)', () => {
     expect(state.currentWounds).toBe(27);
   });
 });
+
+describe(resolveFight.name + ' negative-success guard', () => {
+  it('throws when fighter 2 ends with negative normals', () => {
+    // Fighter 1 is already at 0 wounds, so the strike/parry loop never runs and the
+    // incoming dice counts reach the end-of-fight guard unchanged. Fighter 1 still
+    // holds successes so the loop condition is the wounds check, not an empty dice pool.
+    const guy1 = newFighterState(1, 1, 0);
+    const guy2 = newFighterState(0, -1, 3);
+
+    expect(() => resolveFight(guy1, guy2)).toThrow('bug: ended up with negative successes');
+  });
+});
