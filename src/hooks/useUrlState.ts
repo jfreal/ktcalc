@@ -1,12 +1,12 @@
 import { useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
 import FightOptions from 'src/FightOptions';
 import FightStrategy from 'src/FightStrategy';
 import Ability, { mutuallyExclusiveFightAbilities } from 'src/Ability';
 import { parseRelicMode } from 'src/SaintlyRelics';
-import { CalculatorViewChoice, viewToUrlText } from 'src/CalculatorViewChoice';
+import { CalculatorViewChoice, FIGHT_CALCULATOR_PATH, viewToUrlText } from 'src/CalculatorViewChoice';
 
 interface SituationState {
   attacker: Model;
@@ -176,7 +176,6 @@ function encodeFighter(f: Model): string {
   if (f.has(Ability.MysticScryBuff)) abilities.push('mscry');
   if (f.has(Ability.Duelist)) abilities.push('duelist');
   if (f.has(Ability.JustAScratch)) abilities.push('jas');
-  if (f.has(Ability.Durable)) abilities.push('dur');
   if (f.has(Ability.Shock)) abilities.push('shock');
   // Keep this token distinct from 'jas', which enables the other scratch ability.
   if (f.has(Ability.JustAScratchNorms)) abilities.push('scratchnorm');
@@ -239,7 +238,6 @@ function decodeFighter(param: string): Model {
   if (abilities.includes('mscry')) f.abilities.add(Ability.MysticScryBuff);
   if (abilities.includes('duelist')) f.abilities.add(Ability.Duelist);
   if (abilities.includes('jas')) f.abilities.add(Ability.JustAScratch);
-  if (abilities.includes('dur')) f.abilities.add(Ability.Durable);
   if (abilities.includes('shock')) f.abilities.add(Ability.Shock);
   if (abilities.includes('scratchnorm')) f.abilities.add(Ability.JustAScratchNorms);
   if (abilities.includes('halfstrike')) f.abilities.add(Ability.HalfDamageFirstStrike);
@@ -247,8 +245,11 @@ function decodeFighter(param: string): Model {
   // appended after abilities; absent in older URLs and sanitized to off for unrecognized values
   f.saintlyRelics = parseRelicMode(parts[13]);
   // Append FNP so older links retain their field positions and default to off.
+  // Legal thresholds match Shoot and the rules: 4+, 5+, and 6+. A 2+ or 3+
+  // from an older fight link degrades to off rather than a value the control
+  // no longer offers.
   const fnp = Number(parts[14]);
-  f.fnp = Number.isInteger(fnp) && fnp >= 2 && fnp <= 6 ? fnp : 0;
+  f.fnp = Number.isInteger(fnp) && fnp >= 4 && fnp <= 6 ? fnp : 0;
 
   return f;
 }
@@ -330,23 +331,34 @@ export function getStateFromUrl(): { s1?: SituationState; s2?: SituationState } 
 // merges into the query as of the latest render, even when it was registered
 // with ShareContext while this section was inactive.
 function useMergeIntoSearch() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const latest = useRef({ searchParams, setSearchParams });
-  latest.current = { searchParams, setSearchParams };
-  return useCallback((updates: Record<string, string>) => {
+  const [searchParams] = useSearchParams();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const latest = useRef({ searchParams, pathname, navigate });
+  latest.current = { searchParams, pathname, navigate };
+  return useCallback((
+    updates: Record<string, string>,
+    options: { pathname?: string; drop?: string[] } = {},
+  ) => {
     const next = new URLSearchParams(latest.current.searchParams);
+    for (const key of options.drop ?? []) {
+      next.delete(key);
+    }
     for (const [key, value] of Object.entries(updates)) {
       next.set(key, value);
     }
-    latest.current.setSearchParams(next, { replace: true });
+    latest.current.navigate(
+      { pathname: options.pathname ?? latest.current.pathname, search: `?${next.toString()}` },
+      { replace: true },
+    );
   }, []);
 }
 
-function toShareUrl(params: Record<string, string>): string {
+function toShareUrl(params: Record<string, string>, pathname = window.location.pathname): string {
   const query = Object.entries(params)
     .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
     .join('&');
-  return `${window.location.origin}${window.location.pathname}?${query}`;
+  return `${window.location.origin}${pathname}?${query}`;
 }
 
 export function useUrlState(
@@ -381,16 +393,21 @@ export function useFightUrlState(
   fightOptions: FightOptions,
 ) {
   const shareParams = useCallback((): Record<string, string> => ({
-    view: viewToUrlText.get(CalculatorViewChoice.KtFight)!,
     fa: encodeFighter(fighterA),
     fb: encodeFighter(fighterB),
     fo: encodeFightOptions(fightOptions),
   }), [fighterA, fighterB, fightOptions]);
 
-  const getShareUrl = useCallback(() => toShareUrl(shareParams()), [shareParams]);
+  // Always /fight, not the current path. `/?view=fight` is served as the
+  // shoot snapshot, so a fight link unfurls as the shooting calculator. The
+  // path decides the view there, so `view` is dropped rather than written.
+  const getShareUrl = useCallback(
+    () => toShareUrl(shareParams(), FIGHT_CALCULATOR_PATH), [shareParams]);
 
   const mergeIntoSearch = useMergeIntoSearch();
-  const addParamsToUrl = useCallback(() => mergeIntoSearch(shareParams()), [mergeIntoSearch, shareParams]);
+  const addParamsToUrl = useCallback(
+    () => mergeIntoSearch(shareParams(), { pathname: FIGHT_CALCULATOR_PATH, drop: ['view'] }),
+    [mergeIntoSearch, shareParams]);
 
   return { getShareUrl, addParamsToUrl };
 }

@@ -5,6 +5,7 @@ import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
 import FightOptions from 'src/FightOptions';
 import AppHeader from 'src/components/AppHeader';
+import { FIGHT_CALCULATOR_PATH } from 'src/CalculatorViewChoice';
 import { getFightStateFromUrl, getStateFromUrl, useFightUrlState, useUrlState } from './useUrlState';
 
 afterEach(() => window.history.replaceState({}, '', '/'));
@@ -40,7 +41,7 @@ it('merges share params through the router so a view switch keeps both calculato
   const fighterB = new Model().setProp('wounds', 9);
   const router = createMemoryRouter(
     [{
-      path: '/',
+      path: '*',
       element: <>
         <AppHeader onCalculator />
         <ShootShareButton attacker={attacker} />
@@ -70,14 +71,16 @@ it('merges share params through the router so a view switch keeps both calculato
 
     fireEvent.click(screen.getByRole('button', { name: 'Kill Team Fight Calculator' }));
     params = searchOf(router);
-    expect(params.get('view')).toBe('fight');
+    expect(router.state.location.pathname).toBe(FIGHT_CALCULATOR_PATH);
+    expect(params.has('view')).toBe(false);
     expect(params.get('a1')).toContain(':5:9:');
     expect(params.get('fa')).toBe('old-fight');
     expect(params.get('extra')).toBe('keep');
 
     fireEvent.click(screen.getByRole('button', { name: 'Add Fight Params' }));
     params = searchOf(router);
-    expect(params.get('view')).toBe('fight');
+    expect(router.state.location.pathname).toBe(FIGHT_CALCULATOR_PATH);
+    expect(params.has('view')).toBe(false);
     expect(params.get('a1')).toContain(':5:9:');
     expect(params.get('fa')).toMatch(/^8:/);
     expect(params.get('fb')).toMatch(/^9:/);
@@ -92,6 +95,7 @@ it('merges share params through the router so a view switch keeps both calculato
 
     fireEvent.click(screen.getByRole('button', { name: 'Kill Team Shoot Calculator' }));
     params = searchOf(router);
+    expect(router.state.location.pathname).toBe('/');
     expect(params.get('view')).toBe('shoot');
     expect(params.get('a1')).toContain(':5:9:');
     expect(params.get('fa')).toMatch(/^8:/);
