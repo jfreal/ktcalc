@@ -525,18 +525,39 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
     // surviving on Feel No Pain is exactly what decides whether this
     // parry-then-kill line works — without consuming draws the real resolution
     // needs.
-    const chooserClone = chooser.asEstimate();
-    const enemyClone = enemy.asEstimate();
+    //
+    // Crit-first (nextStrike) is the default. When both die types remain after
+    // the parry, also lead with a normal: Just a Scratch or half-damage on the
+    // first strike can hide a kill that only exists if the cheaper die goes
+    // first. Either order reaching 0 is enough. One die type means the two
+    // orders are the same, so that second pass is skipped.
+    const parry = fightChoice;
+    const parryThenStrikesKill = (leadWithNorm: boolean): boolean => {
+      const chooserClone = chooser.asEstimate();
+      const enemyClone = enemy.asEstimate();
 
-    resolveDieChoice(fightChoice, chooserClone, enemyClone);
+      resolveDieChoice(parry, chooserClone, enemyClone);
 
-    // After parrying the enemy's last success the enemy is out of successes,
-    // so the chooser simply strikes until the enemy dies or its successes run out.
-    while(chooserClone.successes() > 0 && enemyClone.currentWounds > 0) {
-      resolveDieChoice(chooserClone.nextStrike(), chooserClone, enemyClone);
+      // After parrying the enemy's last success the enemy is out of successes,
+      // so the chooser simply strikes until the enemy dies or its successes run out.
+      let lead = leadWithNorm;
+      while(chooserClone.successes() > 0 && enemyClone.currentWounds > 0) {
+        const strike = lead ? FightChoice.NormStrike : chooserClone.nextStrike();
+        lead = false;
+        resolveDieChoice(strike, chooserClone, enemyClone);
+      }
+
+      return enemyClone.currentWounds <= 0;
+    };
+
+    if(parryThenStrikesKill(false)) {
+      return fightChoice;
     }
 
-    if(enemyClone.currentWounds <= 0) {
+    const spendsCrit = fightChoice === FightChoice.CritParry;
+    const critsAfterParry = chooser.crits - (spendsCrit ? 1 : 0);
+    const normsAfterParry = chooser.norms - (spendsCrit ? 0 : 1);
+    if(critsAfterParry > 0 && normsAfterParry > 0 && parryThenStrikesKill(true)) {
       return fightChoice;
     }
   }
