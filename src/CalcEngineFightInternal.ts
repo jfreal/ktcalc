@@ -260,14 +260,18 @@ export function preferredStrikeChoice(chooser: FighterState, enemy: FighterState
   return normFirstBetter ? FightChoice.NormStrike : critFirst;
 }
 
-// Pick which die to strike when the decision is "strike". For the damage-maximizing strategies,
-// defer to preferredStrikeChoice (which may strike norm-first to deny a normal parry, or to feed
-// an enemy's first-strike negation like Just a Scratch its smaller die so the crit lands). Other
-// strategies (e.g. Parry, when forced to strike) just strike crit-first.
+// Pick which die to strike when the decision is "strike". Damage-maximizing strategies defer
+// to preferredStrikeChoice (norm-first to deny a normal parry, or to feed a first-strike
+// negation such as Just a Scratch its smaller die). Parry does the same when it is forced to
+// strike because the enemy has no successes left — including just after it parried the last
+// one. It uses the fewer-enemy-wounds comparison, and stays crit-first on a tie. A Shock-forced
+// strike while the enemy still has successes stays crit-first for Parry: that shortcut exists
+// to land the shocking crit, and the both-orders search is the Strike / Max Dmg / Min Dmg case.
 function strategyStrike(chooser: FighterState, enemy: FighterState): FightChoice {
   if(chooser.strategy === FightStrategy.Strike
     || chooser.strategy === FightStrategy.MaxDmgToEnemy
-    || chooser.strategy === FightStrategy.MinDmgToSelf) {
+    || chooser.strategy === FightStrategy.MinDmgToSelf
+    || (chooser.strategy === FightStrategy.Parry && enemy.crits + enemy.norms === 0)) {
     return preferredStrikeChoice(chooser, enemy);
   }
   return chooser.nextStrike();

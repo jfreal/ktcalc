@@ -120,7 +120,8 @@ On each turn, `calcDieChoice` decides in this order. The first rule that applies
      enemy lower (Max Dmg) or yourself higher (Min Dmg).
 
 Whenever a rule above resolves to **strike** under the **Strike**, **Max Dmg**, or **Min Dmg**
-strategies, the actual die is chosen by `preferredStrikeChoice` (crit-first by default,
+strategies, or under **Parry** once the enemy has no successes left, the actual die is chosen by
+`preferredStrikeChoice` (crit-first by default,
 norm-first to deny a normal parry or to feed an enemy's first-strike negation — see
 [Strike order](#strike-order-crit-first-except-to-deny-a-normal-parry)). The one exception is the
 **lethal-strike** rule (#2), which strikes crit-first when that strike is estimated to kill.
