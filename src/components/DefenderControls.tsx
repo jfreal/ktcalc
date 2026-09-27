@@ -29,6 +29,7 @@ import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 export interface Props {
   defender: Model;
   changeHandler: Accepter<Model>;
+  idPrefix: string;
 }
 
 
@@ -74,7 +75,7 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
   const usedAdvancedParams = advancedParams.filter(p => incDecPropsHasNondefaultSelectedValue(p));
   const advancedParamsToShow = wantShowAdvanced ? advancedParams : usedAdvancedParams;
   const paramsToShow = basicParams.concat(advancedParamsToShow);
-  const elemsCol0 = propsToRows(paramsToShow);
+  const elemsCol0 = propsToRows(paramsToShow, props.idPrefix);
 
   const indomitusCheckbox = (
     <Form.Check
