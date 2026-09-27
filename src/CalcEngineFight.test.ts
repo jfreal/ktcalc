@@ -342,6 +342,25 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
     const enemy = newFighterState(99, 99, 20);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
   });
+  it('#2d: Parry shock-strikes a crit-only enemy, because that strike discards a crit', () => {
+    // Shock discards a normal if the enemy has one, otherwise a crit. Against a crit-only
+    // opponent the discard removes a crit and still deals damage, so it beats a plain parry.
+    // The enemy having crits must not keep a Parry fighter parrying when they have no normals.
+    const chooser = newFighterState(1, 0, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
+    const enemy = newFighterState(2, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('#2e: a mixed hand still shock-strikes the crit against a crit-only enemy', () => {
+    const chooser = newFighterState(1, 1, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
+    const enemy = newFighterState(1, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+  it('#2f: already shocked, a crit-only enemy does not force another strike under Parry', () => {
+    const chooser = newFighterState(1, 0, 99, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
+    chooser.hasCritStruck = true;
+    const enemy = newFighterState(2, 0, 99);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+  });
   it('#3: parry if can parry last enemy success and still kill them', () => {
     const chooser = newFighterState(99, 99, 99, FightStrategy.Strike);
     const enemy = newFighterState(1, 0, 20);
@@ -366,6 +385,79 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
     const chooser = newFighterState(1, 1, 99, FightStrategy.MinDmgToSelf, new Set<Ability>([Ability.Shock]));
     const enemy = newFighterState(1, 1, 99, FightStrategy.Strike);
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+  });
+});
+
+describe(calcDieChoice.name + ', lethal strike respects damage prevention', () => {
+  function scratchMatchup(strategy = FightStrategy.MaxDmgToEnemy) {
+    const chooser = new FighterState(
+      new Model(3, 6, 3, 4).setProp('wounds', 3), 2, 1, strategy);
+    const enemy = new FighterState(
+      new Model(1, 6, 3, 4).setProp('wounds', 4).setAbility(Ability.JustAScratch),
+      0, 1, FightStrategy.Strike);
+    return { chooser, enemy };
+  }
+
+  it.each([FightStrategy.MaxDmgToEnemy, FightStrategy.MinDmgToSelf])(
+    '%s: parries instead of wasting an apparently lethal crit on Just a Scratch', strategy => {
+      // A: 3 wounds, 2 crits + 1 norm, damage 3/4. B: 4 wounds, 1 norm, JaS.
+      // Striking first gets scratched, then B kills A. Parrying the normal instead
+      // removes B's only attack; A's first crit is scratched and its second kills B.
+      const { chooser, enemy } = scratchMatchup(strategy);
+      expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormParry);
+      resolveFight(chooser, enemy);
+      expect(chooser.currentWounds).toBe(3);
+      expect(enemy.currentWounds).toBe(0);
+    });
+
+  it('changes the full simulation distribution for guaranteed retained dice', () => {
+    const { chooser, enemy } = scratchMatchup();
+    chooser.profile.setProp('autoCrits', 2).setProp('autoNorms', 1);
+    enemy.profile.setProp('autoNorms', 1);
+    const outcomes = calcRemainingWoundPairProbs(
+      chooser.profile, enemy.profile, chooser.strategy, enemy.strategy, 1, 8, 12345);
+    expect(outcomes).toEqual(new Map([[toWoundPairKey(3, 0), 1]]));
+  });
+
+  // Positive controls: a real killing blow must still override the Parry strategy.
+  it.each([false, true])('still strikes when Just a Scratch is absent or spent (spent=%s)', spent => {
+    const { chooser, enemy } = scratchMatchup(FightStrategy.Parry);
+    if (spent) chooser.hasStruck = true;
+    else enemy.profile.setAbility(Ability.JustAScratch, false);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+    resolveFight(chooser, enemy);
+    expect(chooser.currentWounds).toBe(3);
+    expect(enemy.currentWounds).toBe(0);
+  });
+
+  it('does not treat a scratched normal as a killing blow', () => {
+    const chooser = newFighterState(0, 2, 3, FightStrategy.Parry);
+    const enemy = newFighterState(0, 2, 1);
+    enemy.profile.setAbility(Ability.JustAScratchNorms);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormParry);
+  });
+
+  it('accounts for halving the first strike before taking the lethal shortcut', () => {
+    const chooser = newFighterState(1, 1, 10, FightStrategy.Parry);
+    chooser.profile.critDmg = 4;
+    const enemy = newFighterState(2, 0, 4);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+  });
+
+  it('estimates a potentially lethal strike without consuming rng or changing live state', () => {
+    const chooser = newFighterState(1, 0, 10, FightStrategy.Parry);
+    const enemy = newFighterState(2, 0, 2);
+    enemy.profile.fnp = 4;
+    const rng = jest.fn(() => 0.5);
+    chooser.rng = rng;
+    enemy.rng = rng;
+    const beforeChooser = chooser.clone();
+    const beforeEnemy = enemy.clone();
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+    expect(rng).not.toHaveBeenCalled();
+    expect(chooser).toEqual(beforeChooser);
+    expect(enemy).toEqual(beforeEnemy);
   });
 });
 
@@ -530,18 +622,6 @@ describe('both-orders simulation still runs when the enemy holds a crit', () => 
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
   });
 
-  it('Durable shaving the crit below the normal: strike the normal when only one hit lands', () => {
-    // critDmg 4 shaved to 3 by Durable; the normal is 4. One strike lands before we die.
-    const chooser = newFighterState(1, 1, 1, FightStrategy.Strike);
-    chooser.profile.setProp('normDmg', 4);
-    chooser.profile.setProp('critDmg', 4);
-    const enemy = newFighterState(1, 0, 99, FightStrategy.Strike, new Set<Ability>([Ability.Durable]));
-    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
-
-    resolveFight(chooser, enemy);
-    expect(enemy.currentWounds).toBe(99 - 4);
-  });
-
   it('keeps crit-first on a tie when both dice land and Hammerhand applies once either way', () => {
     const chooser = newFighterState(
       1, 1, 99, FightStrategy.Strike, new Set<Ability>([Ability.Hammerhand2021]));
@@ -587,6 +667,32 @@ describe(handleDuelist.name + ' fires only once per fight', () => {
     expect(clonedDuelist.hasDuelistParried).toBe(true);
     handleDuelist(clonedDuelist, enemy.clone());
     expect(clonedDuelist.crits).toBe(1); // still no second parry
+  });
+  it('only normals vs only crits does not spend a die or the once-per-fight flag', () => {
+    // A normal cannot cancel a crit. NormParry would still decrement chooser.norms
+    // and cancel nothing (enemy.norms is already 0), and the flag is set before the
+    // choice, so the free parry would be gone. Skip both.
+    const duelist = newFighterState(0, 2, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(2, 0, 99);
+
+    handleDuelist(duelist, enemy);
+
+    expect(duelist.norms).toBe(2);
+    expect(duelist.crits).toBe(0);
+    expect(enemy.crits).toBe(2);
+    expect(enemy.norms).toBe(0);
+    expect(duelist.hasDuelistParried).toBe(false);
+  });
+  it('only normals vs a Brutal enemy does not spend a die or the once-per-fight flag', () => {
+    // Brutal can only be parried by a crit, so normals-only has no legal parry.
+    const duelist = newFighterState(0, 2, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Strike, new Set<Ability>([Ability.Brutal]));
+
+    handleDuelist(duelist, enemy);
+
+    expect(duelist.norms).toBe(2);
+    expect(enemy.norms).toBe(2);
+    expect(duelist.hasDuelistParried).toBe(false);
   });
 });
 
@@ -641,6 +747,29 @@ describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, duel
       expect(enemy.norms).toBe(origEnemyNorms - 1);
       expect(enemy.currentWounds).toBe(finalWounds);
     }
+  });
+  it('CritStrike+shock, enemy has no normals, so a crit is discarded', () => {
+    const chooser = makeChooser(Ability.Shock);
+    chooser.profile.setAbility(Ability.Shock, true);
+    const enemy = newFighterState(origEnemyCrits, 0, chooser.profile.critDmg + finalWounds);
+
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(chooser.crits).toBe(origChooserCrits - 1);
+    expect(chooser.norms).toBe(origChooserNorms);
+    expect(chooser.currentWounds).toBe(finalWounds);
+    expect(enemy.crits).toBe(origEnemyCrits - 1);
+    expect(enemy.norms).toBe(0);
+    expect(enemy.currentWounds).toBe(finalWounds);
+  });
+  it('CritStrike+shock, enemy has no successes, discards nothing', () => {
+    const chooser = makeChooser(Ability.Shock);
+    chooser.profile.setAbility(Ability.Shock, true);
+    const enemy = newFighterState(0, 0, chooser.profile.critDmg + finalWounds);
+
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+    expect(enemy.crits).toBe(0);
+    expect(enemy.norms).toBe(0);
+    expect(enemy.currentWounds).toBe(finalWounds);
   });
   it('CritStrike+shock, already shocked', () => {
     for(let stormShieldMaybe of [Ability.None, Ability.StormShield2021]) { // storm shield shouldn't matter
@@ -841,6 +970,26 @@ describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, duel
     resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds - 2);
   });
+  it('HalfDamageFirstStrike leaves a 1-damage strike at 1', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('normDmg', 1); // ceil(1/2) = 1; the floor must not lift it to 2
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds - 1);
+  });
+  it('HalfDamageFirstStrike leaves a 0-damage strike at 0', () => {
+    const initialWounds = 100;
+    const chooser = newFighterState(2, 2, 10);
+    chooser.profile.setProp('normDmg', 0);
+    const enemy = newFighterState(2, 2, initialWounds);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike, true);
+
+    resolveDieChoice(FightChoice.NormStrike, chooser, enemy);
+    expect(enemy.currentWounds).toBe(initialWounds);
+  });
   it('HalfDamageFirstStrike with hammerhand: hammerhand applies then halved', () => {
     const initialWounds = 100;
     const normDmg = 3;
@@ -1028,6 +1177,18 @@ describe(resolveFight.name + 'hardcoded answers', () => {
     resolveFight(guy1, guy2);
     expect(guy1.currentWounds).toBe(1);
     expect(guy2.currentWounds).toBe(0);
+  });
+  it('Parry fighter with Shock discards a crit-only enemy crit and deals the strike', () => {
+    // newFighterState uses critDmg=2. A plain crit parry would cancel the enemy crit and deal
+    // nothing; the shocking crit strike deals 2 and discards that crit, so they never strike back.
+    const atk = newFighterState(1, 0, 10, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
+    const def = newFighterState(1, 0, 10, FightStrategy.Strike);
+
+    resolveFight(atk, def);
+    expect(atk.currentWounds).toBe(10);
+    expect(def.currentWounds).toBe(10 - atk.profile.critDmg);
+    expect(def.crits).toBe(0);
+    expect(atk.crits).toBe(0);
   });
 });
 
