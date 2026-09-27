@@ -1250,3 +1250,58 @@ describe('SaintlyRelics (fight)', () => {
     expect(state.currentWounds).toBe(27);
   });
 });
+
+describe('Parry, when forced to strike, uses the same strike order as Max Dmg', () => {
+  // strategyStrike used to send Parry straight to nextStrike() (crit-first). Just a Scratch
+  // and half-damage then eat the crit. Parry is forced to strike when the enemy is out of
+  // dice, including after Parry has just parried the enemy's last success.
+  function parryFighter(crits: number, norms: number, critDmg: number, normDmg: number): FighterState {
+    const chooser = newFighterState(crits, norms, 99, FightStrategy.Parry);
+    chooser.profile.critDmg = critDmg;
+    chooser.profile.normDmg = normDmg;
+    return chooser;
+  }
+
+  it('defender out of dice with Just a Scratch: strike the normal first and kill', () => {
+    // 1 crit (5) + 1 normal (2) vs 5 wounds and no dice. Crit-first is scratched and the
+    // normal leaves the defender at 3. Norm-first is scratched and the crit kills.
+    const chooser = parryFighter(1, 1, 5, 2);
+    const enemy = newFighterState(0, 0, 5, FightStrategy.Strike, new Set<Ability>([Ability.JustAScratch]));
+
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+    resolveFight(chooser, enemy);
+    expect(enemy.currentWounds).toBe(0);
+  });
+
+  it('after parrying the last die, Just a Scratch eats a normal and the rest kill', () => {
+    // 1 crit (4) + 3 normals (3) vs 1 normal and 7 wounds. Parry cancels that normal, then
+    // crit-first scratches the crit and the two normals leave 1 wound (7 - 3 - 3).
+    // Norm-first scratches a normal and 4+3+3 kills.
+    const chooser = parryFighter(1, 3, 4, 3);
+    const enemy = newFighterState(0, 1, 7, FightStrategy.Strike, new Set<Ability>([Ability.JustAScratch]));
+
+    resolveFight(chooser, enemy);
+    expect(enemy.currentWounds).toBe(0);
+  });
+
+  it('after parrying the last die, half-damage falls on a normal and the crit kills', () => {
+    // 1 crit (5) + 2 normals (2) vs 1 normal and 6 wounds with half-damage on the first
+    // strike. After the parry, crit-first deals ceil(5/2)+2 = 5 and leaves 1 wound.
+    // Norm-first deals 2 (already at the half-damage floor) + 5 = 7 and kills.
+    const chooser = parryFighter(1, 2, 5, 2);
+    const enemy = newFighterState(
+      0, 1, 6, FightStrategy.Strike, new Set<Ability>([Ability.HalfDamageFirstStrike]));
+
+    resolveFight(chooser, enemy);
+    expect(enemy.currentWounds).toBe(0);
+  });
+
+  it('stays crit-first on a tie when both orders kill', () => {
+    // Positive control. Just a Scratch is on, but the defender has only 2 wounds, so either
+    // order kills (the un-scratched die is at least 2). The comparison ties and crit-first stays.
+    const chooser = parryFighter(1, 1, 5, 2);
+    const enemy = newFighterState(0, 0, 2, FightStrategy.Strike, new Set<Ability>([Ability.JustAScratch]));
+
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+});
