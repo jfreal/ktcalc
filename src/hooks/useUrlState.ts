@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { FIGHT_CALCULATOR_PATH } from 'src/CalculatorViewChoice';
 import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
 import FightOptions from 'src/FightOptions';
@@ -174,7 +175,6 @@ function encodeFighter(f: Model): string {
   if (f.has(Ability.MysticScryBuff)) abilities.push('mscry');
   if (f.has(Ability.Duelist)) abilities.push('duelist');
   if (f.has(Ability.JustAScratch)) abilities.push('jas');
-  if (f.has(Ability.Durable)) abilities.push('dur');
   if (f.has(Ability.Shock)) abilities.push('shock');
   // Keep this token distinct from 'jas', which enables the other scratch ability.
   if (f.has(Ability.JustAScratchNorms)) abilities.push('scratchnorm');
@@ -237,7 +237,6 @@ function decodeFighter(param: string): Model {
   if (abilities.includes('mscry')) f.abilities.add(Ability.MysticScryBuff);
   if (abilities.includes('duelist')) f.abilities.add(Ability.Duelist);
   if (abilities.includes('jas')) f.abilities.add(Ability.JustAScratch);
-  if (abilities.includes('dur')) f.abilities.add(Ability.Durable);
   if (abilities.includes('shock')) f.abilities.add(Ability.Shock);
   if (abilities.includes('scratchnorm')) f.abilities.add(Ability.JustAScratchNorms);
   if (abilities.includes('halfstrike')) f.abilities.add(Ability.HalfDamageFirstStrike);
@@ -245,8 +244,11 @@ function decodeFighter(param: string): Model {
   // appended after abilities; absent in older URLs and sanitized to off for unrecognized values
   f.saintlyRelics = parseRelicMode(parts[13]);
   // Append FNP so older links retain their field positions and default to off.
+  // Legal thresholds match Shoot and the rules: 4+, 5+, and 6+. A 2+ or 3+
+  // from an older fight link degrades to off rather than a value the control
+  // no longer offers.
   const fnp = Number(parts[14]);
-  f.fnp = Number.isInteger(fnp) && fnp >= 2 && fnp <= 6 ? fnp : 0;
+  f.fnp = Number.isInteger(fnp) && fnp >= 4 && fnp <= 6 ? fnp : 0;
 
   return f;
 }
@@ -361,14 +363,16 @@ export function useFightUrlState(
     const fa = encodeFighter(fighterA);
     const fb = encodeFighter(fighterB);
     const fo = encodeFightOptions(fightOptions);
-    return `${window.location.origin}${window.location.pathname}?view=fight&fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
+    // Always /fight, not the current path. `/?view=fight` is served as the
+    // shoot snapshot, so a fight link unfurls as the shooting calculator.
+    return `${window.location.origin}${FIGHT_CALCULATOR_PATH}?fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
   }, [fighterA, fighterB, fightOptions]);
 
   const addParamsToUrl = useCallback(() => {
     const fa = encodeFighter(fighterA);
     const fb = encodeFighter(fighterB);
     const fo = encodeFightOptions(fightOptions);
-    const newUrl = `${window.location.pathname}?view=fight&fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
+    const newUrl = `${FIGHT_CALCULATOR_PATH}?fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
     window.history.replaceState({}, '', newUrl);
   }, [fighterA, fighterB, fightOptions]);
 
