@@ -3,9 +3,34 @@ import { render } from '@testing-library/react';
 import Model from 'src/Model';
 import Ability from 'src/Ability';
 import FightOptions from 'src/FightOptions';
+import { FIGHT_CALCULATOR_PATH } from 'src/CalculatorViewChoice';
 import { getFightStateFromUrl, useFightUrlState } from './useUrlState';
 
 afterEach(() => window.history.replaceState({}, '', '/'));
+
+it('shares fight state on /fight so unfurls are not the shoot snapshot', () => {
+  const fighterA = new Model();
+  const fighterB = new Model();
+  let share!: ReturnType<typeof useFightUrlState>;
+  function Harness() {
+    share = useFightUrlState(fighterA, fighterB, new FightOptions());
+    return null;
+  }
+  render(<Harness />);
+
+  const url = new URL(share.getShareUrl());
+  expect(url.origin).toBe(window.location.origin);
+  expect(url.pathname).toBe(FIGHT_CALCULATOR_PATH);
+  expect(url.searchParams.has('view')).toBe(false);
+  expect(url.searchParams.get('fa')).toBeTruthy();
+  expect(url.searchParams.get('fb')).toBeTruthy();
+  expect(url.searchParams.get('fo')).toBeTruthy();
+
+  share.addParamsToUrl();
+  expect(window.location.pathname).toBe(FIGHT_CALCULATOR_PATH);
+  expect(new URLSearchParams(window.location.search).has('view')).toBe(false);
+  expect(getFightStateFromUrl()).not.toBeNull();
+});
 
 it.each([
   [Ability.Shock],

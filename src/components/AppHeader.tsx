@@ -1,9 +1,9 @@
 import React from "react";
 import { Container } from 'react-bootstrap';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import "src/components/AppHeader.css"
-import { CalculatorViewChoice, getViewFromUrlText, viewToUrlText } from 'src/CalculatorViewChoice';
+import { CalculatorViewChoice, calculatorViewLocation, getCalculatorView } from 'src/CalculatorViewChoice';
 import ktFightIcon from 'src/images/KtFightIcon.svg';
 import ktShootIcon from 'src/images/KtShootIcon.svg';
 import logoSmall from 'src/images/logo-small.png';
@@ -11,19 +11,21 @@ import logoSmall from 'src/images/logo-small.png';
 
 type AppHeaderProps = {
   rightContent?: React.ReactNode;
-  // Whether the calculator ('/') route is the one currently showing. Passed
-  // down from Layout (which already knows the route) rather than re-derived
-  // here, so there is one place that decides "are we on the calculator".
+  // Whether a calculator route ('/' or '/fight') is the one currently showing.
+  // Passed down from Layout (which already knows the route) rather than
+  // re-derived here, so there is one place that decides "are we on the calculator".
   onCalculator: boolean;
 }
 
 // NOTE: the 'type' and 'name' on the buttons are for ac11y reasons
 const AppHeader = (props: AppHeaderProps) => {
+  const location = useLocation();
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
   // A view is only "active" on the calculator route; other pages highlight nothing.
-  const activeView = props.onCalculator ? getViewFromUrlText(params.get('view')) : null;
+  // `/fight` is the fight calculator (no ?view= required).
+  const activeView = props.onCalculator ? getCalculatorView(location.pathname, params.get('view')) : null;
 
   function makeButton(
     view: CalculatorViewChoice,
@@ -46,9 +48,8 @@ const AppHeader = (props: AppHeaderProps) => {
           // Merge into the existing params rather than replacing the query
           // string outright, so switching views doesn't clobber shared
           // calculator state (a1/d1/fa/fb/etc.) already in the URL.
-          const next = new URLSearchParams(params);
-          next.set('view', viewToUrlText.get(view) as string);
-          navigate({ pathname: '/', search: `?${next.toString()}` });
+          // Fight goes to /fight; that path is what unfurls as the fight calculator.
+          navigate(calculatorViewLocation(view, params.toString()));
         }}
         >
         <img src={img} alt={imgAlt} width="26" height="26" />
