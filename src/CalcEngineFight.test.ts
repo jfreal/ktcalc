@@ -388,6 +388,79 @@ describe(calcDieChoice.name + ', common & strike/parry', () => {
   });
 });
 
+describe(calcDieChoice.name + ', lethal strike respects damage prevention', () => {
+  function scratchMatchup(strategy = FightStrategy.MaxDmgToEnemy) {
+    const chooser = new FighterState(
+      new Model(3, 6, 3, 4).setProp('wounds', 3), 2, 1, strategy);
+    const enemy = new FighterState(
+      new Model(1, 6, 3, 4).setProp('wounds', 4).setAbility(Ability.JustAScratch),
+      0, 1, FightStrategy.Strike);
+    return { chooser, enemy };
+  }
+
+  it.each([FightStrategy.MaxDmgToEnemy, FightStrategy.MinDmgToSelf])(
+    '%s: parries instead of wasting an apparently lethal crit on Just a Scratch', strategy => {
+      // A: 3 wounds, 2 crits + 1 norm, damage 3/4. B: 4 wounds, 1 norm, JaS.
+      // Striking first gets scratched, then B kills A. Parrying the normal instead
+      // removes B's only attack; A's first crit is scratched and its second kills B.
+      const { chooser, enemy } = scratchMatchup(strategy);
+      expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormParry);
+      resolveFight(chooser, enemy);
+      expect(chooser.currentWounds).toBe(3);
+      expect(enemy.currentWounds).toBe(0);
+    });
+
+  it('changes the full simulation distribution for guaranteed retained dice', () => {
+    const { chooser, enemy } = scratchMatchup();
+    chooser.profile.setProp('autoCrits', 2).setProp('autoNorms', 1);
+    enemy.profile.setProp('autoNorms', 1);
+    const outcomes = calcRemainingWoundPairProbs(
+      chooser.profile, enemy.profile, chooser.strategy, enemy.strategy, 1, 8, 12345);
+    expect(outcomes).toEqual(new Map([[toWoundPairKey(3, 0), 1]]));
+  });
+
+  // Positive controls: a real killing blow must still override the Parry strategy.
+  it.each([false, true])('still strikes when Just a Scratch is absent or spent (spent=%s)', spent => {
+    const { chooser, enemy } = scratchMatchup(FightStrategy.Parry);
+    if (spent) chooser.hasStruck = true;
+    else enemy.profile.setAbility(Ability.JustAScratch, false);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+    resolveFight(chooser, enemy);
+    expect(chooser.currentWounds).toBe(3);
+    expect(enemy.currentWounds).toBe(0);
+  });
+
+  it('does not treat a scratched normal as a killing blow', () => {
+    const chooser = newFighterState(0, 2, 3, FightStrategy.Parry);
+    const enemy = newFighterState(0, 2, 1);
+    enemy.profile.setAbility(Ability.JustAScratchNorms);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormParry);
+  });
+
+  it('accounts for halving the first strike before taking the lethal shortcut', () => {
+    const chooser = newFighterState(1, 1, 10, FightStrategy.Parry);
+    chooser.profile.critDmg = 4;
+    const enemy = newFighterState(2, 0, 4);
+    enemy.profile.setAbility(Ability.HalfDamageFirstStrike);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+  });
+
+  it('estimates a potentially lethal strike without consuming rng or changing live state', () => {
+    const chooser = newFighterState(1, 0, 10, FightStrategy.Parry);
+    const enemy = newFighterState(2, 0, 2);
+    enemy.profile.fnp = 4;
+    const rng = jest.fn(() => 0.5);
+    chooser.rng = rng;
+    enemy.rng = rng;
+    const beforeChooser = chooser.clone();
+    const beforeEnemy = enemy.clone();
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+    expect(rng).not.toHaveBeenCalled();
+    expect(chooser).toEqual(beforeChooser);
+    expect(enemy).toEqual(beforeEnemy);
+  });
+});
+
 describe(calcDieChoice.name + ', norm-first to deny a normal parry', () => {
   // A normal parry can cancel only a normal (it can't touch a crit). So when we hold both a
   // crit and a norm and the enemy has no crits, striking the NORM first forces it through
@@ -461,6 +534,112 @@ describe(calcDieChoice.name + ', norm-first to deny a normal parry', () => {
   });
 });
 
+describe('both-orders simulation still runs when the enemy holds a crit', () => {
+  // An enemy crit used to skip preferredStrikeChoice's both-orders simulation entirely, so the
+  // engine always struck crit-first. That is wrong when the first strike is zeroed or halved,
+  // or when the normal is the bigger die: norm-first can land strictly more damage. Crit-first
+  // stays on a tie, and when the enemy's crit would parry ours if we led with the normal.
+
+  function mixedHand(
+    strategy: FightStrategy,
+    abilities: Ability[] = [],
+  ): FighterState {
+    const chooser = newFighterState(1, 1, 99, strategy, new Set<Ability>(abilities));
+    chooser.profile.setProp('critDmg', 5);
+    chooser.profile.setProp('normDmg', 2);
+    return chooser;
+  }
+
+  it('Just a Scratch: strike the normal first so the scratch eats it and the crit lands', () => {
+    // 5-damage crit, 2-damage normal, enemy has a crit and JaS, nobody is in lethal range.
+    // Crit-first is scratched and the normal lands later (2). Norm-first is scratched and the
+    // crit lands (5). The enemy is striking, so they do not parry the remaining die.
+    const chooser = mixedHand(FightStrategy.MaxDmgToEnemy);
+    const enemy = newFighterState(1, 0, 99, FightStrategy.Strike, new Set<Ability>([Ability.JustAScratch]));
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+
+    resolveFight(chooser, enemy);
+    expect(enemy.currentWounds).toBe(99 - chooser.profile.critDmg);
+  });
+
+  it('Just a Scratch vs a parrying crit stays crit-first (both orders deal 0)', () => {
+    const chooser = mixedHand(FightStrategy.Strike);
+    const enemy = newFighterState(1, 0, 99, FightStrategy.Parry, new Set<Ability>([Ability.JustAScratch]));
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+
+  it('Half Damage: lead with the normal so the crit is not the die that gets halved', () => {
+    const chooser = mixedHand(FightStrategy.MaxDmgToEnemy);
+    const enemy = newFighterState(
+      1, 0, 99, FightStrategy.Strike, new Set<Ability>([Ability.HalfDamageFirstStrike]));
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+
+    resolveFight(chooser, enemy);
+    // norm halved to max(2, ceil(2/2)) = 2, then the full crit
+    expect(enemy.currentWounds).toBe(99 - chooser.profile.normDmg - chooser.profile.critDmg);
+  });
+
+  it('Half Damage in a one-strike death-race stays crit-first', () => {
+    // The enemy's crit kills us before a second strike. Halved crit (ceil(5/2)=3) still beats
+    // the halved-or-minimum normal (2), so front-loading the crit remains correct.
+    const chooser = mixedHand(FightStrategy.Strike);
+    chooser.currentWounds = 1;
+    const enemy = newFighterState(
+      1, 0, 99, FightStrategy.Strike, new Set<Ability>([Ability.HalfDamageFirstStrike]));
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+
+  it('Half Damage vs a parrying crit stays crit-first (halved crit beats a halved normal)', () => {
+    // Crit-first: halved crit (3) lands, their crit parries the normal. Norm-first: halved
+    // normal (2) lands, their crit parries ours. 3 > 2, so crit-first wins.
+    const chooser = mixedHand(FightStrategy.Strike);
+    const enemy = newFighterState(
+      1, 0, 99, FightStrategy.Parry, new Set<Ability>([Ability.HalfDamageFirstStrike]));
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+
+  it('Hammerhand with a bigger normal: strike the normal when only one hit will land', () => {
+    // norm 5 + Hammerhand = 6, crit 2 + Hammerhand = 3. We die to the enemy's crit before a
+    // second strike, so the first die is the only damage we deal.
+    const chooser = newFighterState(
+      1, 1, 1, FightStrategy.Strike, new Set<Ability>([Ability.Hammerhand2021]));
+    chooser.profile.setProp('normDmg', 5);
+    chooser.profile.setProp('critDmg', 2);
+    const enemy = newFighterState(1, 0, 99, FightStrategy.Strike);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+
+    resolveFight(chooser, enemy);
+    expect(enemy.currentWounds).toBe(99 - (5 + 1));
+  });
+
+  it('a bigger normal is struck first even without Hammerhand when only one hit lands', () => {
+    // Hammerhand's +1 rides on whichever die is first, so the flip is the normal already
+    // out-damaging the crit. Same death-race, no Hammerhand: 5 beats 2.
+    const chooser = newFighterState(1, 1, 1, FightStrategy.Strike);
+    chooser.profile.setProp('normDmg', 5);
+    chooser.profile.setProp('critDmg', 2);
+    const enemy = newFighterState(1, 0, 99, FightStrategy.Strike);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+  });
+
+  it('keeps crit-first on a tie when both dice land and Hammerhand applies once either way', () => {
+    const chooser = newFighterState(
+      1, 1, 99, FightStrategy.Strike, new Set<Ability>([Ability.Hammerhand2021]));
+    chooser.profile.setProp('normDmg', 5);
+    chooser.profile.setProp('critDmg', 2);
+    const enemy = newFighterState(1, 0, 99, FightStrategy.Strike);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+
+  it('Hammerhand does not reorder when the crit is still the bigger die', () => {
+    // defaults: normDmg 1, critDmg 2. Hammerhand makes the first strike 2 or 3; the crit wins.
+    const chooser = newFighterState(
+      1, 1, 1, FightStrategy.Strike, new Set<Ability>([Ability.Hammerhand2021]));
+    const enemy = newFighterState(1, 0, 99, FightStrategy.Strike);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+  });
+});
+
 describe(handleDuelist.name + ' fires only once per fight', () => {
   // Duelist's free parry is once per fight. resolveFight runs handleDuelist at its start, and the
   // lookahead simulations in calcDieChoice / preferredStrikeChoice call resolveFight again on
@@ -488,6 +667,32 @@ describe(handleDuelist.name + ' fires only once per fight', () => {
     expect(clonedDuelist.hasDuelistParried).toBe(true);
     handleDuelist(clonedDuelist, enemy.clone());
     expect(clonedDuelist.crits).toBe(1); // still no second parry
+  });
+  it('only normals vs only crits does not spend a die or the once-per-fight flag', () => {
+    // A normal cannot cancel a crit. NormParry would still decrement chooser.norms
+    // and cancel nothing (enemy.norms is already 0), and the flag is set before the
+    // choice, so the free parry would be gone. Skip both.
+    const duelist = newFighterState(0, 2, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(2, 0, 99);
+
+    handleDuelist(duelist, enemy);
+
+    expect(duelist.norms).toBe(2);
+    expect(duelist.crits).toBe(0);
+    expect(enemy.crits).toBe(2);
+    expect(enemy.norms).toBe(0);
+    expect(duelist.hasDuelistParried).toBe(false);
+  });
+  it('only normals vs a Brutal enemy does not spend a die or the once-per-fight flag', () => {
+    // Brutal can only be parried by a crit, so normals-only has no legal parry.
+    const duelist = newFighterState(0, 2, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Strike, new Set<Ability>([Ability.Brutal]));
+
+    handleDuelist(duelist, enemy);
+
+    expect(duelist.norms).toBe(2);
+    expect(enemy.norms).toBe(2);
+    expect(duelist.hasDuelistParried).toBe(false);
   });
 });
 
@@ -1248,5 +1453,17 @@ describe('SaintlyRelics (fight)', () => {
     state.applyDmg(3, true); // no ignore => damage lands
     expect(state.relicIgnoresUsed).toBe(2);
     expect(state.currentWounds).toBe(27);
+  });
+});
+
+describe(resolveFight.name + ' negative-success guard', () => {
+  it('throws when fighter 2 ends with negative normals', () => {
+    // Fighter 1 is already at 0 wounds, so the strike/parry loop never runs and the
+    // incoming dice counts reach the end-of-fight guard unchanged. Fighter 1 still
+    // holds successes so the loop condition is the wounds check, not an empty dice pool.
+    const guy1 = newFighterState(1, 1, 0);
+    const guy2 = newFighterState(0, -1, 3);
+
+    expect(() => resolveFight(guy1, guy2)).toThrow('bug: ended up with negative successes');
   });
 });

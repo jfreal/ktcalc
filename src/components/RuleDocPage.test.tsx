@@ -15,9 +15,9 @@ jest.mock('remark-gfm', () => ({ __esModule: true, default: () => {} }));
 
 // Smoke tests for the /rules/* pages. fetch is mocked so we exercise the
 // loading -> ok and loading -> error transitions without hitting public/rules/.
-function renderDoc(file = 'COMBAT_RULES.md') {
+function renderDoc(file = 'COMBAT_RULES.md', url = '/') {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[url]}>
       <RuleDocPage file={file} />
     </MemoryRouter>,
   );
@@ -86,6 +86,34 @@ describe('RuleDocPage', () => {
       renderLink('//example.com/x');
       expect(screen.getByRole('link').getAttribute('target')).toBeNull();
     });
+
+    it('leaves an in-page hash as a plain anchor', () => {
+      renderLink('#reproducing-this');
+      const a = screen.getByRole('link');
+      expect(a.getAttribute('href')).toBe('#reproducing-this');
+      expect(a.getAttribute('target')).toBeNull();
+    });
+  });
+
+  it('scrolls to the url hash once the document has loaded', async () => {
+    const el = document.createElement('h2');
+    el.id = 'reproducing-this';
+    const scrollIntoView = jest.fn();
+    el.scrollIntoView = scrollIntoView;
+    document.body.appendChild(el);
+    try {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve('## Reproducing this'),
+      }) as unknown as typeof fetch;
+
+      renderDoc('WEAPON_BALANCE.md', '/rules/weapon-balance#reproducing-this');
+      await screen.findByTestId('md');
+      expect(scrollIntoView).toHaveBeenCalled();
+    } finally {
+      document.body.removeChild(el);
+    }
   });
 
   it('always offers a back link to the help hub', async () => {

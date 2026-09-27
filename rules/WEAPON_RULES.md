@@ -93,7 +93,7 @@ If you **don't retain any critical successes**, you can change **one of your nor
 
 **Important:** The Devastating and Piercing Crits weapon rules still take effect, but **Punishing and Rending don't**.
 
-**Calculator implementation:** Severe is evaluated after Punishing, so Punishing only triggers from natural crits. Rending is explicitly blocked when Severe triggers.
+**Calculator implementation:** Severe is evaluated after Punishing, so Punishing only triggers from natural crits. Rending is explicitly blocked when Severe triggers. With the KT2021 Waaagh ploy and three or more normals (no crits), Severe resolves before Waaagh so both land; with exactly two normals Waaagh goes first.
 
 ---
 
@@ -168,11 +168,11 @@ For a given scenario, reroll abilities should generally produce results in this 
 - **File:** `CalcEngineCommon.ts` - `calcFinalDiceProbRerollMostCommonFailPlusBalanced()`
 
 ### Severe Rule Fix
-- **Fixed** Punishing (FailToNormIfCrit) no longer triggers from Severe-created crits
+- **Fixed** Punishing no longer triggers from Severe-created crits
 - **Fixed** Rending no longer triggers from Severe-created crits
 - **Added** `severeTriggered` flag to track when Severe creates a crit
 - **Preserved** Devastating X and Piercing Crits X still work with Severe
-- **File:** `CalcEngineCommon.ts` lines 177-198
+- **File:** `CalcEngineCommon.ts` - `severeTriggered` in `resolveAfterPunishing`
 
 ### Reroll Targeting Strategy
 - **Clarified** all reroll abilities only target fails (optimal play)

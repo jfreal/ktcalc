@@ -16,7 +16,7 @@ Stay on the shooting calculator (`h1` `Kill Team 2024 Shooting Calculator`) and 
 
 1. On `/`, in the Situation 1 panel, click Attacks `+` once so the two situations differ. Confirm Situation 1's Average Damage changed and Situation 2's did not (same bar as the shooting feature).
 2. Click the button whose text is `Copy From Situation 1` (it sits in the Situation 2 title bar).
-3. Situation 2's `select#Attacks` now equals Situation 1's.
+3. Situation 2's `select#s2-atk-Attacks` now equals Situation 1's.
 4. In the panel titled `Comparison Matrix (Avg Dmg + Kill % vs W)`, the first data row (`Avg`) shows S1 and S2 equal and the delta cell is zero rather than a `+` or `-` value.
 5. Check the checkbox labeled `Show Sv 6+`. A `Sv 6+` column group appears in the header.
 

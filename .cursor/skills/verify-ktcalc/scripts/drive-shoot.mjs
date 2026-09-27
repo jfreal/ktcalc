@@ -70,7 +70,7 @@ const PAGE_HOOKS = `
   }
 
   function attacksSelect(root) {
-    const selects = [...root.querySelectorAll('select#Attacks')].filter(isVisible);
+    const selects = [...root.querySelectorAll('select[id$="-Attacks"]')].filter(isVisible);
     if (selects.length !== 1) {
       throw new Error('expected 1 visible Attacks select in this panel, found ' + selects.length);
     }
