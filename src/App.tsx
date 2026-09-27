@@ -1,8 +1,9 @@
 import { Col, Container, Row } from 'react-bootstrap';
 import { ErrorBoundary } from 'react-error-boundary';
-import { Route, Routes, useSearchParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 
-import { CalculatorViewChoice, getViewFromUrlText, viewToUrlText } from 'src/CalculatorViewChoice';
+import { CalculatorViewChoice, calculatorCanonicalPath, getCalculatorView } from 'src/CalculatorViewChoice';
+import LegacyFightViewRedirect from 'src/LegacyFightViewRedirect';
 import { centerHoriz, } from 'src/Util';
 import FightSection from 'src/components/FightSection';
 import HelpPage from 'src/components/HelpPage';
@@ -16,9 +17,9 @@ import ShootMassAnalysisSection from 'src/components/ShootMassAnalysisSection';
 import ShootSection from 'src/components/ShootSection';
 import { ShareProvider } from 'src/context/ShareContext';
 
-// Per-view <head> + on-page heading copy. Keyed off the same ?view= value
-// the calculator switches on, so the title, description, canonical, and H1
-// can never disagree about which tool is showing.
+// Per-view <head> + on-page heading copy. Keyed off the same view the
+// calculator switches on (`/fight`, or ?view= everywhere else), so the title,
+// description, canonical, and H1 can never disagree about which tool is showing.
 const VIEW_SEO: Record<CalculatorViewChoice, { title: string; description: string; h1: string }> = {
   [CalculatorViewChoice.KtShoot]: {
     title: 'Kill Team 2024 Shooting Calculator — Ranged Attack Odds | ktcalc',
@@ -51,15 +52,13 @@ function fallbackRender({ error, resetErrorBoundary }: { error: Error, resetErro
 }
 
 const AppContent = () => {
+  const location = useLocation();
   const [urlParams] = useSearchParams();
   // Derived fresh on every render — never cached in state — so this can never
-  // disagree with AppHeader's own read of the same ?view= param.
-  const currentView = getViewFromUrlText(urlParams.get('view'));
+  // disagree with AppHeader's own read of the same location.
+  const currentView = getCalculatorView(location.pathname, urlParams.get('view'));
   const viewSeo = VIEW_SEO[currentView];
-  const canonicalPath =
-    currentView === CalculatorViewChoice.KtShoot
-      ? '/'
-      : `/?view=${viewToUrlText.get(currentView)}`;
+  const canonicalPath = calculatorCanonicalPath(currentView);
 
   function sectionDiv(
     view: CalculatorViewChoice,
@@ -184,7 +183,7 @@ const App = () => (
           </ErrorBoundary>
         }
       />
-      <Route path="*" element={<AppContent />} />
+      <Route path="*" element={<LegacyFightViewRedirect><AppContent /></LegacyFightViewRedirect>} />
       </Route>
     </Routes>
   </ShareProvider>

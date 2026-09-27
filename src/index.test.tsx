@@ -23,6 +23,7 @@ afterEach(() => {
 
 it.each([
   '/?view=fight&fa=12%3A4%3A3%3A3%3A4%3AX%3A0%3A0%3A0%3A0%3A0%3A%3A%3A0',
+  '/fight?fa=12%3A4%3A3%3A3%3A4%3AX%3A0%3A0%3A0%3A0%3A0%3A%3A%3A0',
   '/?view=shoot&a1=4%3A3%3A0%3A0%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A',
 ])('replaces the default snapshot for shared URL %s', (url) => {
   document.body.innerHTML = '<div id="root"><div>Default Shoot snapshot</div></div>';
@@ -32,8 +33,9 @@ it.each([
   expect(ReactDOM.hydrate).not.toHaveBeenCalled();
 });
 
-it('hydrates a snapshot when the URL has no query parameters', () => {
+it.each(['/', '/fight'])('hydrates a snapshot when %s has no query parameters', (url) => {
   document.body.innerHTML = '<div id="root"><div>Snapshot</div></div>';
+  window.history.replaceState({}, '', url);
   const ReactDOM = boot();
   expect(ReactDOM.hydrate).toHaveBeenCalledTimes(1);
   expect(ReactDOM.render).not.toHaveBeenCalled();

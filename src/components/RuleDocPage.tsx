@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Container } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import 'src/components/RuleDocPage.css';
+import { rehypeHeadingIds } from 'src/components/headingSlug';
 import Seo from 'src/components/Seo';
 import * as T from 'src/theme';
 
@@ -88,6 +89,7 @@ type LoadState =
 
 const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
+  const { hash } = useLocation();
 
   useEffect(() => {
     // Reset to loading so a file change never leaves stale content on screen.
@@ -106,6 +108,21 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
       });
     return () => controller.abort();
   }, [file]);
+
+  // The markdown arrives after first paint, so the browser's own hash scroll
+  // has already missed. Once the headings exist, scroll to one if the URL has it,
+  // and again when an in-app link changes only the hash.
+  useEffect(() => {
+    if (state.status !== 'ok') return;
+    if (hash.length < 2) return;
+    let id: string;
+    try {
+      id = decodeURIComponent(hash.slice(1));
+    } catch {
+      return;
+    }
+    document.getElementById(id)?.scrollIntoView();
+  }, [state, hash]);
 
   // Fall back to a generic rules-reference head for any unknown file so a new or
   // mistyped doc never leaves the previous route's title/canonical/meta in place
@@ -129,7 +146,11 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
       )}
       {state.status === 'ok' && (
         <div className="RuleDoc-body">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHeadingIds]}
+            components={{ a: MarkdownLink }}
+          >
             {state.text}
           </ReactMarkdown>
         </div>

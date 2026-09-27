@@ -1,11 +1,50 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import Model from 'src/Model';
 import Ability from 'src/Ability';
 import FightOptions from 'src/FightOptions';
+import { FIGHT_CALCULATOR_PATH } from 'src/CalculatorViewChoice';
 import { getFightStateFromUrl, useFightUrlState } from './useUrlState';
 
 afterEach(() => window.history.replaceState({}, '', '/'));
+
+function renderFightShare(fighterA: Model, fighterB: Model) {
+  let share!: ReturnType<typeof useFightUrlState>;
+  function Harness() {
+    share = useFightUrlState(fighterA, fighterB, new FightOptions());
+    const location = useLocation();
+    return <>
+      <button type="button" onClick={share.addParamsToUrl}>Add Share Params</button>
+      <output data-testid="location">{location.pathname}{location.search}</output>
+    </>;
+  }
+  render(<MemoryRouter initialEntries={['/']}><Harness /></MemoryRouter>);
+  return {
+    getShareUrl: () => share.getShareUrl(),
+    addParamsToUrl: () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Add Share Params' }));
+      window.history.replaceState({}, '', screen.getByTestId('location').textContent || '/');
+    },
+  };
+}
+
+it('shares fight state on /fight so unfurls are not the shoot snapshot', () => {
+  const share = renderFightShare(new Model(), new Model());
+
+  const url = new URL(share.getShareUrl());
+  expect(url.origin).toBe(window.location.origin);
+  expect(url.pathname).toBe(FIGHT_CALCULATOR_PATH);
+  expect(url.searchParams.has('view')).toBe(false);
+  expect(url.searchParams.get('fa')).toBeTruthy();
+  expect(url.searchParams.get('fb')).toBeTruthy();
+  expect(url.searchParams.get('fo')).toBeTruthy();
+
+  share.addParamsToUrl();
+  expect(window.location.pathname).toBe(FIGHT_CALCULATOR_PATH);
+  expect(new URLSearchParams(window.location.search).has('view')).toBe(false);
+  expect(getFightStateFromUrl()).not.toBeNull();
+});
 
 it.each([
   [Ability.Shock],
@@ -16,12 +55,7 @@ it.each([
   const fighterA = new Model();
   abilities.forEach(ability => fighterA.setAbility(ability));
   const fighterB = new Model().setAbility(Ability.JustAScratch);
-  let share!: ReturnType<typeof useFightUrlState>;
-  function Harness() {
-    share = useFightUrlState(fighterA, fighterB, new FightOptions());
-    return null;
-  }
-  render(<Harness />);
+  const share = renderFightShare(fighterA, fighterB);
   for (const action of [
     () => window.history.replaceState({}, '', share.getShareUrl()),
     () => share.addParamsToUrl(),
@@ -48,12 +82,7 @@ it('preserves abilities in legacy fight links without enabling new or removed ab
 it.each([0, 4, 5, 6])('preserves FNP %i for both fighters through both sharing actions', (fnp) => {
   const fighterA = new Model().setProp('fnp', fnp).setProp('saintlyRelics', 1);
   const fighterB = new Model().setProp('fnp', fnp === 0 ? 4 : 0).setProp('saintlyRelics', 2);
-  let share!: ReturnType<typeof useFightUrlState>;
-  function Harness() {
-    share = useFightUrlState(fighterA, fighterB, new FightOptions());
-    return null;
-  }
-  render(<Harness />);
+  const share = renderFightShare(fighterA, fighterB);
   for (const action of [
     () => window.history.replaceState({}, '', share.getShareUrl()),
     () => share.addParamsToUrl(),
@@ -71,12 +100,7 @@ it.each([0, 4, 5, 6])('preserves FNP %i for both fighters through both sharing a
 it.each([2, 3])('degrades fight FNP %i to off through both sharing actions', (fnp) => {
   const fighterA = new Model().setProp('fnp', fnp).setProp('saintlyRelics', 1);
   const fighterB = new Model().setProp('fnp', fnp).setProp('saintlyRelics', 2);
-  let share!: ReturnType<typeof useFightUrlState>;
-  function Harness() {
-    share = useFightUrlState(fighterA, fighterB, new FightOptions());
-    return null;
-  }
-  render(<Harness />);
+  const share = renderFightShare(fighterA, fighterB);
   for (const action of [
     () => window.history.replaceState({}, '', share.getShareUrl()),
     () => share.addParamsToUrl(),

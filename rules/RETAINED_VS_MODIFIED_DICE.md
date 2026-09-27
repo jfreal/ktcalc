@@ -187,10 +187,12 @@ normal attacker, cover wins at every save value and every promotion count, and d
 ahead once you hold norm→crit save promotions *and* most of the incoming hits are critical.
 [When Not to Take Cover Saves](/rules/cover-saves) has the numbers and the workaround.
 
-**Optional rules are ranked on pre-save damage.** When the calculator decides Punishing, Accurate or
-Mystic Scry, it scores the options by the damage the dice would deal, without weighing the
-defender's saves or Piercing. For save dice, where there is no damage to score, it falls back to
-counting a critical save as two normal saves.
+**Accurate is ranked on pre-save damage.** How many Accurate dice to retain is decided before the
+roll, from the damage those dice would deal, without the defender's saves or Piercing. **Punishing
+and Mystic Scry are decided per roll.** On a shoot, each candidate is scored by its expected damage
+against that defender's saves, cover, and Piercing; with no defender, and in a fight, they fall
+back to pre-save damage. For save dice, where there is no damage to score, the fallback counts a
+critical save as two normal saves.
 
 **FailsToNorms is treated as a change, not a retention.** The generic input is worded as a
 modification, so the norms it produces stay promotable. If your rule is worded "retain one of your
