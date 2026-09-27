@@ -591,10 +591,9 @@ export function handleDuelist(
   // mid-fight state) don't grant it a second time and corrupt the estimate.
   guy1State.hasDuelistParried = true;
 
+  // Brutal: only a crit can parry, and the guard above already returned when we have none.
   if(guy2State.profile.has(Ability.Brutal)) {
-    if(guy1State.crits) {
-      resolveDieChoice(FightChoice.CritParry, guy1State, guy2State);
-    }
+    resolveDieChoice(FightChoice.CritParry, guy1State, guy2State);
     return;
   }
 

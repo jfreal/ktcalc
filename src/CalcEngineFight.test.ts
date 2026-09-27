@@ -504,6 +504,17 @@ describe(handleDuelist.name + ' fires only once per fight', () => {
     expect(enemy.norms).toBe(0);
     expect(duelist.hasDuelistParried).toBe(false);
   });
+  it('only normals vs a Brutal enemy does not spend a die or the once-per-fight flag', () => {
+    // Brutal can only be parried by a crit, so normals-only has no legal parry.
+    const duelist = newFighterState(0, 2, 99, FightStrategy.MaxDmgToEnemy, new Set<Ability>([Ability.Duelist]));
+    const enemy = newFighterState(0, 2, 99, FightStrategy.Strike, new Set<Ability>([Ability.Brutal]));
+
+    handleDuelist(duelist, enemy);
+
+    expect(duelist.norms).toBe(2);
+    expect(enemy.norms).toBe(2);
+    expect(duelist.hasDuelistParried).toBe(false);
+  });
 });
 
 describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, dueller', () => {
