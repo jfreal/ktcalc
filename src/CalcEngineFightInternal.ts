@@ -568,10 +568,11 @@ export function handleDuelist(
     return;
   }
 
-  // A normal success cannot cancel a critical success. With no crit of our own
-  // and no enemy normal, NormParry would spend a die and cancel nothing. Return
-  // before the once-per-fight flag is set so the free parry stays available.
-  if (guy1State.crits === 0 && guy2State.norms === 0) {
+  // A normal success cannot cancel a critical success, and against Brutal it can't parry at all.
+  // With no crit of our own and no enemy normal (or a Brutal enemy), NormParry would spend a die
+  // and cancel nothing. Return before the once-per-fight flag is set so the free parry stays
+  // available.
+  if (guy1State.crits === 0 && (guy2State.norms === 0 || guy2State.profile.has(Ability.Brutal))) {
     return;
   }
 
