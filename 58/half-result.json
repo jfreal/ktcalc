@@ -1,0 +1,13 @@
+{
+  "feature": "half-damage-tooltip",
+  "url": "http://127.0.0.1:4173/?view=fight",
+  "beforeVisible": {
+    "halfVisible": false
+  },
+  "after": {
+    "label": "Half Dmg 1st Strike ⚙️",
+    "title": "First strike damage is halved and rounded up, but never below 2 and never above the strike, so a 2 stays 2 and a 0 or 1 is unchanged."
+  },
+  "rejectsMinimumOf2": true,
+  "matchesEngineWording": true
+}

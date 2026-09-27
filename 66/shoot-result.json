@@ -1,0 +1,23 @@
+{
+  "feature": "shooting",
+  "url": "http://127.0.0.1:4174/",
+  "before": {
+    "h1": "Kill Team 2024 Shooting Calculator",
+    "situation1Attacks": "4",
+    "situation1AverageDamage": "3.29",
+    "situation2AverageDamage": "3.29"
+  },
+  "after": {
+    "h1": "Kill Team 2024 Shooting Calculator",
+    "situation1Attacks": "5",
+    "situation1AverageDamage": "5.04",
+    "situation2AverageDamage": "3.29"
+  },
+  "attacksStepped": true,
+  "damageChanged": true,
+  "situation2Unchanged": true,
+  "evidence": {
+    "before": "/tmp/kt-evidence/66/shoot-before.png",
+    "after": "/tmp/kt-evidence/66/shoot-after.png"
+  }
+}

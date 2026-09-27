@@ -1,0 +1,21 @@
+{
+  "feature": "fighting",
+  "url": "http://127.0.0.1:4173/?view=fight",
+  "before": {
+    "h1": "Kill Team 2024 Fight Calculator",
+    "fighterAAttacks": "4",
+    "fighterBAttacks": "4",
+    "fighterAAvgRemainingWounds": "3.61",
+    "fighterBAvgRemainingWounds": "3.57"
+  },
+  "after": {
+    "h1": "Kill Team 2024 Fight Calculator",
+    "fighterAAttacks": "5",
+    "fighterBAttacks": "4",
+    "fighterAAvgRemainingWounds": "3.95",
+    "fighterBAvgRemainingWounds": "2.09"
+  },
+  "attacksStepped": true,
+  "woundsChanged": true,
+  "fighterBAttacksUnchanged": true
+}

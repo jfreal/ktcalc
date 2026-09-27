@@ -1,0 +1,7 @@
+PR #63
+Test command: CI=true npm test -- --watchAll=false
+UI: .cursor/skills/verify-ktcalc/scripts/launch.sh && doctor.sh && drive-shoot.mjs && cleanup.sh
+Tests: 1 failed, 3 skipped, 427 passed, 431 total (exit 1)
+Only failing suite: src/WeaponRulesShock.test.ts, which also fails on main (1 failed, 1 passed) and is not changed by this PR.
+The workflow command is the suite above. .github/workflows/test.yml runs npm ci (puppeteer download skipped) then CI=true npm test -- --watchAll=false on pull_request and on push to main, Node 20.
+drive-shoot: PASS. Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04. Situation 2 Average Damage stayed 3.29.

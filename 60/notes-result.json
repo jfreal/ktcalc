@@ -1,0 +1,20 @@
+{
+  "feature": "llms-notes",
+  "seen": [
+    {
+      "url": "http://127.0.0.1:4174/notes/lethal-relentless",
+      "heading": "Lethal + Relentless: why kill chance can rise as BS gets worse"
+    },
+    {
+      "url": "http://127.0.0.1:4174/notes/mystic-scry-buff",
+      "heading": "Mystic Scry Buff + Rending: why the best choice depends on what you already rolled"
+    },
+    {
+      "url": "http://127.0.0.1:4174/help",
+      "heading": "How KT Calc works"
+    }
+  ],
+  "llmsUrl": "http://127.0.0.1:4174/llms.txt",
+  "missing": [],
+  "hasBothNewLinks": true
+}

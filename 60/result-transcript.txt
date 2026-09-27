@@ -1,0 +1,8 @@
+PR #60
+Test command: CI=true npm run testq
+UI: .cursor/skills/verify-ktcalc/scripts/launch.sh && doctor.sh && drive-shoot.mjs && cleanup.sh
+Tests: 1 failed, 3 skipped, 428 passed, 432 total (exit 1)
+Only failing suite: src/WeaponRulesShock.test.ts, which also fails on main (1 failed, 1 passed) and is not changed by this PR.
+llmsTxt.test.ts passed. /llms.txt lists both note URLs; /notes/lethal-relentless, /notes/mystic-scry-buff, and /help rendered their headings.
+drive-shoot: PASS. Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04. Situation 2 Average Damage stayed 3.29.
+drive-notes: PASS. lethal-relentless, mystic-scry-buff, and help headings rendered; llms.txt contains all three /notes/ sitemap URLs.

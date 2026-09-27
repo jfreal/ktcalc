@@ -1,0 +1,8 @@
+PR #54
+Test command: CI=true npm run testq
+UI: .cursor/skills/verify-ktcalc/scripts/launch.sh && doctor.sh && drive-shoot.mjs && cleanup.sh
+Tests: 1 failed, 3 skipped, 428 passed, 432 total (exit 1)
+Only failing suite: src/WeaponRulesShock.test.ts, which also fails on main (1 failed, 1 passed) and is not changed by this PR.
+CalcEngineFight.test.ts passed, including the new fighter-2 negative-normals guard.
+drive-shoot: PASS. Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04. Situation 2 Average Damage stayed 3.29.
+drive-fight: PASS. Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 3.95. Fighter B Attacks stayed 4.

@@ -1,0 +1,9 @@
+{
+  "feature": "weapon-rules-severe",
+  "url": "http://127.0.0.1:4174/rules/weapon",
+  "heading": "Kill Team 2024 Weapon Rules",
+  "section": "Severe Rule Fix\nFixed Punishing no longer triggers from Severe-created crits\nFixed Rending no longer triggers from Severe-created crits\nAdded severeTriggered flag to track when Severe creates a crit\nPreserved Devastating X and Piercing Crits X still work with Severe\nFile: CalcEngineCommon.ts - severeTriggered in resolveAfterPunishing\nReroll Targeting Strategy\nClarified all reroll abilities only target fails (optimal play)\nRationale: Rerolling fails can only improve; rerolling norms/crits can get worse\nApplied to: Balanced, Ceaseless, Relentless, CeaselessPlusBalanced, OnesPlusBalanced\nNo Double Reroll Rule\nDocumented dice cannot be rerolled twice in same action\nImplementation: Track availFai",
+  "citesFunction": true,
+  "citesOldLines": false,
+  "citesOldName": false
+}

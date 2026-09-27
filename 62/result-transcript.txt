@@ -1,0 +1,7 @@
+PR #62
+Test command: CI=true npm run testq
+UI: .cursor/skills/verify-ktcalc/scripts/launch.sh && doctor.sh && drive-shoot.mjs && cleanup.sh
+Tests: 1 failed, 3 skipped, 434 passed, 438 total (exit 1)
+Only failing suite: src/WeaponRulesShock.test.ts, which also fails on main (1 failed, 1 passed) and is not changed by this PR.
+CalcEngineShoot.test.ts passed, including the JustAScratchNorms calcDamage cases and the brute-force grid.
+drive-shoot: PASS. Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04. Situation 2 Average Damage stayed 3.29.
