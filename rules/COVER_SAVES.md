@@ -72,10 +72,11 @@ The calculator does make this kind of choice elsewhere: it declines **Punishing*
 in the table above — **the right answer depends on the attacker**, and specifically on what share of
 the incoming hits are critical.
 
-Everywhere else the engine makes an optional-rule decision, it does so in the dice step, which sees
-only the dice being rolled and their damage values. That is enough for attack dice, whose value is
-their own damage. It is not enough for save dice: a save's worth is defined entirely by the hits it
-has to cancel, and the dice step has no view of them.
+Attack-side retain choices can see the defender. On a shoot, Punishing and Mystic Scry score each
+line by expected damage against that defender's saves, cover, and Piercing. The cover decision
+cannot: it is made while rolling the defender's own dice, which do not see the incoming hits. A
+save's worth is defined entirely by the hits it has to cancel, and that dice step has no view of
+them.
 
 Doing it properly means hoisting the decision up to `calcDmgProbs`, which does see both sides:
 compute the full damage distribution for each legal cover count and keep whichever minimises damage.

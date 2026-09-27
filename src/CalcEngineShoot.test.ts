@@ -133,21 +133,6 @@ describe(calcDamage.name + ', smallCrit (crit < norm)', () => {
   });
 });
 
-describe(calcDmgProbs.name + ', Durable', () => {
-  const dn = 10; // normal damage
-  const dc = 100; // critical damage
-  const atker = new Model(0, 0, dn, dc);
-  const def = new Model().setAbility(Ability.Durable);
-  it('Durable, D=10/100', () => {
-    expect(calcDamage(atker, def, 2, 2, 0, 0).damage).toBe(2 * dc - 1 + 2 * dn);
-  });
-  it('Durable, D=10/3', () => {
-    const lowDc = 3;
-    const lowAtker = new Model(0, 0, dn, lowDc);
-    expect(calcDamage(lowAtker, def, 2, 2, 0, 0).damage).toBe(2 * lowDc + 2 * dn);
-  });
-});
-
 describe(calcDamage.name + ', numHits with MWx', () => {
   // cancelled crit still counts as a hit when MWx contributed damage
   const dn = 1;
@@ -222,47 +207,8 @@ describe(calcDamage.name + ', JustAScratch cancels the higher-damage hit', () =>
   });
 });
 
-describe(calcDamage.name + ', JustAScratch with Durable', () => {
-  const def = new Model().setAbility(Ability.JustAScratch).setAbility(Ability.Durable);
-
-  it('critDmg == normDmg == 4, 1ch 1nh => cancels the norm, Durable shaves the crit to 3', () => {
-    const atker = new Model(0, 0, 4, 4, 0);
-    const r = calcDamage(atker, def, 1, 1, 0, 0);
-    expect(r.damage).toBe(3);
-    expect(r.survivingCritHits).toBe(1);
-    expect(r.survivingNormHits).toBe(0);
-  });
-  it('critDmg == normDmg == 4, 1ch 1nh vs 0cs 1ns => cancels the crit so the save blocks the norm, 0 dmg', () => {
-    const atker = new Model(0, 0, 4, 4, 0);
-    expect(calcDamage(atker, def, 1, 1, 0, 1).damage).toBe(0);
-  });
-  it('critDmg == normDmg == 4, 2ch 1nh => cancels a crit (Durable shaves the other), 3 + 4', () => {
-    const atker = new Model(0, 0, 4, 4, 0);
-    expect(calcDamage(atker, def, 2, 1, 0, 0).damage).toBe(7);
-  });
-});
-
-describe(calcDamage.name + ', save allocation with Durable', () => {
-  const def = new Model().setAbility(Ability.Durable);
-
-  it('critDmg == normDmg == 4, 1ch 1nh vs 1cs => crit save blocks the norm, Durable shaves the crit to 3', () => {
-    const atker = new Model(0, 0, 4, 4, 0);
-    const r = calcDamage(atker, def, 1, 1, 1, 0);
-    expect(r.damage).toBe(3);
-    expect(r.survivingCritHits).toBe(1);
-    expect(r.survivingNormHits).toBe(0);
-    expect(r.durableCritReduction).toBe(1);
-  });
-  it('critDmg=5 > normDmg=4, 1ch 1nh vs 1cs => 4 either way (norm, or crit shaved to 4), keeps blocking the crit', () => {
-    const atker = new Model(0, 0, 4, 5, 0);
-    const r = calcDamage(atker, def, 1, 1, 1, 0);
-    expect(r.damage).toBe(4);
-    expect(r.survivingCritHits).toBe(0);
-  });
-  it('critDmg=3 is too low for Durable, 1ch 1nh vs 1cs => blocks the crit as before', () => {
-    const atker = new Model(0, 0, 3, 3, 0);
-    expect(calcDamage(atker, def, 1, 1, 1, 0).damage).toBe(3);
-  });
+describe(calcDamage.name + ', save allocation', () => {
+  const def = new Model();
 
   // Brute force: every legal use of the saves (including wasteful ones) and every JaS choice.
   function bruteForceMinDamage(atker: Model, defender: Model, ch: number, nh: number, cs: number, ns: number) {
@@ -273,7 +219,6 @@ describe(calcDamage.name + ', save allocation with Durable', () => {
       if (nh > 0) jasChoices.push([ch, nh - 1]);
       if (ch + nh === 0) jasChoices.push([0, 0]);
     }
-    const durable = defender.has(Ability.Durable) && atker.critDmg > 3;
     let best = Infinity;
     for (const [c0, n0] of jasChoices) {
       for (let a = 0; a <= Math.min(cs, c0); a++) {
@@ -282,8 +227,7 @@ describe(calcDamage.name + ', save allocation with Durable', () => {
             for (let d = 0; d <= Math.min(Math.floor((ns - c) / 2), c0 - a); d++) {
               const crits = c0 - a - d;
               const norms = n0 - b - c;
-              const dmg = ch * atker.mwx + crits * atker.critDmg + norms * atker.normDmg
-                - (durable && crits > 0 ? 1 : 0);
+              const dmg = ch * atker.mwx + crits * atker.critDmg + norms * atker.normDmg;
               best = Math.min(best, dmg);
             }
           }
@@ -296,7 +240,7 @@ describe(calcDamage.name + ', save allocation with Durable', () => {
   const profiles: [number, number][] = [[3, 4], [4, 4], [4, 5], [3, 6], [3, 7], [2, 4], [5, 4], [4, 9]];
   for (const withJas of [false, true]) {
     it(`matches brute force for every 0-3 hits/saves split${withJas ? ', with JaS' : ''}`, () => {
-      const defender = withJas ? new Model().setAbility(Ability.Durable).setAbility(Ability.JustAScratch) : def;
+      const defender = withJas ? new Model().setAbility(Ability.JustAScratch) : def;
       for (const [dn, dc] of profiles) {
         for (const mwx of [0, 2]) {
           const atker = new Model(0, 0, dn, dc, mwx);
@@ -660,6 +604,33 @@ describe(calcDmgProbs.name + ', relentless', () => {
   });
 });
 
+describe(calcDmgProbs.name + ', mystic scry and punishing vs saves', () => {
+  it('mystic scry keeps the crit when one cover save and Piercing Crits 1 beat two normals', () => {
+    // 2 dice at 2+, never crit: 25/36 two norms, 10/36 one norm + one fail, 1/36 two fails.
+    // Two normals upgrade one to a crit (Piercing removes the cover) for 7.
+    // One norm and one fail: fail->norm is 6 raw but the cover leaves 3; norm->crit is 4 and
+    // Piercing Crits 1 removes the cover die, so 4 gets through. Two fails become one saved norm.
+    const atk = new Model(2, 2, 3, 4).setProp('lethal', 7).setProp('px', 1)
+      .setAbility(Ability.MysticScryBuff, true);
+    const def = new Model(1, 6).setProp('autoNorms', 1);
+
+    expect(avgDmg(atk, def)).toBeCloseTo((25 * 7 + 10 * 4) / 36, requiredPrecision);
+  });
+
+  it('punishing declines the locked norm when one normal save makes the crit line better', () => {
+    // 2 dice at 6+: 1/36 two crits, 10/36 one crit + one fail, 25/36 two fails.
+    // Norm 6 / crit 2, Rending, FailsToNorms 1, one always-normal save.
+    // Taking on the mixed roll locks {1c,1n}: the save blocks the norm and 2 gets through.
+    // Declining lets FailsToNorms + Rending make {2c}: one normal save cannot block a crit, so 4.
+    const atk = new Model(2, 6, 6, 2).setProp('failsToNorms', 1)
+      .setAbility(Ability.Punishing, true)
+      .setAbility(Ability.Rending, true);
+    const def = new Model(1).withAlwaysNorm();
+
+    expect(avgDmg(atk, def)).toBeCloseTo((1 * 4 + 10 * 4) / 36, requiredPrecision);
+  });
+});
+
 describe(calcDmgProbs.name + ', rending & starfire', () => {
   it('rending, 2 atk dice, probability 2 crits', () => {
     const atk = newTestAttacker(2).setAbility(Ability.Rending, true);
@@ -742,16 +713,6 @@ describe(calcRelicsOutcomes.name, () => {
     const outcomes = calcRelicsOutcomes(result(24, 2, 1, 1), atk, SaintlyRelicsInspiring);
     const total = outcomes.reduce((sum, o) => sum + o.prob, 0);
     expect(total).toBeCloseTo(1, requiredPrecision);
-  });
-  it('Durable: ignoring the lone reduced crit removes critDmg-1, not critDmg', () => {
-    // critDmg 4, normDmg 2; Durable already shaved the single surviving crit, so damage = 3 + 2 = 5.
-    // Ignoring that crit must leave the normal hit intact at 2 (not 1 from over-subtracting full critDmg).
-    const durAtk = new Model(0, 0, 2, 4);
-    const res: DamageResult =
-      { damage: 5, numHits: 2, survivingCritHits: 1, survivingNormHits: 1, durableCritReduction: 1 };
-    const outcomes = calcRelicsOutcomes(res, durAtk, SaintlyRelicsNormal);
-    expect(outcomes.find(o => o.ignored && o.damage === 2)).toBeTruthy(); // ignored the crit -> norm intact
-    expect(outcomes.find(o => o.damage === 1)).toBeUndefined(); // the buggy over-subtracted value
   });
 });
 

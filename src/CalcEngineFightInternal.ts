@@ -181,7 +181,7 @@ export function resolveFight(
     && currentGuy.currentWounds > 0 && nextGuy.currentWounds > 0)
   {
     // used to have a `if(oneGuy out of successes){ oneGuy.applyDmg(otherGuy.totalDmg())); }`
-    // but it would be painful to make that handle Durable and other abilities
+    // but it would be painful to make that handle first-strike and other abilities
 
     if(currentGuy.crits + currentGuy.norms > 0) {
       const choice = calcDieChoice(currentGuy, nextGuy);
@@ -205,11 +205,23 @@ export function preferredStrikeChoice(chooser: FighterState, enemy: FighterState
   // not survive to spend every success — better to land the crit than die holding it.
   const critFirst = chooser.nextStrike();
 
-  // The only time striking norm-first can help is when we hold BOTH crits and norms AND the
-  // enemy has NO crits: a normal parry can cancel only a normal (it can't touch a crit), so
-  // striking our normal first forces it through before the enemy can parry it, while our crit
-  // stays unparryable. Outside this shape, crit-first is always at least as good.
-  if(!(chooser.crits > 0 && chooser.norms > 0 && enemy.crits === 0)) {
+  // Norm-first is only an option when we hold both dice types. Compare it when order can
+  // change the damage that actually lands:
+  //  - the enemy has no crits, so a normal parry can cancel our normal but not our crit;
+  //  - the enemy zeros or halves the first strike (Just a Scratch, Half Damage), so spending
+  //    the cheaper die on that penalty can leave the bigger one intact;
+  //  - our normal out-damages our crit. Hammerhand's +1 lands on whichever die is first, so
+  //    it preserves that gap rather than closing it.
+  // An enemy crit does not by itself make crit-first safe: they may parry our crit if we lead
+  // with the normal, or kill us before the second strike. The simulation below keeps crit-first
+  // unless norm-first is strictly better.
+  const normalOutDamagesCrit = chooser.profile.normDmg > chooser.profile.critDmg;
+  // Only this fighter's first strike is zeroed or halved; once it has struck, order no longer
+  // dodges the penalty, and re-running the simulation at every later strike would compound.
+  const firstStrikeIsPunished = !chooser.hasStruck
+    && (enemy.profile.has(Ability.JustAScratch) || enemy.profile.has(Ability.HalfDamageFirstStrike));
+  if(!(chooser.crits > 0 && chooser.norms > 0
+    && (enemy.crits === 0 || firstStrikeIsPunished || normalOutDamagesCrit))) {
     return critFirst;
   }
 
@@ -271,20 +283,35 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
     return strategyStrike(chooser, enemy);
   }
 
-  // ALWAYS strike if you can kill enemy with a single strike;
-  // also, if enemy has brutal and you have no crits, then you must strike;
-  if(chooser.nextDmg(enemy) >= enemy.currentWounds
-    || (enemy.profile.has(Ability.Brutal) && chooser.crits === 0)) {
+  // Brutal leaves no legal parry when we have no crits.
+  if(enemy.profile.has(Ability.Brutal) && chooser.crits === 0) {
     return chooser.nextStrike();
   }
 
-  // if can shock enemy (crit strike that also cancels an enemy NORM success),
-  // and enemy doesn't have any crit successes, then a shocking crit strike is usually right.
-  // BUT when we also hold a norm and are trying to maximize damage, striking the norm first can
-  // be better: the enemy's normal parry can't touch our crit, so leading with the norm pushes it
-  // past the parry while the crit (and its shock) still lands on a later turn. Defer to
-  // preferredStrikeChoice in that mixed-dice case; otherwise take the crit strike now.
-  if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0 && enemy.crits === 0) {
+  // Check the next strike through the real damage-resolution path: raw damage can
+  // look lethal even when Just a Scratch cancels it or first-strike effects reduce it.
+  // As with the other lookaheads, clones keep live state/rng untouched and estimate
+  // random prevention by its expectation (this is not a guaranteed-kill test).
+  // nextDmg() is the raw upper bound, so skip the clones when even that can't kill.
+  if(chooser.nextDmg() >= enemy.currentWounds) {
+    const struckEnemy = enemy.asEstimate();
+    resolveDieChoice(chooser.nextStrike(), chooser.asEstimate(), struckEnemy);
+    if(struckEnemy.currentWounds <= 0) {
+      return chooser.nextStrike();
+    }
+  }
+
+  // Shock's first crit strike discards one unresolved enemy normal, or a crit if they have
+  // no normals. Force that strike when the discard removes a success they would otherwise
+  // keep: no enemy crits (the discard hits a normal) or no enemy normals (the discard hits
+  // a crit). A Parry fighter would otherwise keep parrying a crit-only opponent and never
+  // land the discard. When we also hold a norm and are maximizing damage against a norms-only
+  // enemy, striking the norm first can still be better — the enemy's normal parry can't touch
+  // our crit — so strategyStrike defers to preferredStrikeChoice in that mixed-dice case.
+  // When the enemy still holds both crits and normals, Shock would only discard a normal, so
+  // this shortcut does not override a crit parry.
+  if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck && chooser.crits > 0
+    && (enemy.crits === 0 || enemy.norms === 0)) {
     return strategyStrike(chooser, enemy);
   }
 
@@ -359,7 +386,9 @@ export function resolveDieChoice(
           dmg++;
         }
         if(enemy.profile.abilities.has(Ability.HalfDamageFirstStrike)) {
-          dmg = Math.max(2, Math.ceil(dmg / 2));
+          // Halved and rounded up, but never below 2 and never above the strike itself.
+          // A 2 stays 2 (half would be 1). A 0 or 1 is already at or under that floor.
+          dmg = dmg <= 2 ? dmg : Math.ceil(dmg / 2);
         }
       }
       chooser.hasStruck = true;
@@ -392,12 +421,16 @@ export function resolveDieChoice(
   }
 
   if(choice === FightChoice.CritStrike) {
-    let critDmgAfterPossibleDurable = chooser.nextCritDmgWithDurableAndWithoutHammerhand(enemy);
-    applyDmgWithFirstStrikeHandling(critDmgAfterPossibleDurable, false);
+    applyDmgWithFirstStrikeHandling(chooser.profile.critDmg, false);
     chooser.crits--;
 
     if(chooser.profile.has(Ability.Shock) && !chooser.hasCritStruck) {
-      enemy.norms = Math.max(0, enemy.norms - 1); // shock ability cancels an enemy norm success
+      // First crit strike discards one unresolved normal, or a crit if there are none.
+      if(enemy.norms > 0) {
+        enemy.norms--;
+      } else if(enemy.crits > 0) {
+        enemy.crits--;
+      }
     }
 
     if (
@@ -509,7 +542,7 @@ export function calcParryForLastEnemySuccessThenKillEnemy(
     // Estimate the chooser's remaining damage by cloning the fighters, applying
     // the parry, then striking out the rest through the real resolution path.
     // This keeps resolveDieChoice the single source of truth for first-strike
-    // handling (JaS Crits, JaS Normals, Hammerhand, Durable, etc.) instead of
+    // handling (JaS Crits, JaS Normals, Hammerhand, etc.) instead of
     // re-deriving it here. The clones are estimates (see asEstimate above), so
     // Feel No Pain and Saintly Relics are applied as expected values — the enemy
     // surviving on Feel No Pain is exactly what decides whether this
@@ -568,15 +601,22 @@ export function handleDuelist(
     return;
   }
 
+  // A normal success cannot cancel a critical success, and against Brutal it can't parry at all.
+  // With no crit of our own and no enemy normal (or a Brutal enemy), NormParry would spend a die
+  // and cancel nothing. Return before the once-per-fight flag is set so the free parry stays
+  // available.
+  if (guy1State.crits === 0 && (guy2State.norms === 0 || guy2State.profile.has(Ability.Brutal))) {
+    return;
+  }
+
   // Duelist's free parry happens once per fight. Mark it spent now so re-entrant resolveFight
   // calls (e.g. the lookahead simulations in calcDieChoice / preferredStrikeChoice, which clone
   // mid-fight state) don't grant it a second time and corrupt the estimate.
   guy1State.hasDuelistParried = true;
 
+  // Brutal: only a crit can parry, and the guard above already returned when we have none.
   if(guy2State.profile.has(Ability.Brutal)) {
-    if(guy1State.crits) {
-      resolveDieChoice(FightChoice.CritParry, guy1State, guy2State);
-    }
+    resolveDieChoice(FightChoice.CritParry, guy1State, guy2State);
     return;
   }
 

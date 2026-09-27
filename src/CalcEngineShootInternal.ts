@@ -3,7 +3,6 @@ import * as Util from 'src/Util';
 import FinalDiceProb from 'src/FinalDiceProb';
 import * as Common from 'src/CalcEngineCommon';
 import Ability from "src/Ability";
-import { MinCritDmgAfterDurable } from "./KtMisc";
 import { relicIgnoreProb } from "src/SaintlyRelics";
 
 class DefenderFinalDiceStuff {
@@ -79,6 +78,42 @@ export function calcDefenderFinalDiceStuff(
   );
 }
 
+// The defence-dice distribution a hit profile faces: Piercing Crits only applies when a crit
+// was retained.
+export function defenceDiceFor(stuff: DefenderFinalDiceStuff, crits: number): FinalDiceProb[] {
+  return (stuff.pxIsRelevant && crits > 0) ? stuff.finalDiceProbsWithPx : stuff.finalDiceProbs;
+}
+
+// Expected damage of one already-retained hit profile against this defender.
+// Cover and both Piercing rules come from the same defence-dice distributions the
+// shot uses afterwards, so a retain choice ranked with this scorer is ranking the
+// damage that choice will actually deal. Feel No Pain stays out: calcDamage is
+// pre-FNP, and the retain step still does not weigh the shape of those rolls.
+// Saintly Relics are likewise left out. Pass the shot's own defence-dice stuff to
+// avoid building those distributions twice.
+export function hitScorerForDefender(
+  attacker: Model,
+  defender: Model,
+  stuff: DefenderFinalDiceStuff = calcDefenderFinalDiceStuff(defender, attacker),
+): (crits: number, norms: number) => number {
+  const cache = new Map<string, number>();
+  return (crits, norms) => {
+    const key = `${crits},${norms}`;
+    const cached = cache.get(key);
+    if (cached !== undefined) {
+      return cached;
+    }
+    let total = 0;
+    if (crits + norms > 0) {
+      for (const def of defenceDiceFor(stuff, crits)) {
+        total += def.prob * calcDamage(attacker, defender, crits, norms, def.crits, def.norms).damage;
+      }
+    }
+    cache.set(key, total);
+    return total;
+  };
+}
+
 export function calcPostFnpDamages(
   fnp: number,
   preFnpDmgs: Map<string,number>, // key = "damage,numHits"
@@ -108,7 +143,6 @@ export interface DamageResult {
   numHits: number; // damage-causing hits / FNP-relevant hit instances; includes cancelled crits when MWx contributed damage
   survivingCritHits: number; // crit hits left after saves (each dealing critDmg); SaintlyRelics targets these
   survivingNormHits: number; // norm hits left after saves (each dealing normDmg); SaintlyRelics targets these
-  durableCritReduction?: number; // 1 if Durable already shaved a damage off one surviving crit, else 0
 }
 
 // One post-SaintlyRelics damage possibility for a single attack/defense scenario.
@@ -133,7 +167,7 @@ export function calcDamage(
     calcDamageAfterJas(attacker, defender, originalCritHits, mwxDamage, crits, norms, critSaves, normSaves);
 
   // Just a Scratch cancels one hit before saves. Which one is best depends on what the saves can
-  // then block and on Durable, so try each hit type and keep the lowest damage. On equal damage,
+  // then block, so try each hit type and keep the lowest damage. On equal damage,
   // prefer cancelling the type with more per-die damage (crits on a tie). MWx was already counted
   // from the original crits, so cancelling a crit only ever removes critDmg.
   if (defender.has(Ability.JustAScratch) && critHits + normHits > 0) {
@@ -157,7 +191,6 @@ function calcDamageAfterJas(
   normSaves: number,
 ): DamageResult {
   const numNormalSavesToCancelCritHit = 2; // for Kill Team rules, not Fire Team rules
-  const durableApplies = defender.has(Ability.Durable) && attacker.critDmg > MinCritDmgAfterDurable;
 
   function critSavesCancelCritHits() {
     const numCancels = Math.min(critSaves, critHits);
@@ -185,11 +218,6 @@ function calcDamageAfterJas(
       normHits--;
     }
   }
-
-  const initialCritHits = critHits;
-  const initialNormHits = normHits;
-  const initialCritSaves = critSaves;
-  const initialNormSaves = normSaves;
 
   if (attacker.critDmg >= attacker.normDmg) {
     critSavesCancelCritHits();
@@ -219,31 +247,7 @@ function calcDamageAfterJas(
     normSavesCancelCritHits();
   }
 
-  const greedy = damageFromSurvivors(critHits, normHits);
-  if (!durableApplies) {
-    return greedy;
-  }
-
-  // The greedy order above ignores Durable, which takes 1 off a surviving crit. That can make a
-  // different split better, e.g. equal dmgs with 1ch 1nh vs 1cs: saving the norm leaves a shaved
-  // crit. So try every split of the saves and keep one only if it is strictly better, leaving
-  // equal-damage cases as the greedy order chose them. Using spare saves never hurts, so only the
-  // crit-saves-on-crits and norm-saves-on-norms counts need searching.
-  let best = greedy;
-  for (let cscc = 0; cscc <= Math.min(initialCritSaves, initialCritHits); cscc++) {
-    const cscn = Math.min(initialCritSaves - cscc, initialNormHits);
-    for (let nsnn = 0; nsnn <= Math.min(initialNormSaves, initialNormHits - cscn); nsnn++) {
-      const nscc = Math.min(
-        ((initialNormSaves - nsnn) / numNormalSavesToCancelCritHit) >> 0,
-        initialCritHits - cscc,
-      );
-      const candidate = damageFromSurvivors(initialCritHits - cscc - nscc, initialNormHits - cscn - nsnn);
-      if (candidate.damage < best.damage) {
-        best = candidate;
-      }
-    }
-  }
-  return best;
+  return damageFromSurvivors(critHits, normHits);
 
   function damageFromSurvivors(critHits: number, normHits: number): DamageResult {
     // Only damaging hits get FNP rolls; zero-damage hits must not reduce other hits.
@@ -252,9 +256,8 @@ function calcDamageAfterJas(
     const damagingCrits = attacker.critDmg + attacker.mwx > 0 ? critHits : 0;
     const damagingNorms = attacker.normDmg > 0 ? normHits : 0;
     const numHits = damagingCrits + damagingNorms + mwxCancelledCrits;
-    const durableCritReduction = durableApplies && critHits > 0 ? 1 : 0;
-    const damage = mwxDamage + critHits * attacker.critDmg + normHits * attacker.normDmg - durableCritReduction;
-    return { damage, numHits, survivingCritHits: critHits, survivingNormHits: normHits, durableCritReduction };
+    const damage = mwxDamage + critHits * attacker.critDmg + normHits * attacker.normDmg;
+    return { damage, numHits, survivingCritHits: critHits, survivingNormHits: normHits };
   }
 }
 
@@ -280,12 +283,7 @@ export function calcRelicsOutcomes(
   // ignored crit still deals that residual damage, so it must keep its Feel No Pain roll.
   const groups: { count: number; dieDmg: number; keepsFnpRoll: boolean }[] = [];
   if (result.survivingCritHits > 0 && attacker.critDmg > 0) {
-    // when only one crit survives it IS the Durable-reduced one, so ignoring it removes critDmg-1;
-    // with several, the defender ignores a full crit (Durable shaved a different one)
-    const critDieDmg = result.survivingCritHits === 1
-      ? attacker.critDmg - (result.durableCritReduction ?? 0)
-      : attacker.critDmg;
-    groups.push({ count: result.survivingCritHits, dieDmg: critDieDmg, keepsFnpRoll: attacker.mwx > 0 });
+    groups.push({ count: result.survivingCritHits, dieDmg: attacker.critDmg, keepsFnpRoll: attacker.mwx > 0 });
   }
   if (result.survivingNormHits > 0 && attacker.normDmg > 0) {
     groups.push({ count: result.survivingNormHits, dieDmg: attacker.normDmg, keepsFnpRoll: false });
