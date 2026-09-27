@@ -30,12 +30,32 @@ export default class DieProbs {
       || reroll === Ability.Relentless
       || reroll === Ability.RerollOnesPlusBalanced
     ) {
-      const rerollMultiplier = reroll === Ability.Relentless
-        ? 1 + failHitProb
-        : 7 / 6;
-      critHitProb *= rerollMultiplier;
-      normHitProb *= rerollMultiplier;
-      failHitProb = 1 - critHitProb - normHitProb;
+      // The 7/6 factor assumes a rolled 1 is a failure. On a 1+ stat nothing can
+      // fail (fail is 0, or a float residue of 0), so that factor pushes crit+norm
+      // above 1. Relentless only rerolls fails, so it is already a no-op here.
+      // RerollOnes still rerolls the face: a normal 1 can come up a crit.
+      const oneIsAlreadyASuccess = reroll !== Ability.Relentless
+        && normSkill <= 1
+        && Math.abs(failHitProb) <= 1e-9;
+      if (oneIsAlreadyASuccess) {
+        if (effCritSkill > 1) {
+          const pOne = 1 / 6;
+          critHitProb += pOne * critHitProb;
+          normHitProb = (normHitProb - pOne) + pOne * normHitProb;
+        }
+        const kept = critHitProb + normHitProb;
+        critHitProb /= kept;
+        normHitProb /= kept;
+        failHitProb = 0;
+      }
+      else {
+        const rerollMultiplier = reroll === Ability.Relentless
+          ? 1 + failHitProb
+          : 7 / 6;
+        critHitProb *= rerollMultiplier;
+        normHitProb *= rerollMultiplier;
+        failHitProb = 1 - critHitProb - normHitProb;
+      }
     }
     else if (reroll === Ability.CritFishRelentless) {
       const noncritProb = 1 - critHitProb;

@@ -218,7 +218,9 @@ export function calcFinalDiceProb(
     prob = calcMultiRollProb(dieProbs, crits, norms, fails);
   }
 
-  if (reroll === Ability.RerollOnesPlusBalanced) {
+  // Balanced rerolls one fail Ones did not already reroll. When nothing can fail,
+  // the formula divides by dieProbs.fail and the NaN rows are dropped (prob > 0).
+  if (reroll === Ability.RerollOnesPlusBalanced && dieProbs.fail > 0) {
     const probRollBeforeBalanced = prob;
     // probSingleFailCanNotBeRerolled = (BS - 1) / (7*BS - 13)
     // but, to put it in terms of given RerollOnes fail prob: 1/7 + 1/(42*pFail)
