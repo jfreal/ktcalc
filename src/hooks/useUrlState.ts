@@ -1,10 +1,12 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
 import FightOptions from 'src/FightOptions';
 import FightStrategy from 'src/FightStrategy';
 import Ability, { mutuallyExclusiveFightAbilities } from 'src/Ability';
 import { parseRelicMode } from 'src/SaintlyRelics';
+import { CalculatorViewChoice, FIGHT_CALCULATOR_PATH, viewToUrlText } from 'src/CalculatorViewChoice';
 
 interface SituationState {
   attacker: Model;
@@ -321,6 +323,44 @@ export function getStateFromUrl(): { s1?: SituationState; s2?: SituationState } 
   return result;
 }
 
+// Merge into the router's current query and replace the history entry.
+// history.replaceState updates the address bar without updating useSearchParams,
+// so the next Shoot/Fight toggle rebuilds the query from stale router state and
+// drops these params, including the other calculator's.
+// The router state lives in a ref so the returned callback is stable and always
+// merges into the query as of the latest render, even when it was registered
+// with ShareContext while this section was inactive.
+function useMergeIntoSearch() {
+  const [searchParams] = useSearchParams();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const latest = useRef({ searchParams, pathname, navigate });
+  latest.current = { searchParams, pathname, navigate };
+  return useCallback((
+    updates: Record<string, string>,
+    options: { pathname?: string; drop?: string[] } = {},
+  ) => {
+    const next = new URLSearchParams(latest.current.searchParams);
+    for (const key of options.drop ?? []) {
+      next.delete(key);
+    }
+    for (const [key, value] of Object.entries(updates)) {
+      next.set(key, value);
+    }
+    latest.current.navigate(
+      { pathname: options.pathname ?? latest.current.pathname, search: `?${next.toString()}` },
+      { replace: true },
+    );
+  }, []);
+}
+
+function toShareUrl(params: Record<string, string>, pathname = window.location.pathname): string {
+  const query = Object.entries(params)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
+  return `${window.location.origin}${pathname}?${query}`;
+}
+
 export function useUrlState(
   attacker1: Model,
   defender1: Model,
@@ -329,26 +369,20 @@ export function useUrlState(
   defender2: Model,
   shootOptions2: ShootOptions,
 ) {
-  const getShareUrl = useCallback(() => {
-    const a1 = encodeAttacker(attacker1);
-    const d1 = encodeDefender(defender1);
-    const so1 = encodeShootOptions(shootOptions1);
-    const a2 = encodeAttacker(attacker2);
-    const d2 = encodeDefender(defender2);
-    const so2 = encodeShootOptions(shootOptions2);
-    return `${window.location.origin}${window.location.pathname}?view=shoot&a1=${encodeURIComponent(a1)}&d1=${encodeURIComponent(d1)}&so1=${encodeURIComponent(so1)}&a2=${encodeURIComponent(a2)}&d2=${encodeURIComponent(d2)}&so2=${encodeURIComponent(so2)}`;
-  }, [attacker1, defender1, shootOptions1, attacker2, defender2, shootOptions2]);
+  const shareParams = useCallback((): Record<string, string> => ({
+    view: viewToUrlText.get(CalculatorViewChoice.KtShoot)!,
+    a1: encodeAttacker(attacker1),
+    d1: encodeDefender(defender1),
+    so1: encodeShootOptions(shootOptions1),
+    a2: encodeAttacker(attacker2),
+    d2: encodeDefender(defender2),
+    so2: encodeShootOptions(shootOptions2),
+  }), [attacker1, defender1, shootOptions1, attacker2, defender2, shootOptions2]);
 
-  const addParamsToUrl = useCallback(() => {
-    const a1 = encodeAttacker(attacker1);
-    const d1 = encodeDefender(defender1);
-    const so1 = encodeShootOptions(shootOptions1);
-    const a2 = encodeAttacker(attacker2);
-    const d2 = encodeDefender(defender2);
-    const so2 = encodeShootOptions(shootOptions2);
-    const newUrl = `${window.location.pathname}?view=shoot&a1=${encodeURIComponent(a1)}&d1=${encodeURIComponent(d1)}&so1=${encodeURIComponent(so1)}&a2=${encodeURIComponent(a2)}&d2=${encodeURIComponent(d2)}&so2=${encodeURIComponent(so2)}`;
-    window.history.replaceState({}, '', newUrl);
-  }, [attacker1, defender1, shootOptions1, attacker2, defender2, shootOptions2]);
+  const getShareUrl = useCallback(() => toShareUrl(shareParams()), [shareParams]);
+
+  const mergeIntoSearch = useMergeIntoSearch();
+  const addParamsToUrl = useCallback(() => mergeIntoSearch(shareParams()), [mergeIntoSearch, shareParams]);
 
   return { getShareUrl, addParamsToUrl };
 }
@@ -358,20 +392,22 @@ export function useFightUrlState(
   fighterB: Model,
   fightOptions: FightOptions,
 ) {
-  const getShareUrl = useCallback(() => {
-    const fa = encodeFighter(fighterA);
-    const fb = encodeFighter(fighterB);
-    const fo = encodeFightOptions(fightOptions);
-    return `${window.location.origin}${window.location.pathname}?view=fight&fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
-  }, [fighterA, fighterB, fightOptions]);
+  const shareParams = useCallback((): Record<string, string> => ({
+    fa: encodeFighter(fighterA),
+    fb: encodeFighter(fighterB),
+    fo: encodeFightOptions(fightOptions),
+  }), [fighterA, fighterB, fightOptions]);
 
-  const addParamsToUrl = useCallback(() => {
-    const fa = encodeFighter(fighterA);
-    const fb = encodeFighter(fighterB);
-    const fo = encodeFightOptions(fightOptions);
-    const newUrl = `${window.location.pathname}?view=fight&fa=${encodeURIComponent(fa)}&fb=${encodeURIComponent(fb)}&fo=${encodeURIComponent(fo)}`;
-    window.history.replaceState({}, '', newUrl);
-  }, [fighterA, fighterB, fightOptions]);
+  // Always /fight, not the current path. `/?view=fight` is served as the
+  // shoot snapshot, so a fight link unfurls as the shooting calculator. The
+  // path decides the view there, so `view` is dropped rather than written.
+  const getShareUrl = useCallback(
+    () => toShareUrl(shareParams(), FIGHT_CALCULATOR_PATH), [shareParams]);
+
+  const mergeIntoSearch = useMergeIntoSearch();
+  const addParamsToUrl = useCallback(
+    () => mergeIntoSearch(shareParams(), { pathname: FIGHT_CALCULATOR_PATH, drop: ['view'] }),
+    [mergeIntoSearch, shareParams]);
 
   return { getShareUrl, addParamsToUrl };
 }

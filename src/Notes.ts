@@ -54,11 +54,7 @@ export const NormsToCrits = new Note(
 );
 export const CloseAssault2021 = new Note(
   `CloseAssault2021`,
-  `If you have two or more sucesses, promote a fail to a normal success.  Imperial Navy Breachers strategic ploy.`,
-);
-export const Waaagh2021 = new Note(
-  `Waaagh2021`,
-  `If you have two or more normal sucesses, promote a norm to a crit.  Kommandos strategic ploy.`,
+  `If you have two or more successes, promote a fail to a normal success.  Imperial Navy Breachers strategic ploy.`,
 );
 export const Rending = new Note(
   `Rending`,
@@ -74,7 +70,8 @@ export const Punishing = new Note(
   `Punishing`,
   `Retain a failed hit as a normal hit if you had at least one critical hit; Necron equipment Starfire Core, Kommando strategic ploy "Dakka! Dakka! Dakka!", Hive Fleet equipment Toxin Sacs, Corsair Voidscarred strategic ploy Outcasts. `
     + `That die has now been retained, so Rending and NormsToCrits cannot promote it. Punishing is optional ("you can `
-    + `retain"), so the calculator declines it on the rolls where taking it would starve a promotion of its only legal target.`,
+    + `retain"), so the calculator declines it when taking it deals less damage. On a shoot that comparison is `
+    + `expected damage after the defender's saves, cover, and Piercing, not the raw dice total.`,
 );
 export const CoverNormSaves = new Note(
   `Cover Saves`,
@@ -104,8 +101,8 @@ export const MysticScryBuff = new Note(
   `In the Roll Attack Dice step, retain one of your fails as a normal success, OR one of your normal successes ` +
   `as a critical success. For each roll the calculator picks whichever option yields more damage, after also ` +
   `resolving Rending — so it correctly seeds a crit for Rending, or adds a norm for Rending to promote, rather ` +
-  `than always favoring one. Attack only. Note: defender saves and Piercing (Px) are not weighed in the choice. ` +
-  `In-game: the "Mystic Scry" ability.`,
+  `than always favoring one. On a shoot, the score is expected damage after the defender's saves, cover, and ` +
+  `Piercing. Attack only. In-game: the "Mystic Scry" ability.`,
 );
 export const Indomitus = new Note(
   `Indomitus`,
@@ -145,9 +142,11 @@ export const Shock = new Note(
 );
 export const NicheAbility = new Note(
   `NicheAbility`,
-  `Dueller2021 is Intercession Squad chapter tactic; each crit parry discards additional 1 norm success of opponent.`
+  `CloseAssault is Imperial Navy Breachers strategic ploy; if you have two or more successes, promote a fail to a normal success.`
+    + `  Dueller2021 is Intercession Squad chapter tactic; each crit parry discards additional 1 norm success of opponent.`
     + `  Hammerhand2021 is Grey Knights psychic power; first strike deals +1 dmg.`
     + `  StormShield2021 is a Custodes ability; each parry discards two successes of opponent instead of 1.`
+    + `  Waaagh2021 is Kommandos strategic ploy; if you have two or more normal successes, promote a norm to a crit.`
     + `  MurderousEntrance2021 is a Void Troupe tactical ploy to strike again after a crit strike.`
 );
 export const Duelist = new Note(

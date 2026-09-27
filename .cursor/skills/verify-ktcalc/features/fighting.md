@@ -19,7 +19,7 @@ There is no separate fight script. Use the same Chrome session pattern as `drive
 1. Click `button[aria-label="Kill Team Fight Calculator"]`.
 2. Wait until `h1` text is `Kill Team 2024 Fight Calculator` and the Fight button is `disabled`.
 3. Scope to the visible panel titled `Fighter A` (a text node in the title bar, same pattern as Situation 1). Ignore hidden Shoot selects.
-4. Read `select#Attacks` in that panel and the `AvgRemainingWounds:` value in the Results panel under the `FighterA` heading.
+4. Read `select#fa-Attacks` in that panel and the `AvgRemainingWounds:` value in the Results panel under the `FighterA` heading.
 5. Click the `+` button that is the next sibling of Fighter A's Attacks select.
 6. Fighter A's Attacks value changed, and the `AvgRemainingWounds:` number for FighterA changed. Fighter B's Attacks select is unchanged.
 
@@ -27,7 +27,6 @@ The results block is the panel titled `Results`. `FighterA` and `FighterB` are p
 
 ## Gotchas
 
-- Fight Attacks selects share `id="Attacks"` with both shoot situations, which are still in the DOM and hidden. A document-wide query returns the hidden shoot control and the click appears to do nothing.
-- `id="Rounds"` also exists on each shoot situation (`ShootOptionControls`) and on Fight Options. Scope to the panel titled `Fight Options` for the fight round count.
+- Select ids are prefixed per panel: `fa-` (Fighter A), `fb-` (Fighter B), `fo-` (Fight Options, e.g. `fo-Rounds`). The hidden shoot situations use `s1-`/`s2-` prefixes, so the fight ids no longer collide with them.
 - Fight results are Monte Carlo inside the page. Read the text the Results panel actually rendered; do not recompute in the console and call that the check.
 - The header Fight button merges `view=fight` into the current query string. A shoot share URL can therefore sit on the fight view. Judge the view by the `h1` and the disabled header button, not only by the presence of `a1=`.
