@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import Model from 'src/Model';
 import ShootOptions from 'src/ShootOptions';
@@ -335,7 +335,11 @@ function useMergeIntoSearch() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const latest = useRef({ searchParams, pathname, navigate });
-  latest.current = { searchParams, pathname, navigate };
+  // Updated after commit, not during render: a render React discards must not leak its
+  // router state into the callback. Layout effect so it lands before any click handler runs.
+  useLayoutEffect(() => {
+    latest.current = { searchParams, pathname, navigate };
+  }, [searchParams, pathname, navigate]);
   return useCallback((
     updates: Record<string, string>,
     options: { pathname?: string; drop?: string[] } = {},
