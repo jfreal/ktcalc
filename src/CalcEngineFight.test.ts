@@ -303,6 +303,42 @@ describe(calcParryForLastEnemySuccessThenKillEnemy.name, () => {
     enemyHalf2.profile.setAbility(Ability.HalfDamageFirstStrike, true);
     expect(calcParryForLastEnemySuccessThenKillEnemy(chooser, enemyHalf2)).toBe(FightChoice.CritParry);
   });
+
+  it('Just a Scratch: parry, then a normal-first follow-up, kills when crit-first does not', () => {
+    // Strike: 1 crit (4) + 3 normals (3), 4 wounds. Defender: 1 normal (4), 7 wounds, Just a Scratch.
+    // After parrying that normal, crit-first is scratched and the two remaining normals deal 3+3,
+    // leaving the defender on 1. Leading with a normal feeds the scratch a 3; the crit and the
+    // other normal then deal 4+3 and the defender dies. The attacker never takes the 4.
+    const attacker = newFighterState(1, 3, 4, FightStrategy.Strike);
+    attacker.profile.critDmg = 4;
+    attacker.profile.normDmg = 3;
+    const defender = newFighterState(
+      0, 1, 7, FightStrategy.Strike, new Set<Ability>([Ability.JustAScratch]));
+    defender.profile.normDmg = 4;
+
+    expect(calcParryForLastEnemySuccessThenKillEnemy(attacker, defender)).toBe(FightChoice.NormParry);
+    resolveFight(attacker, defender);
+    expect(attacker.currentWounds).toBe(4);
+    expect(defender.currentWounds).toBe(0);
+  });
+
+  it('Half Damage: parry, then a normal-first follow-up, kills when crit-first does not', () => {
+    // Strike: 1 crit (5) + 2 normals (2), 3 wounds. Defender: 1 normal (3), 6 wounds,
+    // Half Damage on the first strike. Crit-first after the parry is ceil(5/2)+2 = 5, short of 6.
+    // A normal is already at the half-damage floor (2), so leading with it leaves the full crit:
+    // 2+5 kills. Striking the crit instead lets the defender's 3 finish the attacker.
+    const attacker = newFighterState(1, 2, 3, FightStrategy.Strike);
+    attacker.profile.critDmg = 5;
+    attacker.profile.normDmg = 2;
+    const defender = newFighterState(
+      0, 1, 6, FightStrategy.Strike, new Set<Ability>([Ability.HalfDamageFirstStrike]));
+    defender.profile.normDmg = 3;
+
+    expect(calcParryForLastEnemySuccessThenKillEnemy(attacker, defender)).toBe(FightChoice.NormParry);
+    resolveFight(attacker, defender);
+    expect(attacker.currentWounds).toBe(3);
+    expect(defender.currentWounds).toBe(0);
+  });
 });
 
 describe(calcDieChoice.name + ', common & strike/parry', () => {
