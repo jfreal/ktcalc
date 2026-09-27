@@ -207,59 +207,66 @@ describe(calcDamage.name + ', JustAScratch cancels the higher-damage hit', () =>
   });
 });
 
-describe(calcDamage.name + ', save allocation', () => {
-  const def = new Model();
-
-  // Brute force: every legal use of the saves (including wasteful ones) and every JaS choice.
-  function bruteForceMinDamage(atker: Model, defender: Model, ch: number, nh: number, cs: number, ns: number) {
-    const jasChoices: [number, number][] = [[ch, nh]];
-    if (defender.has(Ability.JustAScratch)) {
-      jasChoices.length = 0;
-      if (ch > 0) jasChoices.push([ch - 1, nh]);
-      if (nh > 0) jasChoices.push([ch, nh - 1]);
-      if (ch + nh === 0) jasChoices.push([0, 0]);
-    }
-    let best = Infinity;
-    for (const [c0, n0] of jasChoices) {
-      for (let a = 0; a <= Math.min(cs, c0); a++) {
-        for (let b = 0; b <= Math.min(cs - a, n0); b++) {
-          for (let c = 0; c <= Math.min(ns, n0 - b); c++) {
-            for (let d = 0; d <= Math.min(Math.floor((ns - c) / 2), c0 - a); d++) {
-              const crits = c0 - a - d;
-              const norms = n0 - b - c;
-              const dmg = ch * atker.mwx + crits * atker.critDmg + norms * atker.normDmg;
-              best = Math.min(best, dmg);
-            }
+// Brute force: every legal use of the saves (including wasteful ones) and every JaS choice.
+// JaS (Normals) then drops one normal that is still there, before any save is spent.
+function bruteForceMinDamage(atker: Model, defender: Model, ch: number, nh: number, cs: number, ns: number) {
+  const jasChoices: [number, number][] = [[ch, nh]];
+  if (defender.has(Ability.JustAScratch)) {
+    jasChoices.length = 0;
+    if (ch > 0) jasChoices.push([ch - 1, nh]);
+    if (nh > 0) jasChoices.push([ch, nh - 1]);
+    if (ch + nh === 0) jasChoices.push([0, 0]);
+  }
+  let best = Infinity;
+  for (const [c0, n1] of jasChoices) {
+    const n0 = defender.has(Ability.JustAScratchNorms) && n1 > 0 ? n1 - 1 : n1;
+    for (let a = 0; a <= Math.min(cs, c0); a++) {
+      for (let b = 0; b <= Math.min(cs - a, n0); b++) {
+        for (let c = 0; c <= Math.min(ns, n0 - b); c++) {
+          for (let d = 0; d <= Math.min(Math.floor((ns - c) / 2), c0 - a); d++) {
+            const crits = c0 - a - d;
+            const norms = n0 - b - c;
+            const dmg = ch * atker.mwx + crits * atker.critDmg + norms * atker.normDmg;
+            best = Math.min(best, dmg);
           }
         }
       }
     }
-    return best;
   }
+  return best;
+}
 
-  const profiles: [number, number][] = [[3, 4], [4, 4], [4, 5], [3, 6], [3, 7], [2, 4], [5, 4], [4, 9]];
-  for (const withJas of [false, true]) {
-    it(`matches brute force for every 0-3 hits/saves split${withJas ? ', with JaS' : ''}`, () => {
-      const defender = withJas ? new Model().setAbility(Ability.JustAScratch) : def;
-      for (const [dn, dc] of profiles) {
-        for (const mwx of [0, 2]) {
-          const atker = new Model(0, 0, dn, dc, mwx);
-          for (let ch = 0; ch <= 3; ch++) {
-            for (let nh = 0; nh <= 3; nh++) {
-              for (let cs = 0; cs <= 3; cs++) {
-                for (let ns = 0; ns <= 3; ns++) {
-                  const expected = bruteForceMinDamage(atker, defender, ch, nh, cs, ns);
-                  const actual = calcDamage(atker, defender, ch, nh, cs, ns).damage;
-                  if (actual !== expected) {
-                    throw new Error(`D=${dn}/${dc} mwx=${mwx} ${ch}ch ${nh}nh vs ${cs}cs ${ns}ns: `
-                      + `got ${actual}, brute force ${expected}`);
-                  }
-                }
+const bruteForceProfiles: [number, number][] = [[3, 4], [4, 4], [4, 5], [3, 6], [3, 7], [2, 4], [5, 4], [4, 9]];
+
+// calcDamage must match the brute force for every 0-3 hits/saves split.
+function expectMatchesBruteForce(defender: Model) {
+  for (const [dn, dc] of bruteForceProfiles) {
+    for (const mwx of [0, 2]) {
+      const atker = new Model(0, 0, dn, dc, mwx);
+      for (let ch = 0; ch <= 3; ch++) {
+        for (let nh = 0; nh <= 3; nh++) {
+          for (let cs = 0; cs <= 3; cs++) {
+            for (let ns = 0; ns <= 3; ns++) {
+              const expected = bruteForceMinDamage(atker, defender, ch, nh, cs, ns);
+              const actual = calcDamage(atker, defender, ch, nh, cs, ns).damage;
+              if (actual !== expected) {
+                throw new Error(`D=${dn}/${dc} mwx=${mwx} ${ch}ch ${nh}nh vs ${cs}cs ${ns}ns: `
+                  + `got ${actual}, brute force ${expected}`);
               }
             }
           }
         }
       }
+    }
+  }
+}
+
+describe(calcDamage.name + ', save allocation', () => {
+  const def = new Model();
+
+  for (const withJas of [false, true]) {
+    it(`matches brute force for every 0-3 hits/saves split${withJas ? ', with JaS' : ''}`, () => {
+      expectMatchesBruteForce(withJas ? new Model().setAbility(Ability.JustAScratch) : def);
     });
   }
 });
@@ -1095,60 +1102,9 @@ describe(calcDamage.name + ', JustAScratchNorms drops one normal before saves', 
     expect(calcDamage(atker, norms, 1, 1, 0, 2).damage).toBe(0);
   });
 
-  // Separate from the JaS (Crits) grid above. Same save enumeration, after the normal scratch.
-  function bruteForceMinDamage(atker: Model, defender: Model, ch: number, nh: number, cs: number, ns: number) {
-    const jasChoices: [number, number][] = [];
-    if (defender.has(Ability.JustAScratch) && ch + nh > 0) {
-      if (ch > 0) jasChoices.push([ch - 1, nh]);
-      if (nh > 0) jasChoices.push([ch, nh - 1]);
-    }
-    else {
-      jasChoices.push([ch, nh]);
-    }
-    let best = Infinity;
-    for (const [c1, n1] of jasChoices) {
-      const n0 = defender.has(Ability.JustAScratchNorms) && n1 > 0 ? n1 - 1 : n1;
-      for (let a = 0; a <= Math.min(cs, c1); a++) {
-        for (let b = 0; b <= Math.min(cs - a, n0); b++) {
-          for (let c = 0; c <= Math.min(ns, n0 - b); c++) {
-            for (let d = 0; d <= Math.min(Math.floor((ns - c) / 2), c1 - a); d++) {
-              const crits = c1 - a - d;
-              const normsLeft = n0 - b - c;
-              const dmg = ch * atker.mwx + crits * atker.critDmg + normsLeft * atker.normDmg;
-              best = Math.min(best, dmg);
-            }
-          }
-        }
-      }
-    }
-    return best;
-  }
-
-  const profiles: [number, number][] = [[3, 4], [4, 4], [4, 5], [3, 6], [3, 7], [2, 4], [5, 4], [4, 9]];
   for (const withJas of [false, true]) {
     it(`matches brute force for every 0-3 hits/saves split, JaS (Normals)${withJas ? ' and JaS (Crits)' : ''}`, () => {
-      const defender = withJas
-        ? new Model().setAbility(Ability.JustAScratch).setAbility(Ability.JustAScratchNorms)
-        : norms;
-      for (const [dn, dc] of profiles) {
-        for (const mwx of [0, 2]) {
-          const atker = new Model(0, 0, dn, dc, mwx);
-          for (let ch = 0; ch <= 3; ch++) {
-            for (let nh = 0; nh <= 3; nh++) {
-              for (let cs = 0; cs <= 3; cs++) {
-                for (let ns = 0; ns <= 3; ns++) {
-                  const expected = bruteForceMinDamage(atker, defender, ch, nh, cs, ns);
-                  const actual = calcDamage(atker, defender, ch, nh, cs, ns).damage;
-                  if (actual !== expected) {
-                    throw new Error(`D=${dn}/${dc} mwx=${mwx} ${ch}ch ${nh}nh vs ${cs}cs ${ns}ns: `
-                      + `got ${actual}, brute force ${expected}`);
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      expectMatchesBruteForce(withJas ? both : norms);
     });
   }
 });
