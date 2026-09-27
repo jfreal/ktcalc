@@ -114,6 +114,9 @@ public/rules/
 # seems to be generated every "npm start"
 src/react-app-env.d.ts
 
+# Evidence from .cursor/skills/verify-ktcalc (screenshots, logs, pid files).
+verify-artifacts/
+
 # rust-wasm stuff
 target/
 pkg/
