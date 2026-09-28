@@ -1,0 +1,132 @@
+{
+  "pass": true,
+  "steps": {
+    "comparison": {
+      "before": {
+        "attacks": "5",
+        "s1": "5.04",
+        "s2": "3.29",
+        "groups": [
+          {
+            "s1": "3.83",
+            "s2": "2.26",
+            "delta": "+1.57"
+          },
+          {
+            "s1": "5.04",
+            "s2": "3.29",
+            "delta": "+1.75"
+          },
+          {
+            "s1": "6.33",
+            "s2": "4.43",
+            "delta": "+1.90"
+          },
+          {
+            "s1": "7.68",
+            "s2": "5.66",
+            "delta": "+2.01"
+          }
+        ],
+        "headers": [
+          "Sv 2+",
+          "Sv 3+",
+          "Sv 4+",
+          "Sv 5+",
+          "S1",
+          "S2",
+          "Δ",
+          "S1",
+          "S2",
+          "Δ",
+          "S1",
+          "S2",
+          "Δ",
+          "S1",
+          "S2",
+          "Δ"
+        ]
+      },
+      "after": {
+        "a1": "5",
+        "a2": "5",
+        "groups": [
+          {
+            "s1": "3.83",
+            "s2": "3.83",
+            "delta": "0.00"
+          },
+          {
+            "s1": "5.04",
+            "s2": "5.04",
+            "delta": "0.00"
+          },
+          {
+            "s1": "6.33",
+            "s2": "6.33",
+            "delta": "0.00"
+          },
+          {
+            "s1": "7.68",
+            "s2": "7.68",
+            "delta": "0.00"
+          }
+        ]
+      },
+      "showSv6": true
+    },
+    "share": {
+      "share": {
+        "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1",
+        "a1": "5:3:3:4:0:0:0:X:0:0:0:0:0:",
+        "attacksField": "5",
+        "attacks": "5"
+      },
+      "reloaded": {
+        "attacks": "5",
+        "dmg": "5.04",
+        "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1"
+      },
+      "damageBeforeReload": "5.04"
+    },
+    "helpLink": {
+      "href": "http://127.0.0.1:4173/help",
+      "target": "_blank",
+      "text": "How it works (opens in a new tab)",
+      "helpOpenedByClick": false
+    },
+    "help": {
+      "helpState": {
+        "h1": "How KT Calc works",
+        "shareButtons": []
+      },
+      "rules": {
+        "headingVisible": true
+      }
+    },
+    "fight": {
+      "heading": "Kill Team 2024 Fight Calculator",
+      "before": {
+        "h1": "Kill Team 2024 Fight Calculator",
+        "faAttacks": "4",
+        "fbAttacks": "4",
+        "faWounds": "3.61",
+        "fbWounds": "3.57",
+        "hasDeath": true
+      },
+      "after": {
+        "attacks": "5",
+        "fbAttacks": "4",
+        "faWounds": "3.95"
+      },
+      "halfBeforeAdvanced": {
+        "visible": 0
+      },
+      "half": {
+        "title": "First strike damage is halved and rounded up. Strikes of 0, 1, and 2 stay as they are, and a larger strike is not raised.",
+        "description": "First strike damage is halved and rounded up. Strikes of 0, 1, and 2 stay as they are, and a larger strike is not raised.",
+        "label": "Half Dmg 1st Strike ⚙️"
+      }
+    }
+  }
+}

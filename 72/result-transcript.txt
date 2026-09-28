@@ -1,0 +1,44 @@
+PR #72
+Branch: cursor/half-damage-hover-dc49
+
+Unit commands:
+- CI=true npm run testq -- --testPathPattern='HalfDamageFirstStrikeNote|NotesPanelSync' --watchAll=false --verbose
+  Test Suites: 2 passed, 2 total
+  Tests: 8 passed, 8 total
+  0 failed, 0 skipped
+- CI=true npm run testq
+  Test Suites: 3 skipped, 34 passed, 34 of 37 total
+  Tests: 3 skipped, 534 passed, 537 total
+  0 failed
+
+UI commands:
+- .cursor/skills/verify-ktcalc/scripts/launch.sh
+  verify-ktcalc: ready at http://127.0.0.1:4173/
+  dev-server.log: Compiled successfully!
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  verify-ktcalc doctor: instance is worth driving
+- .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+  verify-ktcalc drive-shoot: PASS (exit 0)
+  Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04
+  Situation 2 Average Damage stayed 3.29
+- node /tmp/ktcalc-drive-rest.mjs
+  verify-ktcalc drive-rest: PASS (exit 0)
+  Comparison: Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04, Situation 2 stayed 3.29.
+  Matrix Avg deltas before copy were signed (+1.57, +1.75, +1.90, +2.01).
+  Copy From Situation 1 made both Attacks selects 5 and every Avg delta 0.00.
+  Show Sv 6+ added a Sv 6+ header.
+  Add Share Params wrote view=shoot and a1=5:... . Reload kept Attacks 5 and Average Damage 5.04.
+  Help: header link is target=_blank. Headless Chrome blocked the popup, so /help was opened in a new tab (skill fallback).
+  h1 How KT Calc works. Share buttons absent. Combat rules link showed Kill Team 2024 Combat Rules.
+  Status was not Loading… and not Could not load this document. Back to How it works restored the help h1.
+  Back to calculator restored the shooting h1 and the share buttons.
+  Fight: h1 Kill Team 2024 Fight Calculator, Fight button disabled.
+  Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 3.95. Fighter B Attacks stayed 4. DeathChance present.
+  Half Dmg 1st Strike checkbox was hidden before Advanced (visible count 0).
+  After Advanced, checkbox title and Notes text:
+  First strike damage is halved and rounded up. Strikes of 0, 1, and 2 stay as they are, and a larger strike is not raised.
+  Neither string contains "never below 2".
+- .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+  stopped the recorded dev server
+
+UI pass/fail/skip: drive-shoot PASS, drive-rest PASS, 0 failed, 0 skipped.
