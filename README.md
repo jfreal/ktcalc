@@ -17,9 +17,9 @@ Dev setup...
 - You'll need to install [NodeJS+npm](https://nodejs.org/en/) for building and running.
 - For debugging and otherwise having a nice experience, this project is set up for vscode as the IDE.
 - Initially, you'll have to do a `npm ci` to install npm packages with exact versions of previous development.
-- Do a `npm run build` to build the wasm and React stuff.
+- Do a `npm run build` to build the React app and prerender the public routes.
 - Do a `npm start` to build the TypeScript stuff and run.
 - For debugging non-tests with vscode, be sure to do `npm start` before launching the debugger.
   For debugging tests, you can just launch one of vscode's test-oriented debug profiles.
 - To run tests, do `npm test` for normal watch-mode testing that sticks around.
-  Do `npm run testq` that does a single run of tests (like doing `test` and then hitting `q` to quit).
+  Do `npm run testq` for a single run of tests (like doing `test` and then hitting `q` to quit). CI runs `npm run testq` on pull requests and on pushes to main.
