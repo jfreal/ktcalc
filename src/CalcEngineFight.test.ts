@@ -1117,6 +1117,48 @@ describe(resolveDieChoice.name + ': basic, shock, storm shield, hammerhand, duel
     resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
     expect(enemy.currentWounds).toBe(initialWounds - critDmg);
   });
+  it('Murderous Entrance skips the bonus strike once the target is dead, so it cannot spend a relic', () => {
+    // crit 2, pending normal 4: the crit is not the biggest strike, so Saintly Relics is saved
+    // for the bonus normal. The crit already kills. The bonus must not resolve, and must not
+    // roll (and spend) that saved ignore.
+    const critDmg = 2;
+    const chooser = newFighterState(1, 1, 10, FightStrategy.MaxDmgToEnemy,
+      new Set([Ability.MurderousEntrance2021]));
+    chooser.profile.setProp('critDmg', critDmg);
+    chooser.profile.setProp('normDmg', 4);
+    const enemy = newFighterState(0, 0, critDmg);
+    enemy.profile.setProp('saintlyRelics', SaintlyRelicsNormal);
+    enemy.rng = () => 0.9; // floor(0.9*6)+1 === 6, so a rolled relic always ignores
+
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+
+    expect(enemy.currentWounds).toBe(0);
+    expect(enemy.relicUsed).toBe(false);
+    expect(enemy.relicIgnoresUsed).toBe(0);
+    expect(chooser.crits).toBe(0);
+    expect(chooser.norms).toBe(1);
+    expect(chooser.hasCritStruck).toBe(true);
+  });
+  it('Murderous Entrance still lands the bonus strike when the target survives the crit', () => {
+    const critDmg = 2;
+    const initialWounds = 10;
+    const chooser = newFighterState(1, 1, 10, FightStrategy.MaxDmgToEnemy,
+      new Set([Ability.MurderousEntrance2021]));
+    chooser.profile.setProp('critDmg', critDmg);
+    chooser.profile.setProp('normDmg', 4);
+    const enemy = newFighterState(0, 0, initialWounds);
+    enemy.profile.setProp('saintlyRelics', SaintlyRelicsNormal);
+    enemy.rng = () => 0.9;
+
+    resolveDieChoice(FightChoice.CritStrike, chooser, enemy);
+
+    // crit lands (relic saved for the bigger normal); the bonus normal is ignored by the relic
+    expect(enemy.currentWounds).toBe(initialWounds - critDmg);
+    expect(enemy.relicUsed).toBe(true);
+    expect(enemy.relicIgnoresUsed).toBe(1);
+    expect(chooser.crits).toBe(0);
+    expect(chooser.norms).toBe(0);
+  });
 });
 
 describe(resolveFight.name + ' smart strategies should optimize goal', () => {
