@@ -5,7 +5,7 @@ Observable end state: after switching to Fight, the `h1` is `Kill Team 2024 Figh
 ## Sub-features
 
 - Fighter A and Fighter B panels (WS, Attacks, Wounds, damage, weapon-rule checkboxes, Advanced).
-- Fight Options panel: `Fighter A Strategy`, `Fighter B Strategy`, `Attacker/FirstActer` (`A` or `B`), and `Rounds`.
+- Fight Options panel: `Fighter A Strategy`, `Fighter B Strategy`, `Goes first` (`A` or `B`), and `Rounds`.
 - Results panel with per-fighter death chance, average remaining wounds, and average damage.
 
 ## How to get to it (user POV)
