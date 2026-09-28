@@ -1,0 +1,107 @@
+{
+  "pass": true,
+  "features": {
+    "shareLink": {
+      "pass": true,
+      "attacksBefore": "4",
+      "afterPlus": {
+        "attacks": "5",
+        "dmg": "5.04",
+        "s2": "3.29"
+      },
+      "search": "?view=shoot&a1=5:3:3:4:0:0:0:X:0:0:0:0:0:&d1=3:12:0:0:0:0:0:0:X::0&so1=1&a2=4:3:3:4:0:0:0:X:0:0:0:0:0:&d2=3:12:0:0:0:0:0:0:X::0&so2=1",
+      "a1Attacks": "5",
+      "reloaded": {
+        "attacks": "5",
+        "dmg": "5.04",
+        "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=4%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1"
+      },
+      "evidence": [
+        "/workspace/verify-artifacts/share-before-reload.png",
+        "/workspace/verify-artifacts/share-after-reload.png"
+      ]
+    },
+    "comparisonMatrix": {
+      "pass": true,
+      "beforeDeltas": [
+        "+1.57",
+        "+1.75",
+        "+1.90",
+        "+2.01"
+      ],
+      "afterDeltas": [
+        "0.00",
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      "attacks": "5",
+      "headers": [
+        "W",
+        "Sv 2+",
+        "Sv 3+",
+        "Sv 4+",
+        "Sv 5+",
+        "Sv 6+",
+        "S1",
+        "S2",
+        "Δ",
+        "S1",
+        "S2",
+        "Δ",
+        "S1",
+        "S2",
+        "Δ",
+        "S1",
+        "S2",
+        "Δ",
+        "S1",
+        "S2",
+        "Δ"
+      ],
+      "evidence": [
+        "/workspace/verify-artifacts/matrix-before.png",
+        "/workspace/verify-artifacts/matrix-after.png",
+        "/workspace/verify-artifacts/matrix-sv6.png"
+      ]
+    },
+    "fighting": {
+      "pass": true,
+      "before": {
+        "h1": "Kill Team 2024 Fight Calculator",
+        "fightDisabled": true,
+        "fa": "4",
+        "fb": "4",
+        "avgA": "3.61",
+        "hasDeath": true
+      },
+      "after": {
+        "fa": "5",
+        "fb": "4",
+        "avgA": "3.95",
+        "h1": "Kill Team 2024 Fight Calculator"
+      },
+      "evidence": [
+        "/workspace/verify-artifacts/fight-before.png",
+        "/workspace/verify-artifacts/fight-after.png"
+      ]
+    },
+    "helpOpen": {
+      "helpOpenedBy": "new tab at /help (popup blocked)",
+      "pagesBefore": [
+        "http://127.0.0.1:4173/fight/?a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=4%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1",
+        "about:blank"
+      ]
+    },
+    "helpAndRules": {
+      "pass": true,
+      "shareButtonsOnHelp": false,
+      "rulesExcerpt": "KT Calc\nShoot\nFight\nHow it works\n(opens in a new tab)\nNEW\nAuspex Fatalis runs your Kill Team league: schedule, scores, standings and finals.\nStart a league →\n(opens in a new tab)\n×\n\n← Back to How it works\n\nKill Team 2024 Combat Rules\nDefense Mechanics\nDefense Dice\n\nAll operatives roll exactly 3 defense dice.\n\nThis is a fixed value in Kill Team 2024 and cannot be modified by abilities or equipment,",
+      "evidence": [
+        "/workspace/verify-artifacts/help.png",
+        "/workspace/verify-artifacts/rules-combat.png",
+        "/workspace/verify-artifacts/help-back.png"
+      ]
+    }
+  }
+}
