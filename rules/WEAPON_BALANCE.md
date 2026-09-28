@@ -38,8 +38,9 @@ engine is Monte Carlo, so the harness pins the simulation count (40,000) and the
 re-running reproduces the published numbers exactly instead of landing near them.
 
 **Shooting is exact.** The Shoot engine enumerates every attack-and-save outcome, so no sampling is
-involved: expected damage and kill chance are computed, not estimated. Cover, Piercing, Devastating,
-and Saturate are modeled as the engine handles them ([Combat rules](/rules/combat)).
+involved: expected damage and kill chance are computed, not estimated. Cover, Piercing, and
+Devastating are modeled as the engine handles them ([Combat rules](/rules/combat)). Saturate is
+represented by setting cover saves to 0.
 
 **Kill chance is the headline number for melee, damage for shooting.** In a fight, killing the enemy
 is what stops the counterattack, so kill chance is the outcome that decides games. A shooting attack
