@@ -437,10 +437,13 @@ export function resolveDieChoice(
       }
     }
 
+    // A dead fighter cannot be struck. The bonus die would not change this round's
+    // wounds, but applyDmg still rolls Saintly Relics and can spend a battle ignore.
     if (
       chooser.successes()
       && chooser.profile.has(Ability.MurderousEntrance2021)
       && !chooser.hasCritStruck
+      && enemy.currentWounds > 0
     ) {
       if(chooser.crits > 0) {
         applyDmgWithFirstStrikeHandling(chooser.profile.critDmg, false);
