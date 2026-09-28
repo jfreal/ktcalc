@@ -93,7 +93,7 @@ When the defender is obscured from the attacker:
 ### Just a Scratch (Crits)
 Cancel one attack die just before damage is resolved, before saves:
 - **Chooses the die that saves the most damage**: tries cancelling a crit and cancelling a normal, and keeps the lower damage
-- Does not always drop the crit. Cancelling the normal is kept when it leaves less damage — the normal deals more, Durable would shave a surviving crit, or a save can still block the die that remains
+- Does not always drop the crit. Cancelling the normal is kept when it leaves less damage — the normal deals more, or a save can still block the die that remains
 - On equal damage, cancels the higher per-die damage type (a crit when the two deal the same). If only one hit type landed, that type is cancelled
 - MWx (Devastating) damage is counted from the original crits, so cancelling a crit never removes it
 
