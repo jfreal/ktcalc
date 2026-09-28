@@ -85,6 +85,12 @@ describe('mounted IncDecSelect ids', () => {
     expectDistinctControls('fa-Wounds', 's1-def-Wounds');
     expectDistinctControls('fo-Rounds', 's1-opt-Rounds');
     expect(document.getElementById('fo-Fighter A Strategy')).not.toBeNull();
+    const goesFirst = document.getElementById('fo-Goes first') as HTMLSelectElement | null;
+    expect(goesFirst).not.toBeNull();
+    expect(goesFirst!.id.includes('/')).toBe(false);
+    expect([...goesFirst!.options].map(option => option.value)).toEqual(['A', 'B']);
+    expect(fight.querySelector('label[for="fo-Goes first"]')?.textContent).toBe('Goes first');
+    expect(document.getElementById('fo-Attacker/FirstActer')).toBeNull();
 
     const fightAttacks = document.getElementById('fa-Attacks');
     expect(fight.contains(fightAttacks)).toBe(true);
