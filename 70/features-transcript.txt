@@ -1,0 +1,146 @@
+verify-ktcalc doctor: OK — dev server pid 2963 is alive
+verify-ktcalc doctor: OK — http://127.0.0.1:4173/ is serving the ktcalc shell
+verify-ktcalc doctor: OK — port 4173 is owned by pid 2963
+verify-ktcalc doctor: OK — log reports a completed compile
+verify-ktcalc doctor: instance is worth driving
+verify-ktcalc comparison-matrix: PASS
+{
+  "before": {
+    "s1Attacks": "5",
+    "s2Attacks": "4",
+    "avgCells": [
+      "Avg",
+      "3.83",
+      "2.26",
+      "+1.57",
+      "5.04",
+      "3.29",
+      "+1.75",
+      "6.33",
+      "4.43",
+      "+1.90",
+      "7.68",
+      "5.66",
+      "+2.01"
+    ],
+    "header": "Comparison Matrix (Avg Dmg + Kill % vs W)\nShow Sv 6+\nW\tSv 2+\tSv 3+\tSv 4+\tSv 5+\nS1\tS2\tΔ\tS1\tS2\tΔ\tS1\tS2\tΔ\tS1\tS2\tΔ\nAvg\t3.83\t2.26\t+1.57\t5.04\t3.29\t+1.75\t6.33\t4.43\t+1.90\t7.68\t5.66\t+2.01\n1\t70%\t51%\t+20%\t79%\t63%\t+16%\t86%\t75%\t+12%\t92%\t84%\t+8%\n2\t70%\t51%\t+20%\t79%\t63%\t+16%\t86%\t75%\t+12%\t92%\t84%\t+8%\n3\t70%\t51%\t+20%\t79%\t63%\t+16%\t86%\t75%\t+12%\t92%\t84%\t+8%\n4\t46%\t26%\t+19%\t58%\t39%\t+19%\t69%\t52%\t+17%\t79%\t64%\t+14%\n5\t34%\t15"
+  },
+  "after": {
+    "s1Attacks": "5",
+    "s2Attacks": "5",
+    "avgCells": [
+      "Avg",
+      "3.83",
+      "3.83",
+      "0.00",
+      "5.04",
+      "5.04",
+      "0.00",
+      "6.33",
+      "6.33",
+      "0.00",
+      "7.68",
+      "7.68",
+      "0.00"
+    ]
+  },
+  "sv6": [
+    "W",
+    "Sv 2+",
+    "Sv 3+",
+    "Sv 4+",
+    "Sv 5+",
+    "Sv 6+",
+    "S1",
+    "S2",
+    "Δ",
+    "S1",
+    "S2",
+    "Δ",
+    "S1",
+    "S2",
+    "Δ",
+    "S1",
+    "S2",
+    "Δ",
+    "S1",
+    "S2",
+    "Δ"
+  ],
+  "evidence": {
+    "before": "/workspace/verify-artifacts/matrix-before.png",
+    "after": "/workspace/verify-artifacts/matrix-after.png"
+  }
+}
+verify-ktcalc share-link: PASS
+{
+  "start": {
+    "attacks": "4",
+    "averageDamage": "3.29"
+  },
+  "stepped": {
+    "attacks": "5",
+    "averageDamage": "5.04"
+  },
+  "shared": {
+    "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=4%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1",
+    "a1First": "5"
+  },
+  "restored": {
+    "attacks": "5",
+    "averageDamage": "5.04"
+  },
+  "help": {
+    "h1": "How KT Calc works",
+    "shareButtonsPresent": false
+  },
+  "evidence": {
+    "search": "/workspace/verify-artifacts/share-url.png",
+    "reload": "/workspace/verify-artifacts/share-reload.png"
+  }
+}
+verify-ktcalc fighting: PASS
+{
+  "before": {
+    "h1": "Kill Team 2024 Fight Calculator",
+    "attacksA": "4",
+    "attacksB": "4",
+    "panelAttacksA": "fa-Attacks",
+    "visibleA": true,
+    "visibleB": true,
+    "fighterA": {
+      "avgRemainingWounds": "3.61",
+      "avgDmg": "8.39"
+    },
+    "fighterB": {
+      "avgRemainingWounds": "3.57",
+      "avgDmg": "8.43"
+    }
+  },
+  "after": {
+    "attacksA": "5",
+    "attacksB": "4",
+    "avgRemainingWounds": "3.95",
+    "avgDmg": "8.05"
+  },
+  "evidence": {
+    "before": "/workspace/verify-artifacts/fight-before.png",
+    "after": "/workspace/verify-artifacts/fight-after.png"
+  }
+}
+verify-ktcalc help-and-rules: PASS
+{
+  "help": {
+    "h1": "How KT Calc works",
+    "href": "/rules/combat"
+  },
+  "combat": {
+    "heading": "Kill Team 2024 Combat Rules"
+  },
+  "back": "How KT Calc works",
+  "evidence": {
+    "help": "/workspace/verify-artifacts/help.png",
+    "combat": "/workspace/verify-artifacts/rules-combat.png"
+  }
+}
+verify-ktcalc features: PASS

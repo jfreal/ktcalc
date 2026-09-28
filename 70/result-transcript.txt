@@ -1,0 +1,20 @@
+PR #70
+Commands:
+- CI=true npm run testq
+- .cursor/skills/verify-ktcalc/scripts/launch.sh
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+- .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+- feature drive (comparison matrix, share link, fight, help and rules) via the verify-ktcalc browser helper
+- .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+
+Unit tests: Test Suites: 3 skipped, 34 passed, 34 of 37 total. Tests: 3 skipped, 534 passed, 537 total. Fail: 0. Skip: 3. Pass: 534.
+
+UI:
+- doctor: instance is worth driving
+- drive-shoot: PASS. Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04. Situation 2 Average Damage stayed 3.29.
+- comparison-matrix: PASS. Attacks 5 vs 4, Avg delta +1.57 before copy; after Copy From Situation 1 both attacks 5 and delta 0.00. Show Sv 6+ added the Sv 6+ header.
+- share-link: PASS. Add Share Params wrote view=shoot and a1 first field 5. Reload kept Attacks 5 and Average Damage 5.04. /help has no share buttons. Back to calculator returned to the shooting heading.
+- fighting: PASS. h1 Kill Team 2024 Fight Calculator. Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 3.95. Fighter B Attacks stayed 4.
+- help-and-rules: PASS. /help h1 How KT Calc works. /rules/combat showed Kill Team 2024 Combat Rules, not a load error. Back to How it works restored the help heading.
+
+UI pass: 5. UI fail: 0. UI skip: 0.
