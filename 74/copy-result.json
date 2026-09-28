@@ -1,0 +1,34 @@
+{
+  "feature": "punishing-fnp-copy",
+  "base": "http://127.0.0.1:4173",
+  "checks": [
+    {
+      "name": "calculator Punishing note",
+      "pass": true,
+      "evidence": "/workspace/verify-artifacts/notes-punishing.png"
+    },
+    {
+      "name": "help index",
+      "pass": true,
+      "shareButtonsHidden": true,
+      "evidence": "/workspace/verify-artifacts/help.png"
+    },
+    {
+      "name": "combat rules",
+      "pass": true,
+      "evidence": "/workspace/verify-artifacts/rules-combat.png"
+    },
+    {
+      "name": "punishing note page",
+      "pass": true,
+      "h1": "Why Punishing can lower your damage",
+      "evidence": "/workspace/verify-artifacts/punishing-note.png"
+    },
+    {
+      "name": "retained-dice limitations",
+      "pass": true,
+      "evidence": "/workspace/verify-artifacts/rules-retained.png"
+    }
+  ],
+  "pass": true
+}

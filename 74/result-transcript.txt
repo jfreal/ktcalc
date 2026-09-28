@@ -1,0 +1,35 @@
+PR #74
+Branch: cursor/punishing-fnp-score-note-f5af
+
+CI=true npm run testq
+Test Suites: 3 skipped, 35 passed, 35 of 38 total
+Tests:       3 skipped, 537 passed, 540 total
+Failed: 0
+Snapshots: 0
+
+npx eslint src/Notes.ts src/components/notes/PunishingNote.tsx src/components/notes/PunishingNote.test.tsx src/PunishingScoreLimitation.test.ts
+exit 0
+
+.cursor/skills/verify-ktcalc/scripts/launch.sh
+verify-ktcalc: ready at http://127.0.0.1:4173/
+
+.cursor/skills/verify-ktcalc/scripts/doctor.sh
+verify-ktcalc doctor: instance is worth driving
+
+.cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+verify-ktcalc drive-shoot: PASS
+Situation 1 Attacks 4 -> 5
+Situation 1 Average Damage 3.29 -> 5.04
+Situation 2 Average Damage stayed 3.29
+
+Help, Punishing note, and retained-dice pages (browser, real links after opening /help):
+verify-ktcalc drive-copy: PASS
+- Calculator notes show: "The shoot score includes saves, cover, and Piercing, and does not include Feel No Pain or Saintly Relics."
+- /help h1 is "How KT Calc works"; share buttons are absent.
+- /rules/combat shows "Kill Team 2024 Combat Rules" and not "Could not load this document". Back returns to the help h1.
+- /notes/punishing h1 is "Why Punishing can lower your damage" and includes the same sentence.
+- /rules/retained-vs-modified shows "Retained vs Modified Dice" and the same sentence under Known modelling limitations.
+Headless Chrome blocked the header "How it works" popup (no new tab). /help was opened in its own tab, then the combat, punishing, and retained-dice links were clicked in that tab.
+
+.cursor/skills/verify-ktcalc/scripts/cleanup.sh
+(run after this transcript was copied)
