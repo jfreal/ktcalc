@@ -235,6 +235,22 @@ describe('simulateFighterDice auto-dice and promotions', () => {
     expect(avgNorms).toBeCloseTo(1, 1);
   });
 
+  it('Severe declines when the crit deals less than the normal', () => {
+    const model = new Model(1, 1, 5, 3, 0, new Set([Ability.Severe])).setProp('lethal', 7);
+    const result = simulateFighterDice(model, undefined, mulberry32(7));
+
+    expect(result).toStrictEqual({ crits: 0, norms: 1 });
+  });
+
+  it('Rending declines when the crit deals less than the normal', () => {
+    // 1 auto-crit + 1 always-normal. Taking Rending would be two crits (6); declining is 8.
+    const model = new Model(2, 1, 5, 3, 0, new Set([Ability.Rending])).setProp('lethal', 7)
+      .setProp('autoCrits', 1);
+    const result = simulateFighterDice(model, undefined, mulberry32(7));
+
+    expect(result).toStrictEqual({ crits: 1, norms: 1 });
+  });
+
   it('Severe promotes one norm to crit when no crits rolled', () => {
     // WS 6+ means no norms possible, only crits and fails - not great for testing Severe
     // Use WS 3+ and Lethal 7 (never-crit) so all successes are norms

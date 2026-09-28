@@ -638,6 +638,59 @@ describe(calcDmgProbs.name + ', mystic scry and punishing vs saves', () => {
   });
 });
 
+describe(calcDmgProbs.name + ', severe and rending are optional', () => {
+  it('severe declines a worse crit: one die at 2+, norm 5 crit 3, no saves', () => {
+    // Crit on 6 (1/6), norm on 2-5 (4/6). Forcing every success into a crit would be 2.5.
+    const atk = new Model(1, 2, 5, 3).setAbility(Ability.Severe, true);
+    const def = new Model(0);
+
+    expect(avgDmg(atk, def)).toBeCloseTo((1 * 3 + 4 * 5) / 6, requiredPrecision);
+  });
+
+  it('two normals under severe stay two normals when the crit is worth less', () => {
+    const atk = new Model(2, 1, 5, 3).setProp('lethal', 7).setAbility(Ability.Severe, true);
+    const def = new Model(0);
+
+    expect(avgDmg(atk, def)).toBeCloseTo(10, requiredPrecision);
+  });
+
+  it('severe takes the crit when Devastating makes it better', () => {
+    // crit 3 + Devastating 3 = 6, which beats a normal 5, so every success converts.
+    const atk = new Model(1, 2, 5, 3, 3).setAbility(Ability.Severe, true);
+    const def = new Model(0);
+
+    expect(avgDmg(atk, def)).toBeCloseTo(5, requiredPrecision);
+  });
+
+  it('severe takes the crit when one cover save and Piercing Crits 1 invert the raw score', () => {
+    // Never crits; a 2+ is a normal (5/6). Raw 5 beats 3, but the cover blocks the normal
+    // and the crit removes that cover die.
+    const atk = new Model(1, 2, 5, 3).setProp('lethal', 7).setProp('px', 1)
+      .setAbility(Ability.Severe, true);
+    const def = new Model(1, 6).setProp('autoNorms', 1);
+
+    expect(avgDmg(atk, def)).toBeCloseTo((5 / 6) * 3, requiredPrecision);
+  });
+
+  it('one crit and one normal under rending stay put when the crit is worth less', () => {
+    // 1 auto-crit + 1 always-normal. Taking Rending would be 6; declining is 8.
+    const atk = new Model(2, 1, 5, 3).setProp('lethal', 7).setProp('autoCrits', 1)
+      .setAbility(Ability.Rending, true);
+    const def = new Model(0);
+
+    expect(avgDmg(atk, def)).toBeCloseTo(8, requiredPrecision);
+  });
+
+  it('rending takes the second crit when one normal save inverts the raw score', () => {
+    // Raw decline is 8 and two crits are 6. The save blocks the normal (3) and cannot block a crit (6).
+    const atk = new Model(2, 1, 5, 3).setProp('lethal', 7).setProp('autoCrits', 1)
+      .setAbility(Ability.Rending, true);
+    const def = new Model(1).withAlwaysNorm();
+
+    expect(avgDmg(atk, def)).toBeCloseTo(6, requiredPrecision);
+  });
+});
+
 describe(calcDmgProbs.name + ', rending & starfire', () => {
   it('rending, 2 atk dice, probability 2 crits', () => {
     const atk = newTestAttacker(2).setAbility(Ability.Rending, true);

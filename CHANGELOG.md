@@ -1,5 +1,11 @@
 # Changelog
 
+## September 2026 - Severe and Rending are optional
+
+- **Severe and Rending are no longer forced.** Both rules say "you can". One die at BS 2+, normal 5, crit 3, and no saves used to turn every success into a crit for 2.5 expected damage; leaving the normals alone is 3.83. Two normals under Severe became 1 crit + 1 normal (8) instead of 10. One crit and one normal under Rending became two crits (6) instead of 8.
+- The dice step now scores take against decline through the same damage ranking Punishing uses, including Devastating and, on a shoot, expected damage after saves, cover, and Piercing Crits. The decline is kept only when it is strictly better; ties still convert. When Severe does fire, that line still blocks Rending.
+- Fights and callers with no defender still rank by pre-save damage (a critical save counting as two normal saves on defence).
+
 ## September 2026 - Mystic Scry and Punishing weigh saves and Piercing
 
 - **Mystic Scry and Punishing no longer pick the higher raw-damage line when a defender is in the shoot.** One rolled normal and one fail at 3/4 damage used to keep two normals (raw 6 beats a crit's 4). Against one cover save and Piercing Crits 1, the cover blocks one of those normals (3 through) while the crit removes the cover die and 4 gets through. Punishing's take-versus-decline choice used the same blind score, so it could lock a normal that a save made worse than declining.
