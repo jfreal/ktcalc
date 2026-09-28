@@ -1,0 +1,68 @@
+{
+  "features": {
+    "comparison": {
+      "pass": true,
+      "before": {
+        "a1": "5",
+        "a2": "4",
+        "d1": "5.04",
+        "d2": "3.29",
+        "delta": "+1.57",
+        "header": true
+      },
+      "after": {
+        "a1": "5",
+        "a2": "5",
+        "delta": "0.00",
+        "cells": [
+          "Avg",
+          "3.83",
+          "3.83",
+          "0.00"
+        ]
+      },
+      "showSv6": true
+    },
+    "share": {
+      "pass": true,
+      "shared": {
+        "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1",
+        "a1": "5:3:3:4:0:0:0:X:0:0:0:0:0:",
+        "attacks": "5"
+      },
+      "restored": {
+        "attacks": "5",
+        "averageDamage": "5.04",
+        "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1"
+      },
+      "damageNow": "5.04"
+    },
+    "help": {
+      "pass": true,
+      "helpLink": {
+        "text": "How it works (opens in a new tab)",
+        "href": "/help",
+        "target": "_blank"
+      },
+      "helpHeading": "How KT Calc works",
+      "shareHidden": true,
+      "combat": "Kill Team 2024 Combat Rules",
+      "helpBack": "How KT Calc works"
+    },
+    "fight": {
+      "pass": true,
+      "before": {
+        "h1": "Kill Team 2024 Fight Calculator",
+        "attacks": "4",
+        "fbAttacks": "4",
+        "avgRemaining": "3.61"
+      },
+      "after": {
+        "attacks": "5",
+        "fbAttacks": "4",
+        "avgRemaining": "3.95"
+      }
+    }
+  },
+  "pass": true
+}

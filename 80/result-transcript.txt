@@ -1,0 +1,41 @@
+PR #80
+Branch: cursor/severe-rending-optional-667b
+Result: PASS
+
+Unit commands:
+- npm run testq
+  exit 0
+  Test Suites: 3 skipped, 34 passed, 34 of 37 total
+  Tests: 3 skipped, 570 passed, 573 total
+  Snapshots: 0 total
+  Failed: 0
+- npx eslint src/CalcEngineCommon.ts src/CalcEngineCommon.test.ts src/CalcEngineShoot.test.ts src/MonteCarloFightDice.test.ts src/Notes.ts
+  exit 0
+  no findings
+
+UI commands:
+- .cursor/skills/verify-ktcalc/scripts/launch.sh
+  verify-ktcalc: ready at http://127.0.0.1:4173/
+  dev-server.log: Compiled successfully!
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  verify-ktcalc doctor: instance is worth driving
+- .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+  verify-ktcalc drive-shoot: PASS (exit 0)
+  Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04
+  Situation 2 Average Damage stayed 3.29
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  verify-ktcalc doctor: instance is worth driving
+- node /tmp/drive-rest.mjs
+  verify-ktcalc drive-rest: PASS (exit 0)
+  Comparison: Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04, Situation 2 Average Damage stayed 3.29. Avg delta before copy +1.57. Copy From Situation 1 made both Attacks selects 5 and the Avg delta 0.00.
+  Share: Add Share Params wrote view=shoot and a1 first field 5. Opening that URL kept Attacks 5 and Average Damage 5.04.
+  Help: header link is target=_blank href /help. /help opened in a new tab (skill fallback). h1 How KT Calc works. Share buttons absent.
+  Combat rules heading: Kill Team 2024 Combat Rules. Not Loading… and not Could not load this document.
+  Back to How it works restored the help h1.
+  Fight: h1 Kill Team 2024 Fight Calculator, Fight button disabled. Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 3.95. Fighter B Attacks stayed 4. DeathChance present.
+- node follow-up (Show Sv 6+)
+  checkbox unchecked and no "Sv 6+" header before the click; checked and header "Sv 6+" after. Screenshot matrix-sv6.png.
+- .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+  stopped the recorded dev server
+
+UI pass/fail/skip: 5 passed, 0 failed, 0 skipped (shooting, share link, comparison matrix, fighting, help and rules).
