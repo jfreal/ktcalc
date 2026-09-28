@@ -192,7 +192,8 @@ roll, from the damage those dice would deal, without the defender's saves or Pie
 and Mystic Scry are decided per roll.** On a shoot, each candidate is scored by its expected damage
 against that defender's saves, cover, and Piercing; with no defender, and in a fight, they fall
 back to pre-save damage. For save dice, where there is no damage to score, the fallback counts a
-critical save as two normal saves.
+critical save as two normal saves. The shoot score includes saves, cover, and Piercing, and does
+not include Feel No Pain or Saintly Relics.
 
 **FailsToNorms is treated as a change, not a retention.** The generic input is worded as a
 modification, so the norms it produces stay promotable. If your rule is worded "retain one of your

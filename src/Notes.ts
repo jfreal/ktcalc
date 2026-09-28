@@ -71,7 +71,8 @@ export const Punishing = new Note(
   `Retain a failed hit as a normal hit if you had at least one critical hit; Necron equipment Starfire Core, Kommando strategic ploy "Dakka! Dakka! Dakka!", Hive Fleet equipment Toxin Sacs, Corsair Voidscarred strategic ploy Outcasts. `
     + `That die has now been retained, so Rending and NormsToCrits cannot promote it. Punishing is optional ("you can `
     + `retain"), so the calculator declines it when taking it deals less damage. On a shoot that comparison is `
-    + `expected damage after the defender's saves, cover, and Piercing, not the raw dice total.`,
+    + `expected damage after the defender's saves, cover, and Piercing, not the raw dice total. The shoot score `
+    + `includes saves, cover, and Piercing, and does not include Feel No Pain or Saintly Relics.`,
 );
 export const CoverNormSaves = new Note(
   `Cover Saves`,

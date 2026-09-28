@@ -46,6 +46,13 @@ describe('PunishingNote', () => {
     expect(pageText()).toMatch(/Add a second fail and the conflict disappears/i);
   });
 
+  it('says the shoot score skips Feel No Pain and Saintly Relics', () => {
+    renderNote();
+    expect(pageText()).toMatch(
+      /The shoot score includes saves, cover, and Piercing, and does not include Feel No Pain or Saintly Relics/,
+    );
+  });
+
   it('links to the retained-vs-modified rules page', () => {
     renderNote();
     const link = screen.getByRole('link', { name: /Retained vs Modified Dice/i });
