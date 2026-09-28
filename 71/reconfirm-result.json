@@ -1,0 +1,114 @@
+{
+  "report": {
+    "pass": [
+      {
+        "name": "fight-notes",
+        "ok": true,
+        "detail": "{\"hasEstimate\":true,\"hasMiss\":true,\"hasParry\":true,\"hasReroll\":true,\"oldKill\":false}"
+      },
+      {
+        "name": "fight-attacks",
+        "ok": true,
+        "detail": "A attacks 4 -> 5, wounds 3.61 -> 3.95, B attacks stayed 4"
+      },
+      {
+        "name": "matrix-setup",
+        "ok": true,
+        "detail": "S1 dmg 3.29 -> 5.04, S2 stayed 3.29"
+      },
+      {
+        "name": "comparison-matrix",
+        "ok": true,
+        "detail": "delta +1.57 -> 0.00, attacks 5/5"
+      },
+      {
+        "name": "matrix-sv6",
+        "ok": true,
+        "detail": "Sv 6+ header visible"
+      },
+      {
+        "name": "share-link",
+        "ok": true,
+        "detail": "a1 attacks field 5, select 5, search ?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1"
+      },
+      {
+        "name": "share-reload",
+        "ok": true,
+        "detail": "attacks 5, dmg 5.04 (was 5.04)"
+      },
+      {
+        "name": "help",
+        "ok": true,
+        "detail": "How KT Calc works, share buttons absent"
+      },
+      {
+        "name": "help-roundtrip",
+        "ok": true,
+        "detail": "back from combat rules"
+      },
+      {
+        "name": "weapon-reroll",
+        "ok": true,
+        "detail": "Reroll Targeting Strategy\nFails only is the shooting default. Shooting reroll abilities in this calculator only target fails, never norms or crits:\nRerolling a fail can only improve (to norm/crit) or stay the same\nRerolling a norm could get worse (to fail)\nRerolling a crit could "
+      },
+      {
+        "name": "fight-lethal",
+        "ok": true,
+        "detail": "Lethal strike estimate → resolve the next strike on copies of both fighters, including Just a Scratch and other damage prevention, and strike if the target reaches zero wounds. Random prevention (FNP / Saintly Relics) uses expected values, so this remains a heuristic, not a guara"
+      }
+    ],
+    "fail": []
+  },
+  "notes": "Notes\nBasic\nAll strategies will do certain no-downside actions, with the consequence that \"Strike\" will still sometimes parry and \"Parry\" will still sometimes strike.\nThe next-strike kill check is an estimate. If it says the enemy reaches zero wounds, they strike. It can miss a kill that depends on a failed Feel No Pain or relic roll.\nThe parry-then-kill check is the same kind of estimate. If it says they can parry the enemy's last success and still kill afterwards, they will do so. It can miss that kill when it depends on a failed Feel No Pain or relic roll.\nBalanced and Relentless will not reroll a normal success even if it would be wise to do so.\nReroll\nBalanced rerolls 1 die. Relentless rerolls fails. Ceasless rerolls most common fail result (ex: reroll 2s); it's called \"ceaseless\" in KT2024. CritFishRelentless rerolls non-crits. DoubleBalanced rerolls 2 dice. Ones rerolls 1s (\"ceaseless\" in KT2021). BothOnesAndBalanced rerolls 1s and then rerolls 1 die that hasn't already been rerolled.\nRending\nIf you have >=1 crit, you can retain a norm as a crit instead. Since a dice can only be retained once, it cannot promote an Accurate or Punishing retention (only a rolled norm).\nSevere\nIf you have no crits, you can change a norm to a crit. Because it changes (rather than retains) a success, it can take an already-retained norm such as Accurate. Devastating and Piercing Crits still work, but Punishing and Rending don't.\nBrutal\nOpponent can not do norm parries.\n⚙️ Advanced — only shown when the Advanced checkbox is ticked\nNicheAbility\nCloseAssault is Imperial Navy Breachers strategic ploy; if you have two or more successes, promote a fail to a normal success. Dueller2021 is Intercession Squad chapter tactic; each crit parry discards additional 1 norm success of opponent. Hammerhand2021 is Grey Knights psychic power; first strike deals +1 dmg. StormShield2021 is a Custodes ability; each parry discards two successes of opponent instead of 1. Waaagh2021 is Kommandos strategic ploy; if you have two or more normal successes, promote a norm to a crit. MurderousEntrance2021 is a Void Troupe tactical ploy to strike again after a crit strike.\nAccurate\nHow many attack dice can be automatically retained as a normal success. Much like cover saves but for attack dice. A dice can only be retained once, so these are not promotable by NormsToCrits or Rending (\"retain a normal success as a critical success instead\"); Severe, which changes a success, can still take one. The rule is \"retain UP TO x\", so the calculator retains fewer when rolling those dice is worth more (a high crit chance, or a spare promotion that a locked norm would waste), decided before the roll as at the table.\nNormsToCrits\nHow many normal successes can be retained as critical successes instead. Because a dice can only be retained once, this cannot promote a success that was already retained rather than rolled: cover saves, Accurate, or a Punishing fail retention. Rules worded as *changing* a success (Severe, Waaagh) are modeled separately and can take those.\nFailsToNorms\nHow many fails can be modified to normal successes. These are treated as *changed* dice, so NormsToCrits and Rending can still promote them. If your rule instead says to *retain* a fail as a normal success, that die has been retained and cannot be promoted afterwards. Punishing is modeled that way, but only fits if your rule shares its conditions (needs at least one crit, and is switched off against an Obscured target); for an unconditional retain-worded rule there is no exact input yet, and FailsToNorms will slightly overstate it whenever the new norm gets promoted.\nFeelNoPain\nFNP is the category of abilities where just before damage is actually resolved, you roll a die for each successful hit (strike). On a roll at or above the threshold, that hit's damage is reduced by 1. Even MWx damage can be prevented via FNP.\nSaintly Relics\nWhenever an attack dice would inflict damage, roll one D6 (\"1D6\"), or two D6 if the operative is INSPIRING (\"2D6\"); if any result is a 6, ignore all of that attack dice's damage. At most one attack dice is ignored per action and two per battle; a failed roll doesn't use up either cap. Both calculators target the highest-damage hit (crits before norms): Shoot does this exactly, and over multiple Rounds the two-per-battle cap is enforced across the battle; Fight spends the ignore on a strike only when no larger strike is still pending. Note: mortal (MWx) damage is never ignored, matching Just a Scratch.\nShock\nFirst crit strike discards one unresolved enemy normal, or a crit if there are none.\nPunishing\nRetain a failed hit as a normal hit if you had at least one critical hit; Necron equipment Starfire Core, Kommando strategic ploy \"Dakka! Dakka! Dakka!\", Hive Fleet equipment Toxin Sacs, Corsair Voidscarred strategic ploy Outcasts. That die has now been retained, so Rending and NormsToCrits cannot promote it. Punishing is optional (\"you can retain\"), so the calculator declines it when taking it deals less damage. On a shoot that comparison is expected damage after the defender's saves, cover, and Piercing, not the raw dice total.\nPuritySeal\nIf at least 2 dice fail, discard one fail and change another fail to a normal success; attack only. Note: KT2024 rule strictly requires two unmodified 1s; this calculator triggers on any 2 failed dice, so the benefit is slightly overstated on rolls where fails include non-1 values (e.g. 2s on a 3+ stat).\nMystic Scry Buff\nIn the Roll Attack Dice step, retain one of your fails as a normal success, OR one of your normal successes as a critical success. For each roll the calculator picks whichever option yields more damage, after also resolving Rending — so it correctly seeds a crit for Rending, or adds a norm for Rending to promote, rather than always favoring one. On a shoot, the score is expected damage after the defender's saves, cover, and Piercing. Attack only. In-game: the \"Mystic Scry\" ability.\nDuelist/PreParry\nDo one parry before usual dice resolution.\nJaS (Crits)\nJust a Scratch (JaS): Ignore damage from one attack die, choosing whichever die saves the most damage.\nJaS (Normals)\nJust a Scratch (JaS): Ignore damage from one normal hit only (cannot ignore crits).\nHalf Dmg 1st Strike\nFirst strike damage is halved and rounded up, but never below 2 and never above the strike, so a 2 stays 2 and a 0 or 1 is unchanged.",
+  "weapon": "Reroll Targeting Strategy\nFails only is the shooting default. Shooting reroll abilities in this calculator only target fails, never norms or crits:\nRerolling a fail can only improve (to norm/crit) or stay the same\nRerolling a norm could get worse (to fail)\nRerolling a crit could only get worse (to norm/fail)\nCrit-fishing is a fight choice, not this default. The Fight calculator Notes say Balanced and Relentless will not reroll a normal success even if it would be wise to do so. See that note on the Fight calculator.\nCombined Reroll Abilities\nThe calculator supports combined reroll abilities where multiple effects apply in sequence:\nRerollOnesPlusBalanced (BothOnesAndBalanced):\nFirst reroll all 1s\nThen reroll one additional fail that wasn't a 1 (no double reroll)",
+  "lethal": "Lethal strike estimate → resolve the next strike on copies of both fighters, including Just a Scratch and other damage prevention, and strike if the target reaches zero wounds. Random prevention (FNP / Saintly Relics) uses expected values, so this remains a heuristic, not a guarantee of a kill. The estimate changes neither the live fighters nor their RNG streams. Also forced to strike if the enemy weapon is Brutal and you have no crits (your normals can't parry it, so they may as well strike).\nS",
+  "fightBefore": {
+    "attacks": "4",
+    "bAttacks": "4",
+    "avgA": "3.61",
+    "avgB": "3.57"
+  },
+  "fightAfter": {
+    "attacks": "5",
+    "avgA": "3.95",
+    "bAttacks": "4"
+  },
+  "matrixBefore": {
+    "cells": [
+      "Avg",
+      "3.83",
+      "2.26",
+      "+1.57",
+      "5.04",
+      "3.29",
+      "+1.75",
+      "6.33",
+      "4.43",
+      "+1.90",
+      "7.68",
+      "5.66",
+      "+2.01"
+    ],
+    "header": "Comparison Matrix (Avg Dmg + Kill % vs W)\nShow Sv 6+\nW\tSv 2+\tSv 3+\tSv 4+\tSv 5+\nS1\tS2\tΔ\tS1\tS2\tΔ\tS1\tS2\tΔ\tS1\tS2\tΔ\nAvg\t3.83\t2.26\t+1.57\t5.04\t3.29\t+1.75\t6.33\t4.43\t+1.90\t7.68\t5.66\t+2.01\n1\t70%\t51%\t+20%\t79%\t63%\t+16%\t86%\t75%\t+12%\t92%\t84%\t+8%\n2\t70%\t51%\t+20%\t79%\t63%\t+16%\t86%\t75%\t+12%\t92%\t84%\t+8%\n3\t70%\t51%\t+20%\t79%\t63%\t+16%\t86%\t75%\t+12%\t92%\t84%\t+8%\n4\t46%\t26%\t+19%\t58%\t39%\t+19%\t69%\t52%\t+17%\t79%\t64%\t+14%\n5\t34%\t15"
+  },
+  "matrixAfter": {
+    "s1": "5",
+    "s2": "5",
+    "cells": [
+      "Avg",
+      "3.83",
+      "3.83",
+      "0.00",
+      "5.04",
+      "5.04",
+      "0.00",
+      "6.33",
+      "6.33",
+      "0.00",
+      "7.68",
+      "7.68",
+      "0.00"
+    ]
+  },
+  "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1"
+}

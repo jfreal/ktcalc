@@ -1,0 +1,17 @@
+PR #71
+Test command: CI=true npm run testq
+UI: .cursor/skills/verify-ktcalc/scripts/launch.sh && doctor.sh && drive-shoot.mjs && cleanup.sh
+Tests: 0 failed, 3 skipped, 536 passed, 539 total (exit 0)
+Suites: 0 failed, 3 skipped, 35 passed, 38 total
+Focused: CI=true npx react-scripts test --watchAll=false --watch=false --testPathPattern='NotesPanelSync|WeaponRulesReroll'
+Focused: 0 failed, 0 skipped, 8 passed, 8 total (exit 0)
+drive-shoot: PASS. Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04. Situation 2 Average Damage stayed 3.29.
+drive-fight: PASS. Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 3.95. Fighter B Attacks stayed 4.
+fight-notes: PASS. Next-strike kill check is an estimate and can miss a kill that depends on a failed Feel No Pain or relic roll. Parry-then-kill is the same kind of estimate. Balanced and Relentless still will not reroll a normal success even if it would be wise. Old guaranteed-kill sentence is gone.
+comparison-matrix: PASS. Avg delta +1.57 -> 0.00 after Copy From Situation 1. Attacks 5/5. Show Sv 6+ adds the Sv 6+ header.
+share-link: PASS. Add Share Params wrote view=shoot and a1 attacks field 5. Reload kept Attacks 5 and Average Damage 5.04.
+help: PASS. How KT Calc works, share buttons absent. Combat rules heading visible, not Could not load this document. Back returns to How KT Calc works.
+The header help link is target=_blank. Headless Chrome did not spawn that tab, so /help was opened in a new tab and the combat, weapon, and fight rules links were clicked there.
+weapon-reroll: PASS. /rules/weapon Reroll Targeting Strategy says fails only is the shooting default and points at the Fight calculator Notes for crit-fishing.
+fight-lethal: PASS. /rules/fight lethal-strike paragraph says expected Feel No Pain and Saintly Relics, and that the check is not a guarantee of a kill.
+UI checks: 12 passed, 0 failed, 0 skipped (drive-shoot plus 11 reconfirm checks).
