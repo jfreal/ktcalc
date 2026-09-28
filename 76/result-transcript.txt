@@ -1,0 +1,30 @@
+PR #76
+Branch: cursor/fight-goes-first-label-ed9d
+Result: PASS
+
+Commands:
+- CI=true npm run testq
+  exit 0.
+  Test Suites: 3 skipped, 34 passed, 34 of 37 total
+  Tests: 3 skipped, 534 passed, 537 total
+  Snapshots: 0 total
+  Failed: 0
+- npx eslint src/components/FightOptionControls.tsx src/components/IncDecSelect.ids.test.tsx
+  exit 0. No problems.
+- .cursor/skills/verify-ktcalc/scripts/launch.sh
+  ready at http://127.0.0.1:4173/
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  instance is worth driving
+- .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+  PASS. Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04. Situation 2 Average Damage stayed 3.29.
+- node /tmp/ktcalc-drive-rest.mjs (same browser helper; fighting, comparison matrix, share link, help and rules)
+  PASS.
+- .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+  stopped dev server pid 3056
+
+UI features: 5 passed, 0 failed, 0 skipped
+- shooting: PASS (drive-shoot.mjs)
+- fighting: PASS. h1 "Kill Team 2024 Fight Calculator". Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 3.95. Fighter B Attacks stayed 4. Fight Options third stepper label "Goes first", id fo-Goes first (no slash), options A/B. Value A -> B; Fighter A AvgRemainingWounds 3.95 -> 3.88. Old id fo-Attacker/FirstActer absent.
+- comparison: PASS. After Attacks +, Avg row S1 3.83 / S2 2.26 / delta +1.57. Copy From Situation 1 made both attacks 5 and delta 0.00. Show Sv 6+ added a Sv 6+ header.
+- share: PASS. Add Share Params wrote view=shoot and a1 first field 5. Reload kept Attacks 5 and Average Damage 5.04. /help has no share buttons. Back to calculator returned to the shooting heading.
+- help and rules: PASS. Header link target _blank, text starts "How it works". /help h1 "How KT Calc works". /rules/combat showed "Kill Team 2024 Combat Rules" (not Loading…, not Could not load this document). Back to How it works restored the help h1.
