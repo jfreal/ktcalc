@@ -54,6 +54,22 @@ function controlDomId(props: IProps): string {
   return props.idPrefix ? `${props.idPrefix}-${props.id}` : props.id;
 }
 
+// Numeric steppers are plain counts ("4"), dice stats ("3+"), and the X off sentinel
+// from xspan. Anything else is a named option (fight strategy, reroll, niche ability)
+// and must stay wide enough that the closed control shows the selected label.
+const NUMERIC_STEPPER_VALUE = /^(?:X|\d+\+?)$/;
+
+function isNumericStepper(values: readonly string[]): boolean {
+  return values.length > 0 && values.every(value => NUMERIC_STEPPER_VALUE.test(value));
+}
+
+function selectStyle(values: readonly string[]): React.CSSProperties {
+  if (isNumericStepper(values)) {
+    return { maxWidth: '70px' };
+  }
+  return { maxWidth: 'none', width: 'auto' };
+}
+
 const IncDecSelect: React.FC<IProps> = (props: IProps) => {
   let selectedText = props.selectedValue.toString();
   const domId = controlDomId(props);
@@ -87,7 +103,7 @@ const IncDecSelect: React.FC<IProps> = (props: IProps) => {
           id={domId}
           value={selectedText}
           onChange={handleUserSelect}
-          style={{maxWidth: '70px'}}
+          style={selectStyle(props.values)}
         >
           {options}
         </select>
