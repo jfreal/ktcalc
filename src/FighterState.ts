@@ -166,8 +166,16 @@ export default class FighterState {
     if (this.crits > 0) {
       dmg += this.profile.critDmg;
 
+      // The follow-up is another crit only while a second crit is still in hand.
+      // Otherwise it spends a normal, and only if one remains. Hammerhand is the
+      // first strike only, added once below.
       if (this.profile.has(Ability.MurderousEntrance2021) && !this.hasCritStruck) {
-        dmg += this.profile.critDmg;
+        if (this.crits > 1) {
+          dmg += this.profile.critDmg;
+        }
+        else if (this.norms > 0) {
+          dmg += this.profile.normDmg;
+        }
       }
     }
     else if (this.norms > 0) {
