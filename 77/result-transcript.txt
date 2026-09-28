@@ -1,0 +1,41 @@
+PR #77
+Branch: cursor/heavy-saturate-help-1f02
+
+Unit commands:
+- npm run testq
+  Test Suites: 3 skipped, 34 passed, 34 of 37 total
+  Tests: 3 skipped, 534 passed, 537 total
+  0 failed
+
+UI commands:
+- .cursor/skills/verify-ktcalc/scripts/launch.sh
+  verify-ktcalc: ready at http://127.0.0.1:4173/
+  dev-server.log: Compiled successfully!
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  verify-ktcalc doctor: instance is worth driving
+- .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+  verify-ktcalc drive-shoot: PASS (exit 0)
+  Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04
+  Situation 2 Average Damage stayed 3.29
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  verify-ktcalc doctor: instance is worth driving
+- node /tmp/drive-rest.mjs
+  verify-ktcalc drive-rest: PASS (exit 0)
+  14 passed, 0 failed, 0 skipped
+  Comparison: Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04, Situation 2 stayed 3.29.
+  Matrix Avg delta before copy was +1.57. Copy From Situation 1 made both Attacks selects 5 and the Avg delta 0.00.
+  Show Sv 6+ added a Sv 6+ header.
+  Add Share Params wrote view=shoot and a1=5:... . Reload kept Attacks 5 and Average Damage 5.04.
+  Fight: Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 3.95. Fighter B Attacks stayed 4.
+  Help: header link is target=_blank. Headless Chrome blocked the popup, so /help was opened in a new tab (skill fallback).
+  h1 How KT Calc works. Weapon-rules blurb: Heavy is a movement restriction with no dice effect. Saturate is represented by setting cover saves to 0.
+  The old claim "every weapon rule the calculator supports" is gone. Share buttons absent on help.
+  Weapon rules page heading: Kill Team 2024 Weapon Rules. Not Loading… and not Could not load this document.
+  Weapon-balance heading: Comparing Weapons by Power Level. Sentence: Saturate is represented by setting cover saves to 0.
+  The old "and Saturate are modeled as the engine handles them" sentence is gone, and Saturate is not followed by a Combat rules link.
+  Combat rules heading: Kill Team 2024 Combat Rules. No Saturate heading and the page does not mention Saturate.
+  Back to How it works restored the help h1.
+- .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+  stopped the recorded dev server
+
+UI pass/fail/skip: drive-shoot PASS, drive-rest 14 passed, 0 failed, 0 skipped.

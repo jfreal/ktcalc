@@ -1,0 +1,132 @@
+{
+  "features": {
+    "comparison": {
+      "before": {
+        "s1": "3.83",
+        "s2": "2.26",
+        "delta": "+1.57"
+      },
+      "after": {
+        "s1": "3.83",
+        "s2": "3.83",
+        "delta": "0.00"
+      },
+      "sv6": true
+    },
+    "share": {
+      "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=4%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1",
+      "attacksField": "5",
+      "reloadedAttacks": "5",
+      "reloadedDamage": "5.04"
+    },
+    "fight": {
+      "before": {
+        "attacks": "4",
+        "bAttacks": "4",
+        "wounds": "3.61"
+      },
+      "after": {
+        "attacks": "5",
+        "bAttacks": "4",
+        "wounds": "3.95"
+      }
+    },
+    "help": {
+      "heading": "How KT Calc works",
+      "blurb": {
+        "heavy": true,
+        "saturate": true,
+        "oldClaim": false
+      }
+    },
+    "weaponBalance": {
+      "heading": "Comparing Weapons by Power Level",
+      "saturateSentence": true,
+      "oldSentence": false,
+      "combatLinkedFromSaturate": false
+    },
+    "combat": {
+      "heading": "Kill Team 2024 Combat Rules",
+      "saturateHeadings": [],
+      "mentionsSaturate": false
+    }
+  },
+  "summary": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "total": 14,
+    "checks": [
+      {
+        "name": "comparison setup: situation 2 damage unchanged",
+        "ok": true,
+        "detail": "s1 5/5.04 s2 4/3.29"
+      },
+      {
+        "name": "comparison matrix before copy has a signed delta",
+        "ok": true,
+        "detail": "{\"s1\":\"3.83\",\"s2\":\"2.26\",\"delta\":\"+1.57\"}"
+      },
+      {
+        "name": "share link writes view=shoot and a1 attacks field",
+        "ok": true,
+        "detail": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=4%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1"
+      },
+      {
+        "name": "share link reload restores attacks and average damage",
+        "ok": true,
+        "detail": "attacks 5 dmg 5.04"
+      },
+      {
+        "name": "share buttons present on calculator",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "copy from situation 1 zeroes the matrix delta",
+        "ok": true,
+        "detail": "{\"s1\":\"3.83\",\"s2\":\"3.83\",\"delta\":\"0.00\"}"
+      },
+      {
+        "name": "show Sv 6+ adds a column group",
+        "ok": true,
+        "detail": "Sv 2+, Sv 3+, Sv 4+, Sv 5+, Sv 6+"
+      },
+      {
+        "name": "fight: Fighter A attacks and remaining wounds change, Fighter B attacks stay",
+        "ok": true,
+        "detail": "A 4->5 wounds 3.61->3.95 B attacks 4"
+      },
+      {
+        "name": "help blurb marks Heavy and Saturate",
+        "ok": true,
+        "detail": "{\"heavy\":true,\"saturate\":true,\"oldClaim\":false} openedByClick=false href=http://127.0.0.1:4173/help"
+      },
+      {
+        "name": "share buttons absent on help",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "weapon rules page loads",
+        "ok": true,
+        "detail": "Kill Team 2024 Weapon Rules"
+      },
+      {
+        "name": "weapon-balance points Saturate at cover saves set to 0",
+        "ok": true,
+        "detail": "{\"heading\":\"Comparing Weapons by Power Level\",\"saturateSentence\":true,\"oldSentence\":false,\"combatLinkedFromSaturate\":false}"
+      },
+      {
+        "name": "combat rules loads and has no Saturate heading",
+        "ok": true,
+        "detail": "{\"heading\":\"Kill Team 2024 Combat Rules\",\"saturateHeadings\":[],\"mentionsSaturate\":false}"
+      },
+      {
+        "name": "combat back link returns to help",
+        "ok": true,
+        "detail": "How KT Calc works"
+      }
+    ]
+  }
+}
