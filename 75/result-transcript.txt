@@ -1,0 +1,34 @@
+PR #75
+Branch: cursor/ci-build-and-lint-622f
+Result: PASS
+
+Commands:
+- npm ci
+  exit 0 (Puppeteer Chromium downloaded; node_modules/puppeteer/.local-chromium/linux-686378 present)
+- npm run lint
+  exit 0. ESLint printed no problems (0 errors, 0 warnings).
+- CI=true npm run testq
+  exit 0.
+  Test Suites: 3 skipped, 34 passed, 34 of 37 total
+  Tests: 3 skipped, 534 passed, 537 total
+  Snapshots: 0 total
+  Failed: 0
+- CI=true npm run build
+  exit 0. copy-rules copied 6/6. react-scripts compiled successfully. react-snap crawled 13/13, including /fight.
+- .cursor/skills/verify-ktcalc/scripts/launch.sh
+  ready at http://127.0.0.1:4173/
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  instance is worth driving
+- .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+  PASS. Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04. Situation 2 Average Damage stayed 3.29.
+- node /tmp/drive-rest.mjs (same browser helper, mapped features from the skill)
+  PASS. comparison matrix, share link, help and rules, fight.
+- .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+  stopped dev server pid 3289
+
+UI features: 5 passed, 0 failed, 0 skipped
+- shooting: PASS (drive-shoot.mjs)
+- comparison: PASS. Attacks + made S1=5 S2=4, first Avg delta +1.57. Copy From Situation 1 made S1=S2=5 and Avg deltas 0.00. Show Sv 6+ added a Sv 6+ header.
+- share: PASS. Add Share Params wrote view=shoot and a1 first field 5. Reload kept Attacks 5 and Average Damage 5.04. /help has no Add Share Params button.
+- help and rules: PASS. /help h1 "How KT Calc works". /rules/combat showed "Kill Team 2024 Combat Rules" (not Loading…, not Could not load this document). Back returned to the help h1.
+- fight: PASS. h1 "Kill Team 2024 Fight Calculator" at /fight/. Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 3.95. Fighter B Attacks stayed 4.
