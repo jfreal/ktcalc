@@ -1,0 +1,350 @@
+{
+  "origin": "http://127.0.0.1:4173",
+  "checks": [
+    {
+      "name": "matrix copy matches attacks",
+      "ok": true,
+      "detail": {
+        "s1": "5",
+        "s2": "5",
+        "headerHasGroups": true,
+        "deltas": [
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00"
+        ],
+        "showSv6": true
+      }
+    },
+    {
+      "name": "matrix delta was nonzero before copy",
+      "ok": true,
+      "detail": {
+        "s1": "5",
+        "s2": "4",
+        "deltas": [
+          "+1.57",
+          "+1.75",
+          "+1.90",
+          "+2.01"
+        ]
+      }
+    },
+    {
+      "name": "matrix avg deltas are zero after copy",
+      "ok": true,
+      "detail": [
+        "0.00",
+        "0.00",
+        "0.00",
+        "0.00"
+      ]
+    },
+    {
+      "name": "matrix header has S1 S2 delta",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "show sv 6+ adds a column group",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "share url contains view=shoot and a1",
+      "ok": true,
+      "detail": "?view=shoot&a1=5:3:3:4:0:0:0:X:0:0:0:0:0:&d1=3:12:0:0:0:0:0:0:X::0&so1=1&a2=5:3:3:4:0:0:0:X:0:0:0:0:0:&d2=3:12:0:0:0:0:0:0:X::0&so2=1"
+    },
+    {
+      "name": "share a1 attacks field matches the select",
+      "ok": true,
+      "detail": {
+        "a1Attacks": "5",
+        "attacks": "5"
+      }
+    },
+    {
+      "name": "reload keeps situation 1 attacks",
+      "ok": true,
+      "detail": {
+        "attacks": "5",
+        "headers": [
+          "Average Damage: 5.04",
+          "Average Damage: 5.04"
+        ],
+        "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1"
+      }
+    },
+    {
+      "name": "help heading",
+      "ok": true,
+      "detail": "How KT Calc works"
+    },
+    {
+      "name": "help hides share buttons",
+      "ok": true,
+      "detail": {
+        "add": false,
+        "copy": false
+      }
+    },
+    {
+      "name": "rules combat heading",
+      "ok": true,
+      "detail": "Kill Team 2024 Combat Rules"
+    },
+    {
+      "name": "back to help",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "fight heading and disabled fight button",
+      "ok": true,
+      "detail": {
+        "h1": "Kill Team 2024 Fight Calculator",
+        "path": "/fight/",
+        "fightDisabled": true,
+        "shootDisabled": false
+      }
+    },
+    {
+      "name": "strategy closed label is Max Dmg To Enemy",
+      "ok": true,
+      "detail": {
+        "id": "fo-Fighter A Strategy",
+        "value": "Max Dmg To Enemy",
+        "maxWidth": "none",
+        "clientWidth": 170,
+        "textWidth": 149.3,
+        "visibleWidth": 172,
+        "fitsInControl": true,
+        "fullyVisible": true,
+        "clippers": []
+      }
+    },
+    {
+      "name": "strategy is not capped at 70px",
+      "ok": true,
+      "detail": {
+        "id": "fo-Fighter A Strategy",
+        "value": "Max Dmg To Enemy",
+        "maxWidth": "none",
+        "clientWidth": 170,
+        "textWidth": 149.3,
+        "visibleWidth": 172,
+        "fitsInControl": true,
+        "fullyVisible": true,
+        "clippers": []
+      }
+    },
+    {
+      "name": "strategy text fits in the closed control",
+      "ok": true,
+      "detail": {
+        "id": "fo-Fighter A Strategy",
+        "value": "Max Dmg To Enemy",
+        "maxWidth": "none",
+        "clientWidth": 170,
+        "textWidth": 149.3,
+        "visibleWidth": 172,
+        "fitsInControl": true,
+        "fullyVisible": true,
+        "clippers": []
+      }
+    },
+    {
+      "name": "reroll closed label is CeaselessPlusBalanced",
+      "ok": true,
+      "detail": {
+        "id": "fa-Reroll",
+        "value": "CeaselessPlusBalanced",
+        "maxWidth": "none",
+        "clientWidth": 194,
+        "textWidth": 173.6,
+        "visibleWidth": 196,
+        "fitsInControl": true,
+        "fullyVisible": true,
+        "clippers": []
+      }
+    },
+    {
+      "name": "reroll is not capped at 70px",
+      "ok": true,
+      "detail": {
+        "id": "fa-Reroll",
+        "value": "CeaselessPlusBalanced",
+        "maxWidth": "none",
+        "clientWidth": 194,
+        "textWidth": 173.6,
+        "visibleWidth": 196,
+        "fitsInControl": true,
+        "fullyVisible": true,
+        "clippers": []
+      }
+    },
+    {
+      "name": "reroll text fits in the closed control",
+      "ok": true,
+      "detail": {
+        "id": "fa-Reroll",
+        "value": "CeaselessPlusBalanced",
+        "maxWidth": "none",
+        "clientWidth": 194,
+        "textWidth": 173.6,
+        "visibleWidth": 196,
+        "fitsInControl": true,
+        "fullyVisible": true,
+        "clippers": []
+      }
+    },
+    {
+      "name": "numeric attacks stepper stays at 70px",
+      "ok": true,
+      "detail": {
+        "id": "fa-Attacks",
+        "value": "4",
+        "maxWidth": "70px",
+        "clientWidth": 30,
+        "textWidth": 9.2,
+        "visibleWidth": 32,
+        "fitsInControl": true,
+        "fullyVisible": true,
+        "clippers": []
+      }
+    },
+    {
+      "name": "fighter A attacks changed",
+      "ok": true,
+      "detail": {
+        "attacks": "5",
+        "wounds": "4.86",
+        "attacksB": "4"
+      }
+    },
+    {
+      "name": "fighter A remaining wounds changed",
+      "ok": true,
+      "detail": {
+        "before": "3.61",
+        "after": "4.86"
+      }
+    },
+    {
+      "name": "fighter B attacks unchanged",
+      "ok": true,
+      "detail": {
+        "attacks": "5",
+        "wounds": "4.86",
+        "attacksB": "4"
+      }
+    }
+  ],
+  "passed": 23,
+  "failed": 0,
+  "evidence": {
+    "matrixBefore": "/workspace/verify-artifacts/matrix-before.png",
+    "matrixAfter": "/workspace/verify-artifacts/matrix-after.png",
+    "shareUrl": "/workspace/verify-artifacts/share-url.png",
+    "shareReload": "/workspace/verify-artifacts/share-reload.png",
+    "help": "/workspace/verify-artifacts/help.png",
+    "rules": "/workspace/verify-artifacts/rules-combat.png",
+    "fightStrategyBefore": "/workspace/verify-artifacts/fight-strategy-before.png",
+    "fightStrategyAfter": "/workspace/verify-artifacts/fight-strategy-after.png",
+    "fightRerollAfter": "/workspace/verify-artifacts/fight-reroll-after.png",
+    "fightAttacks": "/workspace/verify-artifacts/fight-attacks-after.png"
+  },
+  "labelFit": {
+    "strategy": {
+      "id": "fo-Fighter A Strategy",
+      "value": "Max Dmg To Enemy",
+      "maxWidth": "none",
+      "clientWidth": 170,
+      "textWidth": 149.3,
+      "visibleWidth": 172,
+      "fitsInControl": true,
+      "fullyVisible": true,
+      "clippers": []
+    },
+    "reroll": {
+      "id": "fa-Reroll",
+      "value": "CeaselessPlusBalanced",
+      "maxWidth": "none",
+      "clientWidth": 194,
+      "textWidth": 173.6,
+      "visibleWidth": 196,
+      "fitsInControl": true,
+      "fullyVisible": true,
+      "clippers": []
+    },
+    "attacks": {
+      "id": "fa-Attacks",
+      "value": "4",
+      "maxWidth": "70px",
+      "clientWidth": 30,
+      "textWidth": 9.2,
+      "visibleWidth": 32,
+      "fitsInControl": true,
+      "fullyVisible": true,
+      "clippers": []
+    },
+    "shootRerollHidden": true
+  },
+  "fightHeading": {
+    "h1": "Kill Team 2024 Fight Calculator",
+    "path": "/fight/",
+    "fightDisabled": true,
+    "shootDisabled": false
+  },
+  "beforeFight": {
+    "strategy": "Max Dmg To Enemy",
+    "reroll": "X",
+    "attacks": "4",
+    "attacksB": "4",
+    "wounds": "3.61",
+    "numericMaxWidth": "70px"
+  },
+  "fightAfter": {
+    "attacks": "5",
+    "wounds": "4.86",
+    "attacksB": "4"
+  },
+  "deltaBefore": {
+    "s1": "5",
+    "s2": "4",
+    "deltas": [
+      "+1.57",
+      "+1.75",
+      "+1.90",
+      "+2.01"
+    ]
+  },
+  "deltaAfter": {
+    "s1": "5",
+    "s2": "5",
+    "headerHasGroups": true,
+    "deltas": [
+      "0.00",
+      "0.00",
+      "0.00",
+      "0.00"
+    ],
+    "showSv6": true
+  },
+  "shareBefore": {
+    "attacks": "5",
+    "damageText": "Average Damage: 5.04",
+    "search": ""
+  },
+  "shareUrl": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1",
+  "a1Attacks": "5",
+  "shareAfter": {
+    "attacks": "5",
+    "headers": [
+      "Average Damage: 5.04",
+      "Average Damage: 5.04"
+    ],
+    "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1"
+  }
+}

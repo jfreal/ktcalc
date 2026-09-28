@@ -1,0 +1,28 @@
+PR #73
+Branch: cursor/stepper-dropdown-width-2eb4
+Result: PASS
+
+Commands:
+- CI=true npm run testq
+  exit 0.
+  Test Suites: 3 skipped, 34 passed, 34 of 37 total
+  Tests: 3 skipped, 536 passed, 539 total
+  Snapshots: 0 total
+  Failed: 0
+- .cursor/skills/verify-ktcalc/scripts/launch.sh
+  ready at http://127.0.0.1:4173/
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  instance is worth driving
+- .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+  PASS. Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04. Situation 2 Average Damage stayed 3.29.
+- node /tmp/drive-ktcalc-rest.mjs (same browser helper, mapped features from the skill, plus the closed-label reconfirm)
+  PASS. 23 checks, 0 failed, 0 skipped. comparison matrix, share link, help and rules, fight.
+- .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+  stopped the recorded dev server
+
+UI features: 5 passed, 0 failed, 0 skipped
+- shooting: PASS (drive-shoot.mjs)
+- comparison: PASS. Attacks + made S1=5 S2=4, first Avg delta +1.57. Copy From Situation 1 made S1=S2=5 and Avg deltas 0.00. Show Sv 6+ added a Sv 6+ header.
+- share: PASS. Add Share Params wrote view=shoot and a1 first field 5. Reload kept Attacks 5. /help has no Add Share Params button.
+- help and rules: PASS. /help h1 "How KT Calc works". /rules/combat showed "Kill Team 2024 Combat Rules" (not Loading…, not Could not load this document). Back returned to the help h1.
+- fight: PASS. h1 "Kill Team 2024 Fight Calculator" at /fight/. Closed Fighter A Strategy shows "Max Dmg To Enemy" (max-width none, clientWidth 170, text 149.3, fully visible). Closed Fighter A Reroll shows "CeaselessPlusBalanced" (max-width none, clientWidth 194, text 173.6, fully visible). Numeric Attacks select stays max-width 70px. Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 4.86. Fighter B Attacks stayed 4.
