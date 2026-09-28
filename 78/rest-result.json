@@ -1,0 +1,59 @@
+{
+  "feature": "rest",
+  "origin": "http://127.0.0.1:4173",
+  "checks": [
+    {
+      "name": "comparison-situations-differ",
+      "pass": true,
+      "detail": "Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04; Situation 2 stayed 3.29"
+    },
+    {
+      "name": "comparison-delta-before",
+      "pass": true,
+      "detail": "Avg S1 3.83 S2 2.26 Δ +1.57"
+    },
+    {
+      "name": "comparison-copy",
+      "pass": true,
+      "detail": "both Attacks selects are 5; Avg delta 0.00"
+    },
+    {
+      "name": "comparison-sv6",
+      "pass": true,
+      "detail": "header includes Sv 6+"
+    },
+    {
+      "name": "share-url",
+      "pass": true,
+      "detail": "a1 first field 5; search starts ?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A"
+    },
+    {
+      "name": "share-reload",
+      "pass": true,
+      "detail": "Attacks 5, Average Damage 5.04"
+    },
+    {
+      "name": "fight",
+      "pass": true,
+      "detail": "Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 3.95; Fighter B Attacks stayed 4"
+    },
+    {
+      "name": "help",
+      "pass": true,
+      "detail": "opened /help in this tab because target=_blank does not navigate the current tab; h1 How KT Calc works; share buttons absent; combat href /rules/combat"
+    },
+    {
+      "name": "rules-combat",
+      "pass": true,
+      "detail": "Kill Team 2024 Combat Rules"
+    },
+    {
+      "name": "help-back",
+      "pass": true,
+      "detail": "How KT Calc works"
+    }
+  ],
+  "passed": 10,
+  "failed": 0,
+  "skipped": 0
+}
