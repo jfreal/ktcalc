@@ -59,12 +59,16 @@ export const CloseAssault2021 = new Note(
 export const Rending = new Note(
   `Rending`,
   `If you have >=1 crit, you can retain a norm as a crit instead. Since a dice can only be retained once, it cannot `
-    + `promote an Accurate or Punishing retention (only a rolled norm).`,
+    + `promote an Accurate or Punishing retention (only a rolled norm). Rending is optional, so the calculator `
+    + `declines the promotion when it deals less damage. On a shoot that comparison is expected damage after the `
+    + `defender's saves, cover, Devastating, and Piercing Crits, not the raw dice total.`,
 );
 export const Severe = new Note(
   `Severe`,
   `If you have no crits, you can change a norm to a crit. Because it changes (rather than retains) a success, it can `
-    + `take an already-retained norm such as Accurate. Devastating and Piercing Crits still work, but Punishing and Rending don't.`,
+    + `take an already-retained norm such as Accurate. The calculator declines the change when it deals less damage; `
+    + `on a shoot that comparison includes saves, cover, Devastating, and Piercing Crits. When Severe does fire, `
+    + `Devastating and Piercing Crits still work, but Punishing and Rending don't.`,
 );
 export const Punishing = new Note(
   `Punishing`,

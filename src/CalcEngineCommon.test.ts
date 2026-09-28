@@ -421,6 +421,89 @@ describe(Common.calcFinalDiceProb.name, () => {
     );
     expectClose(actual, pc * pf * 2, 2, 0);
   });
+
+  // Severe and Rending are optional ("you can"). Converting is kept when the crit is worth
+  // at least as much (the 3/4 cases, and the no-damage defence fallback). It is declined when
+  // the normal deals strictly more. Devastating is part of the crit's value. On a shoot,
+  // scoreHits can flip the call back once saves or Piercing Crits are in play. Severe still
+  // blocks Rending on the line where it fires.
+  const severeAndRending = new Set<Ability>([Ability.Severe, Ability.Rending]);
+
+  it('severe {0c,1n} => {0c,1n} when the normal outscores the crit (5/3)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 0, 0, 0, justSevere, 5, 3);
+    expectClose(actual, pn, 0, 1);
+  });
+  it('severe {0c,2n} => {0c,2n} (two normals stay 10, not 1 crit + 1 normal = 8)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 2, 0, Ability.None, 0, 0, 0, 0, justSevere, 5, 3);
+    expectClose(actual, pn * pn, 0, 2);
+  });
+  it('severe {0c,1n} => {1c,0n} at 3/4, where the crit is better', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 0, 0, 0, justSevere, 3, 4);
+    expectClose(actual, pn, 1, 0);
+  });
+  it('severe {0c,2n} => {1c,1n} at 3/4, where the crit is better', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 2, 0, Ability.None, 0, 0, 0, 0, justSevere, 3, 4);
+    expectClose(actual, pn * pn, 1, 1);
+  });
+  it('severe is still taken on the defence path, where there is no damage to rank by', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 0, 0, 0, justSevere);
+    expectClose(actual, pn, 1, 0);
+  });
+  it('severe {0c,1n} => {1c,0n} when Devastating makes the crit worth more (5 vs 3+3)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 1, 0, Ability.None, 0, 0, 0, 0, justSevere, 5, 6);
+    expectClose(actual, pn, 1, 0);
+  });
+  it('rending {1c,1n} => {1c,1n} when the normal outscores the crit (8, not 6)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 0, Ability.None, 0, 0, 0, 0, justRending, 5, 3);
+    expectClose(actual, pc * pn * 2, 1, 1);
+  });
+  it('rending {1c,1n} => {2c,0n} at 3/4, where the crit is better', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 0, Ability.None, 0, 0, 0, 0, justRending, 3, 4);
+    expectClose(actual, pc * pn * 2, 2, 0);
+  });
+  it('rending {1c,1n} => {2c,0n} when Devastating makes two crits worth more (5 vs 3+3)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 1, 0, Ability.None, 0, 0, 0, 0, justRending, 5, 6);
+    expectClose(actual, pc * pn * 2, 2, 0);
+  });
+  it('severe + rending {0c,2n} => {1c,1n} at 3/4 (Severe fires and blocks Rending)', () => {
+    // Taking Severe leaves {1c,1n}=7 and blocks Rending. Two crits would be 8, but that line
+    // is illegal. Declining leaves {0c,2n}=6, and Rending cannot fire without a crit.
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 2, 0, Ability.None, 0, 0, 0, 0, severeAndRending, 3, 4);
+    expectClose(actual, pn * pn, 1, 1);
+  });
+  it('severe + rending {0c,2n} => {0c,2n} at 5/3 (decline Severe; Rending has no crit)', () => {
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 2, 0, Ability.None, 0, 0, 0, 0, severeAndRending, 5, 3);
+    expectClose(actual, pn * pn, 0, 2);
+  });
+  it('waaagh + severe {0c,3n} => {1c,2n} at 5/3 (declining Severe leaves the better Waaagh line)', () => {
+    // Take: Severe then Waaagh = {2c,1n}=11, and that line blocks Rending. Decline: Waaagh
+    // only = {1c,2n}=13. Severe is optional, so the decline wins.
+    const actual = Common.calcFinalDiceProb(dieProbs, 0, 3, 0, Ability.None, 0, 0, 0, 0, severeAndWaaagh, 5, 3);
+    expectClose(actual, pn * pn * pn, 1, 2);
+  });
+  it('severe {0c,1n} => {1c,0n} when one cover save and Piercing Crits 1 beat the raw normal', () => {
+    // Raw decline is 5 and the take is 3. The cover blocks that normal (0 through) while the
+    // crit turns Piercing on and removes the cover die, so 3 gets through.
+    const atk = new Model(1, 2, 5, 3).setProp('px', 1).setAbility(Ability.Severe, true);
+    const def = new Model(1, 6).setProp('autoNorms', 1);
+    const actual = Common.calcFinalDiceProb(
+      dieProbs, 0, 1, 0, Ability.None, 0, 0, 0, 0, justSevere, 5, 3,
+      hitScorerForDefender(atk, def),
+    );
+    expectClose(actual, pn, 1, 0);
+  });
+  it('rending {1c,1n} => {2c,0n} when one normal save inverts the raw scores', () => {
+    // Raw decline is 3+5=8 and two crits are 6. The save blocks the normal (3 through) and
+    // cannot block a crit, so both crits land (6). Rending already has a crit, so Piercing
+    // Crits is on for both lines; the save is what flips this one.
+    const atk = new Model(2, 4, 5, 3).setAbility(Ability.Rending, true);
+    const def = new Model(1).withAlwaysNorm();
+    const actual = Common.calcFinalDiceProb(
+      dieProbs, 1, 1, 0, Ability.None, 0, 0, 0, 0, justRending, 5, 3,
+      hitScorerForDefender(atk, def),
+    );
+    expectClose(actual, pc * pn * 2, 2, 0);
+  });
 });
 
 /*

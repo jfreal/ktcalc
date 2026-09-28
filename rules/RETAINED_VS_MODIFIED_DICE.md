@@ -151,10 +151,10 @@ and one NormsToCrits promotion, and no criticals.
 
 ## Optional rules the calculator decides for you
 
-Three of these effects are **optional** — Punishing and Mystic Scry say "you *can*", and Accurate
-lets you retain "*up to* x" — so taking them in full is a choice, and not always the right one,
-because the dice they produce are locked. The calculator resolves every line and keeps whichever
-ends better, deciding in the dice step exactly as a player must.
+Five of these effects are **optional**. Punishing, Mystic Scry, Severe, and Rending say "you
+*can*", and Accurate lets you retain "*up to* x", so taking them is a choice and not always the
+right one. The calculator resolves every line and keeps whichever ends better, deciding in the
+dice step exactly as a player must.
 
 **Punishing.** With 1 critical hit and 1 fail, Rending, and FailsToNorms 1:
 
@@ -164,6 +164,21 @@ ends better, deciding in the dice step exactly as a player must.
   2 criticals (8 damage).
 
 The calculator declines. Whenever nothing else wants the fail, it takes the retention as usual.
+
+**Severe.** "You can change one of your normal successes to a critical success" when you retained
+no crits. One die at 2+ with normal 5 and crit 3 deals about 3.83 with Severe off, and 2.5 if
+every success is turned into a crit. The calculator declines that conversion: two normals stay two
+normals (10, not 8). Devastating counts toward the crit. On a shoot the score is expected damage
+after saves, cover, and Piercing Crits, so a cover save plus Piercing Crits 1 can make the smaller
+raw crit the right take. When Severe does fire, Rending stays blocked on that line.
+
+**Rending.** "You can retain one of your normal successes as a critical success" when you already
+have a crit. One crit and one normal at 5/3 stay as they are (8, not 6) unless a save makes the
+second crit better: one normal save blocks the normal and cannot block a crit, so 6 gets through
+instead of 3. Devastating can also make the conversion worth taking. A retained normal (Accurate,
+cover, Punishing) is still not a legal target. Ties still convert. Rending already requires a crit,
+so Piercing Crits is on for both lines; it is Severe, which creates the first crit, where Piercing
+Crits changes the defence dice between the take and the decline.
 
 **Mystic Scry.** Retain one fail as a normal success, *or* one normal success as a critical success,
 or decline. The norm→crit half needs a norm that isn't already retained, and the fail→norm half
@@ -188,11 +203,11 @@ ahead once you hold norm→crit save promotions *and* most of the incoming hits 
 [When Not to Take Cover Saves](/rules/cover-saves) has the numbers and the workaround.
 
 **Accurate is ranked on pre-save damage.** How many Accurate dice to retain is decided before the
-roll, from the damage those dice would deal, without the defender's saves or Piercing. **Punishing
-and Mystic Scry are decided per roll.** On a shoot, each candidate is scored by its expected damage
-against that defender's saves, cover, and Piercing; with no defender, and in a fight, they fall
-back to pre-save damage. For save dice, where there is no damage to score, the fallback counts a
-critical save as two normal saves.
+roll, from the damage those dice would deal, without the defender's saves or Piercing. **Punishing,
+Mystic Scry, Severe, and Rending are decided per roll.** On a shoot, each candidate is scored by
+its expected damage against that defender's saves, cover, and Piercing, and Devastating is part of
+the crit's value; with no defender, and in a fight, they fall back to pre-save damage. For save
+dice, where there is no damage to score, the fallback counts a critical save as two normal saves.
 
 **FailsToNorms is treated as a change, not a retention.** The generic input is worded as a
 modification, so the norms it produces stay promotable. If your rule is worded "retain one of your

@@ -79,7 +79,10 @@ If you retain any critical successes, you can retain **one of your normal succes
 *rolled* normal success — never one that was already retained without a roll (Accurate on attack,
 cover on defence) or retained out of the fail pile by Punishing. Severe is worded as a *change*, so
 it is not restricted this way. The same restriction applies to the calculator's NormsToCrits input.
-See [Retained vs Modified Dice](/rules/retained-vs-modified) for the full breakdown.
+Rending is optional ("you can"), so the calculator keeps the normal when converting it deals
+strictly less damage. On a shoot that score includes the defender's saves, cover, Devastating,
+and Piercing Crits; ties still convert. See [Retained vs Modified Dice](/rules/retained-vs-modified)
+for the full breakdown.
 
 ---
 
@@ -93,7 +96,7 @@ If you **don't retain any critical successes**, you can change **one of your nor
 
 **Important:** The Devastating and Piercing Crits weapon rules still take effect, but **Punishing and Rending don't**.
 
-**Calculator implementation:** Severe is evaluated after Punishing, so Punishing only triggers from natural crits. Rending is explicitly blocked when Severe triggers. With the KT2021 Waaagh ploy and three or more normals (no crits), Severe resolves before Waaagh so both land; with exactly two normals Waaagh goes first.
+**Calculator implementation:** Severe is evaluated after Punishing, so Punishing only triggers from natural crits. Severe is optional ("you can"): the calculator scores taking it against declining it and keeps the decline when that deals strictly more damage. Devastating is part of the crit's value, and on a shoot the score is expected damage after saves, cover, and Piercing Crits. Rending is explicitly blocked on the line where Severe fires. With the KT2021 Waaagh ploy and three or more normals (no crits), Severe-before-Waaagh is the line scored against declining, which leaves Waaagh free; with exactly two normals Waaagh goes first.
 
 ---
 
