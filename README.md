@@ -9,7 +9,7 @@ I took this project over because I wanted to do Vespid weapon math and needed a 
 
 ## Dev Stuff
 Basically, this is a React SPA web app mostly written in TypeScript.
-I use Netlify to test, build, and deploy the web app upon every git-push to main branch. I do my development in VsCode but I'm mostly vibe coding along.
+Every push to main is built and deployed automatically. I do my development in VsCode but I'm mostly vibe coding along.
 
 Contributions, human or robot, are welcome!
 
@@ -23,3 +23,9 @@ Dev setup...
   For debugging tests, you can just launch one of vscode's test-oriented debug profiles.
 - To run tests, do `npm test` for normal watch-mode testing that sticks around.
   Do `npm run testq` for a single run of tests (like doing `test` and then hitting `q` to quit). CI runs `npm run testq` on pull requests and on pushes to main.
+
+Deploying...
+- Netlify serves ktcalc.com today. It builds main with `npm run build:react` and publishes `build/` (settings live in the Netlify UI; `public/_redirects` and `public/_headers` are its routing and headers).
+- Cloudflare Workers runs side by side until the DNS cutover. `.github/workflows/deploy.yml` runs `npm run build:cloudflare` and `wrangler deploy` on every push to main (live at https://ktcalc.john-e-farrell.workers.dev), and posts a per-PR Preview URL on pull requests. `wrangler.jsonc` is the config. The workflow needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repo secrets; without them it only builds.
+- To try the Workers build locally: `npm run build:cloudflare`, then `npx wrangler dev`.
+- The cutover steps, rollback, and Netlify switch-off are in [CLOUDFLARE_CUTOVER.md](CLOUDFLARE_CUTOVER.md).

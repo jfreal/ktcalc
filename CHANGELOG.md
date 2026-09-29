@@ -1,5 +1,9 @@
 # Changelog
 
+## September 2026 - Cloudflare Workers deploy, side by side with Netlify
+
+- The site now also deploys to Cloudflare Workers static assets on every push to main, with a Preview URL on each pull request. Netlify still serves ktcalc.com until the DNS cutover in `CLOUDFLARE_CUTOVER.md`. No change to the app itself.
+
 ## September 2026 - Severe and Rending are optional
 
 - **Severe and Rending are no longer forced.** Both rules say "you can". One die at BS 2+, normal 5, crit 3, and no saves used to turn every success into a crit for 2.5 expected damage; leaving the normals alone is 3.83. Two normals under Severe became 1 crit + 1 normal (8) instead of 10. One crit and one normal under Rending became two crits (6) instead of 8.

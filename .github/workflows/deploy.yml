@@ -1,0 +1,97 @@
+name: deploy
+
+# Cloudflare Workers deploy (static assets only, see wrangler.jsonc).
+#   push to main  -> build + `wrangler deploy` (production Worker)
+#   pull request  -> build + `wrangler preview` (per-PR Preview URL, commented on the PR)
+#   PR closed     -> `wrangler preview delete`
+# Netlify still deploys main on its own until the ktcalc.com cutover
+# (CLOUDFLARE_CUTOVER.md). Until the CLOUDFLARE_API_TOKEN and
+# CLOUDFLARE_ACCOUNT_ID repo secrets exist, the build still runs and the
+# Cloudflare steps are skipped. Fork PRs never get secrets, so they build only.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  WRANGLER_VERSION: 4.143.1
+
+jobs:
+  deploy:
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    # Production deploys queue instead of cancelling, so every merge to main
+    # goes live in order. PR previews cancel a superseded run.
+    concurrency:
+      group: ${{ github.event_name == 'pull_request' && format('deploy-pr-{0}', github.event.pull_request.number) || 'deploy-production' }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    # Only a yes/no here; the token itself is passed to the wrangler steps
+    # alone, so npm install scripts and the build never see it.
+    env:
+      HAS_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      # Unlike test.yml, keep puppeteer's Chromium download: react-snap needs
+      # it to prerender the public routes.
+      - name: Install
+        run: npm ci
+      - name: Build
+        run: npm run build:cloudflare
+      - name: Deploy to production
+        if: github.event_name != 'pull_request' && env.HAS_CF_TOKEN == 'true'
+        run: npx --yes wrangler@${WRANGLER_VERSION} deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Deploy PR preview
+        id: preview
+        if: github.event_name == 'pull_request' && env.HAS_CF_TOKEN == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -o pipefail
+          output="$(npx --yes wrangler@${WRANGLER_VERSION} preview --name "pr-${{ github.event.pull_request.number }}" --json)"
+          printf '%s\n' "$output"
+          preview_url="$(printf '%s' "$output" | jq -er '.preview.urls[0]')"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+      - name: Comment preview URL
+        if: steps.preview.outputs.preview_url != ''
+        run: >
+          gh pr comment "${{ github.event.pull_request.number }}" --edit-last --create-if-none
+          --body "Cloudflare Workers preview: ${{ steps.preview.outputs.preview_url }} (commit ${{ github.event.pull_request.head.sha }})"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Note skipped deploy
+        if: env.HAS_CF_TOKEN != 'true'
+        run: echo "::notice::CLOUDFLARE_API_TOKEN is not set (or this is a fork PR); built only, no Cloudflare deploy."
+
+  cleanup-preview:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    env:
+      HAS_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Delete PR preview
+        if: env.HAS_CF_TOKEN == 'true'
+        # A PR that never got a preview (no secrets yet) has nothing to delete.
+        continue-on-error: true
+        run: npx --yes wrangler@${WRANGLER_VERSION} preview delete --name "pr-${{ github.event.pull_request.number }}" --skip-confirmation
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

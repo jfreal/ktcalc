@@ -25,6 +25,7 @@
     "build": "react-scripts build",
     "postbuild": "react-snap",
     "build:react": "npm run build",
+    "build:cloudflare": "npm run build && node scripts/strip-netlify-redirects.js",
     "test": "react-scripts test",
     "testq": "react-scripts test --watchAll=false --watch=false",
     "eject": "react-scripts eject",
