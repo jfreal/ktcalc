@@ -24,20 +24,39 @@ traffic with one proxy toggle, which is also the rollback.
 
 ## Phase 0: deploy path (once)
 
-1. **Create the API token.** Cloudflare dashboard → My Profile → API Tokens →
-   Create Token → template **Edit Cloudflare Workers** → Account Resources:
-   *John.e.farrell@gmail.com's Account* → Zone Resources: *All zones from an
-   account* (it must cover ktcalc.com once the zone exists) → Create. Copy it.
-2. **Add two repo secrets** in GitHub → jfreal/ktcalc → Settings → Secrets and
-   variables → Actions → New repository secret:
-   - `CLOUDFLARE_API_TOKEN` = the token from step 1
-   - `CLOUDFLARE_ACCOUNT_ID` = `08c43dfd9f0fbb3a4a8be12328a94849`
-3. Merge the Workers PR. The `deploy` workflow builds and runs `wrangler deploy`
-   on every push to main. Check the run is green and
+Cloudflare Workers Builds builds and deploys straight from GitHub, so there is
+no API token and no GitHub secret.
+
+1. Cloudflare dashboard → **Workers & Pages** → **ktcalc** → **Settings** →
+   **Builds** → **Connect**. Pick GitHub, install or allow the Cloudflare app
+   for `jfreal/ktcalc`, and choose that repo. Connect this existing Worker
+   rather than creating a new one: the Worker name must be `ktcalc`, the same
+   as `name` in `wrangler.jsonc`, or every build fails.
+2. Build settings:
+
+   | Setting | Value |
+   | --- | --- |
+   | Git branch | `main` |
+   | Root directory | `/` (leave empty) |
+   | Build command | `npm run build:cloudflare` |
+   | Deploy command | `npx wrangler deploy` |
+   | Preview builds | **Enabled** |
+   | Preview command | `npx wrangler preview` |
+
+   The build command matters: plain `npm run build` keeps Netlify's
+   `_redirects`, and Cloudflare rejects the deploy. No build variables are
+   needed; the default Node 24 and `CI=true` build was tested locally.
+3. Merge the Workers PR (or push any commit to main). Check the build under
+   **Deployments → View build history** is green and
    <https://ktcalc.john-e-farrell.workers.dev> shows the new commit.
-4. Open any PR and check the `deploy` run comments a `pr-<number>` Preview URL.
-   If the Preview step fails with a permissions error, edit the token and add
-   the missing permission it names.
+4. Open any PR and check Cloudflare comments a Preview URL on it.
+
+If react-snap cannot start Chromium on Cloudflare's build machine, the build
+log fails in the `postbuild` step. The fallback is a GitHub Actions workflow
+running `wrangler deploy`. One is `.github/workflows/deploy.yml` at commit
+`c3e19ad` (jfreal/ktcalc#81); its build passed on GitHub's runners, but its
+deploy steps never ran. It needs `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID` repo secrets.
 
 Netlify keeps deploying main in parallel. Nothing user-visible changes yet.
 
@@ -73,7 +92,7 @@ answer "Netlify".
 ## Phase 2: the flip
 
 1. **Add the routes to the Worker.** Merge a small PR that adds this to
-   `wrangler.jsonc`, and let the `deploy` workflow go green:
+   `wrangler.jsonc`, and let the Workers Build for it go green:
 
    ```jsonc
    "routes": [
@@ -117,7 +136,7 @@ Do these once the site has been good on Cloudflare for a day or two:
 2. Later, optional, once rollback is no longer wanted: remove `ktcalc.com`
    from the Netlify site's domains, delete the Netlify DNS zone for
    ktcalc.com, and delete `public/_redirects` and `scripts/strip-netlify-redirects.js`
-   (switch the workflow's build to `npm run build`).
+   (switch the Workers Builds build command to `npm run build`).
 
 ## Notes
 

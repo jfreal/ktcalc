@@ -1,6 +1,8 @@
 // Cloudflare Workers static-assets config for ktcalc.com.
 // Assets-only Worker: no `main` script, so every request is served straight
-// from build/ and costs nothing. Deployed by .github/workflows/deploy.yml.
+// from build/ and costs nothing. Built and deployed by Cloudflare Workers
+// Builds, connected to this repo in the Cloudflare dashboard (settings in
+// CLOUDFLARE_CUTOVER.md).
 // Netlify still builds the same build/ folder; both run side by side until the
 // DNS cutover in CLOUDFLARE_CUTOVER.md.
 {
