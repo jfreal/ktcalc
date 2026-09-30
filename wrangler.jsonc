@@ -27,5 +27,9 @@
   // Serve on ktcalc.<subdomain>.workers.dev until the cutover adds the
   // ktcalc.com custom domain, and allow per-PR Preview URLs.
   "workers_dev": true,
-  "preview_urls": true
+  "preview_urls": true,
+  // Required by `wrangler preview` (the Workers Builds preview command for
+  // PRs). Empty: an assets-only Worker has no Preview-specific settings, and
+  // assets and compatibility settings stay at the top level.
+  "previews": {}
 }
