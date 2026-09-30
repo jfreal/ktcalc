@@ -9,8 +9,9 @@
   "name": "ktcalc",
   "compatibility_date": "2026-09-22",
   "assets": {
-    // `npm run build:cloudflare` output: the same CRA build + react-snap
-    // prerendered pages Netlify serves, minus Netlify's _redirects (see
+    // `npm run build:cloudflare` output: the same CRA build Netlify serves,
+    // with the public routes prerendered by scripts/prerender.js (jsdom, no
+    // browser) instead of react-snap, minus Netlify's _redirects (see
     // scripts/strip-netlify-redirects.js). _headers is used by both hosts.
     "directory": "./build",
     // Replaces Netlify's `/*  /index.html  200` rule: a URL with no file

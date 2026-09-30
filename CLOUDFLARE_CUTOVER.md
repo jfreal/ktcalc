@@ -43,17 +43,23 @@ no API token and no GitHub secret.
    | Preview builds | **Enabled** |
    | Preview command | `npx wrangler preview` |
 
-   The build command matters: plain `npm run build` keeps Netlify's
-   `_redirects`, and Cloudflare rejects the deploy. No build variables are
-   needed; the default Node 24 and `CI=true` build was tested locally.
-3. Merge the Workers PR (or push any commit to main). Check the build under
+   The build command matters. Plain `npm run build` runs react-snap, which
+   needs Chromium, and Cloudflare's build machine can't start it (missing
+   `libXcomposite.so.1`). It also keeps Netlify's `_redirects`, which
+   Cloudflare rejects. `build:cloudflare` prerenders with
+   `scripts/prerender.js` (jsdom, no browser) and drops `_redirects`.
+3. Optional, makes each build a little faster: add the build variable
+   `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD` = `true` (Settings → Build → Build
+   variables and secrets). It stops `npm ci` downloading react-snap's
+   Chromium, which the Cloudflare build never uses.
+4. Merge the Workers PR (or push any commit to main). Check the build under
    **Deployments → View build history** is green and
    <https://ktcalc.john-e-farrell.workers.dev> shows the new commit.
-4. Open any PR and check Cloudflare comments a Preview URL on it.
+5. Open any PR and check Cloudflare comments a Preview URL on it.
 
-If react-snap cannot start Chromium on Cloudflare's build machine, the build
-log fails in the `postbuild` step. The fallback is a GitHub Actions workflow
-running `wrangler deploy`. One is `.github/workflows/deploy.yml` at commit
+If the prerender ever fails on Cloudflare, the build log names the route and
+the page error. The fallback is a GitHub Actions workflow running react-snap
+and `wrangler deploy`. One is `.github/workflows/deploy.yml` at commit
 `c3e19ad` (jfreal/ktcalc#81); its build passed on GitHub's runners, but its
 deploy steps never ran. It needs `CLOUDFLARE_API_TOKEN` and
 `CLOUDFLARE_ACCOUNT_ID` repo secrets.
@@ -153,3 +159,10 @@ Do these once the site has been good on Cloudflare for a day or two:
   form); `/index.html` redirects to `/`; a missing file under `/rules/` or
   `/static/` returns `index.html` with `200`, exactly as Netlify's `/*` rule
   does today.
+- Prerender differences from react-snap, checked on all 12 routes: titles,
+  descriptions, og tags, canonicals, h1s and every form control's saved value
+  are identical. The page text keeps the spaces react-snap's minifier drops,
+  and the fight page's chart is saved as an empty box (jsdom has no layout);
+  the browser draws it on load, as before.
+- After cutover, Netlify's react-snap step can go: point `build` at
+  `scripts/prerender.js` and remove `react-snap` from `package.json`.

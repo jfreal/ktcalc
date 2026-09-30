@@ -27,5 +27,5 @@ Dev setup...
 Deploying...
 - Netlify serves ktcalc.com today. It builds main with `npm run build:react` and publishes `build/` (settings live in the Netlify UI; `public/_redirects` and `public/_headers` are its routing and headers).
 - Cloudflare Workers runs side by side until the DNS cutover. Cloudflare Workers Builds is connected to this repo in the Cloudflare dashboard: every push to main runs `npm run build:cloudflare` and `npx wrangler deploy` (live at https://ktcalc.john-e-farrell.workers.dev), and every pull request gets a Preview URL posted as a comment. `wrangler.jsonc` is the config; the build settings live in the Cloudflare dashboard. No GitHub secrets are needed.
-- To try the Workers build locally: `npm run build:cloudflare`, then `npx wrangler dev`.
+- `npm run build:cloudflare` prerenders the public routes with `scripts/prerender.js` (jsdom, no browser) instead of react-snap, because Cloudflare's build machine can't run Chromium. Both use the route list in `package.json` `reactSnap.include`. To try the Workers build locally: `npm run build:cloudflare`, then `npx wrangler dev`.
 - The cutover steps, rollback, and Netlify switch-off are in [CLOUDFLARE_CUTOVER.md](CLOUDFLARE_CUTOVER.md).

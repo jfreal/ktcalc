@@ -6,6 +6,7 @@
 // `assets.not_found_handling = "single-page-application"` in wrangler.jsonc,
 // so the file is simply dropped from the Cloudflare upload. Netlify's build
 // (`npm run build:react`) never runs this, so its _redirects is untouched.
+// Runs last in `npm run build:cloudflare`, after scripts/prerender.js.
 const fs = require('fs');
 const path = require('path');
 
