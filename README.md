@@ -9,7 +9,7 @@ I took this project over because I wanted to do Vespid weapon math and needed a 
 
 ## Dev Stuff
 Basically, this is a React SPA web app mostly written in TypeScript.
-I use Netlify to test, build, and deploy the web app upon every git-push to main branch. I do my development in VsCode but I'm mostly vibe coding along.
+Every push to main is built and deployed automatically. I do my development in VsCode but I'm mostly vibe coding along.
 
 Contributions, human or robot, are welcome!
 
@@ -23,3 +23,9 @@ Dev setup...
   For debugging tests, you can just launch one of vscode's test-oriented debug profiles.
 - To run tests, do `npm test` for normal watch-mode testing that sticks around.
   Do `npm run testq` for a single run of tests (like doing `test` and then hitting `q` to quit). CI runs `npm run testq` on pull requests and on pushes to main.
+
+Deploying...
+- Netlify serves ktcalc.com today. It builds main with `npm run build:react` and publishes `build/` (settings live in the Netlify UI; `public/_redirects` and `public/_headers` are its routing and headers).
+- Cloudflare Workers runs side by side until the DNS cutover. Cloudflare Workers Builds is connected to this repo in the Cloudflare dashboard: every push to main runs `npm run build:cloudflare` and `npx wrangler deploy` (live at https://ktcalc.john-e-farrell.workers.dev), and every pull request gets a Preview URL posted as a comment. `wrangler.jsonc` is the config; the build settings live in the Cloudflare dashboard. No GitHub secrets are needed.
+- `npm run build:cloudflare` prerenders the public routes with `scripts/prerender.js` (jsdom, no browser) instead of react-snap, because Cloudflare's build machine can't run Chromium. Both use the route list in `package.json` `reactSnap.include`. To try the Workers build locally: `npm run build:cloudflare`, then `npx wrangler dev`.
+- The cutover steps, rollback, and Netlify switch-off are in [CLOUDFLARE_CUTOVER.md](CLOUDFLARE_CUTOVER.md).
