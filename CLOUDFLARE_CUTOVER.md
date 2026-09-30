@@ -101,7 +101,12 @@ answer "Netlify".
    ```
 
    The route does nothing yet, because routes only run on proxied (orange)
-   records and the record is still grey.
+   records and the record is still grey. Cloudflare's "proxied record before
+   the route" rule is about traffic reaching the Worker, which step 3 takes
+   care of. If the build ever rejects the route because the record is not
+   proxied, set only the `ktcalc.com` CNAME to Proxied first (visitors then
+   reach Netlify through Cloudflare for a few minutes), retry the build, then
+   continue with step 2.
 2. **www redirect.** Cloudflare → ktcalc.com → **Rules → Redirect Rules** →
    Create from template **Redirect from WWW to root** → status 301, preserve
    query string → Deploy.
