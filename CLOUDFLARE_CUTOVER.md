@@ -12,7 +12,7 @@ only as the rollback until its builds are stopped (see the end of this file).
 | `ktcalc.com` | Workers **Custom Domain** on the Worker `ktcalc`. Cloudflare owns its record (`AAAA 100::`, proxied) and certificate. Listed in `wrangler.jsonc` `routes`, so deploys keep it. |
 | `www.ktcalc.com` | `A 192.0.2.1`, proxied (a placeholder: requests never reach it) + Redirect Rule "Redirect from WWW to root" (301, keeps path and query) |
 | `http://` | Redirect Rule "Redirect from HTTP to HTTPS" (301) |
-| HSTS | **Off**: no `Strict-Transport-Security` header yet (Netlify sent `max-age=31536000`). The values are filled in but not enabled. To finish: SSL/TLS → Edge Certificates → HSTS → enable with max-age 12 months, include subdomains off, preload off, No-Sniff on. |
+| HSTS | **Enabled** (SSL/TLS → Edge Certificates → HSTS): max-age 12 months, include subdomains off, preload off, No-Sniff on. Live header `Strict-Transport-Security: max-age=31536000`, the same as Netlify sent. |
 | Netlify | Site still published and still building main until **Stop builds** below |
 
 The rest of this file is the plan as written before the cutover, then the
