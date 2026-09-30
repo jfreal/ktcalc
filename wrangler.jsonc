@@ -2,9 +2,7 @@
 // Assets-only Worker: no `main` script, so every request is served straight
 // from build/ and costs nothing. Built and deployed by Cloudflare Workers
 // Builds, connected to this repo in the Cloudflare dashboard (settings in
-// CLOUDFLARE_CUTOVER.md).
-// Netlify still builds the same build/ folder; both run side by side until the
-// DNS cutover in CLOUDFLARE_CUTOVER.md.
+// CLOUDFLARE_CUTOVER.md). Serves ktcalc.com since the 2026-09-30 cutover.
 {
   "name": "ktcalc",
   "compatibility_date": "2026-09-22",
@@ -24,8 +22,17 @@
     // sitemap already use the trailing-slash form.
     "html_handling": "auto-trailing-slash"
   },
-  // Serve on ktcalc.<subdomain>.workers.dev until the cutover adds the
-  // ktcalc.com custom domain, and allow per-PR Preview URLs.
+  // ktcalc.com is a Workers Custom Domain (the Worker is the origin; Cloudflare
+  // owns its DNS record and certificate). It was attached in the dashboard at
+  // cutover and is listed here so every `wrangler deploy` keeps it: Wrangler
+  // treats this file as the source of truth for a Worker's routes. www is not
+  // a route: a proxied `www A 192.0.2.1` record plus the zone's "Redirect from
+  // WWW to root" rule send it to ktcalc.com with a 301.
+  "routes": [
+    { "pattern": "ktcalc.com", "custom_domain": true }
+  ],
+  // Keep ktcalc.<subdomain>.workers.dev too (setting routes would otherwise
+  // turn it off), and allow per-PR Preview URLs.
   "workers_dev": true,
   "preview_urls": true,
   // Required by `wrangler preview` (the Workers Builds preview command for

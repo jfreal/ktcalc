@@ -1,10 +1,24 @@
 # Cutover runbook: ktcalc.com from Netlify to Cloudflare Workers
 
-Status: **not cut over.** Netlify still serves ktcalc.com. The Worker `ktcalc`
-builds from the same `build/` folder and runs side by side at
-<https://ktcalc.john-e-farrell.workers.dev> until the flip below.
+Status: **cut over on 2026-09-30.** Cloudflare serves ktcalc.com from the
+Worker `ktcalc` (Workers Builds deploys every push to main). Netlify is kept
+only as the rollback until its builds are stopped (see the end of this file).
 
-## Where things are today (checked 2026-09-29)
+## Now (checked 2026-09-30)
+
+| Thing | Now |
+| --- | --- |
+| Nameservers | Cloudflare: `ashton.ns.cloudflare.com`, `jacqueline.ns.cloudflare.com` (set at Name.com) |
+| `ktcalc.com` | Workers **Custom Domain** on the Worker `ktcalc`. Cloudflare owns its record (`AAAA 100::`, proxied) and certificate. Listed in `wrangler.jsonc` `routes`, so deploys keep it. |
+| `www.ktcalc.com` | `A 192.0.2.1`, proxied (a placeholder: requests never reach it) + Redirect Rule "Redirect from WWW to root" (301, keeps path and query) |
+| `http://` | Redirect Rule "Redirect from HTTP to HTTPS" (301) |
+| HSTS | **Off**: no `Strict-Transport-Security` header yet (Netlify sent `max-age=31536000`). The values are filled in but not enabled. To finish: SSL/TLS → Edge Certificates → HSTS → enable with max-age 12 months, include subdomains off, preload off, No-Sniff on. |
+| Netlify | Site still published and still building main until **Stop builds** below |
+
+The rest of this file is the plan as written before the cutover, then the
+rollback and the Netlify switch-off.
+
+## Before the cutover (checked 2026-09-29)
 
 | Thing | Today |
 | --- | --- |
@@ -95,46 +109,43 @@ Netlify keeps deploying main in parallel. Nothing user-visible changes yet.
 Nothing user-visible changes in this phase, because both nameserver sets
 answer "Netlify".
 
-## Phase 2: the flip
+## Phase 2: the flip (as done on 2026-09-30)
 
-1. **Add the routes to the Worker.** Merge a small PR that adds this to
-   `wrangler.jsonc`, and let the Workers Build for it go green:
+The plan was a `ktcalc.com/*` route plus a grey-to-orange toggle on CNAMEs to
+Netlify. The cutover used a Workers **Custom Domain** instead, which is the
+recommended setup when the Worker is the whole site:
 
-   ```jsonc
-   "routes": [
-     { "pattern": "ktcalc.com/*", "zone_name": "ktcalc.com" }
-   ]
-   ```
-
-   The route does nothing yet, because routes only run on proxied (orange)
-   records and the record is still grey. Cloudflare's "proxied record before
-   the route" rule is about traffic reaching the Worker, which step 3 takes
-   care of. If the build ever rejects the route because the record is not
-   proxied, set only the `ktcalc.com` CNAME to Proxied first (visitors then
-   reach Netlify through Cloudflare for a few minutes), retry the build, then
-   continue with step 2.
-2. **www redirect.** Cloudflare → ktcalc.com → **Rules → Redirect Rules** →
-   Create from template **Redirect from WWW to root** → status 301, preserve
-   query string → Deploy.
-3. **Flip.** DNS → Records → set both CNAMEs to **Proxied** (orange). From now
-   on Cloudflare answers `ktcalc.com` with the Worker, and `www` with the 301.
-   Netlify's origin is no longer reached.
-4. **Check** (a private window avoids cached pages):
-   - `https://ktcalc.com/` loads; response header `server: cloudflare`, no
-     `x-nf-request-id`.
-   - `/fight` → `/fight/`, `/help/`, `/rules/combat/`, `/notes/punishing/`
-     each show their own title. A made-up path shows the calculator.
-   - `https://www.ktcalc.com/fight/` → 301 to `https://ktcalc.com/fight/`.
-   - `http://ktcalc.com/` → 301 to https.
-   - Google Analytics realtime still shows visits.
+1. Workers & Pages → **ktcalc** → Settings → Domains & Routes → Add →
+   **Custom domain** → `ktcalc.com`. Cloudflare replaced the apex record with
+   its own proxied record and issued the certificate.
+2. **www redirect.** ktcalc.com → **Rules → Redirect Rules** → template
+   **Redirect from WWW to root** → 301 → in the "may not apply" dialog pick
+   **Create a new proxied DNS record**: `A`, `www`, `192.0.2.1`.
+3. `wrangler.jsonc` lists the domain under `routes` with `custom_domain: true`,
+   so `wrangler deploy` (which treats the config file as the source of truth
+   for routes) never drops it.
+4. **Checked** on 2026-09-30: `/`, `/fight/`, `/rules/combat/` 200 from
+   Cloudflare with their own titles; a made-up path shows the calculator;
+   `/rules/COMBAT_RULES.md` 200; `www` → 301 to the same path on ktcalc.com
+   (query kept); `http://` → 301 to https.
 
 ## Rollback
 
-DNS → Records → set both CNAMEs back to **DNS only** (grey). Traffic goes to
-Netlify again within about 5 minutes (proxied records have a 300 s TTL). This
-works as long as the Netlify site is still published and its certificate is
-valid (expires 2026-11-21; Netlify may not renew it while the records are
-proxied). The Worker route can stay; it is inert on grey records.
+Works while the Netlify site is still published and its certificate is valid
+(expires 2026-11-21; Netlify renews it once traffic reaches it again).
+
+1. Workers & Pages → **ktcalc** → Settings → Domains & Routes → remove the
+   `ktcalc.com` Custom Domain. This also deletes its DNS record.
+2. ktcalc.com → DNS → Records:
+   - Add `CNAME ktcalc.com → ktcalc.netlify.app`, **DNS only** (grey).
+   - Edit `www`: delete the `A 192.0.2.1` record, add
+     `CNAME www → ktcalc.netlify.app`, **DNS only** (grey). The www Redirect
+     Rule stops applying on its own (it only runs on proxied records), and
+     Netlify redirects www to the apex as before.
+3. Traffic reaches Netlify within minutes.
+4. Before the next merge to main, remove the `routes` entry from
+   `wrangler.jsonc` (or disconnect Workers Builds). Otherwise the next deploy
+   re-attaches the Custom Domain, which fails while the CNAME exists.
 
 ## After the flip: switch off Netlify
 
