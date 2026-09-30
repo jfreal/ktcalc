@@ -13,7 +13,7 @@ only as the rollback until its builds are stopped (see the end of this file).
 | `www.ktcalc.com` | `A 192.0.2.1`, proxied (a placeholder: requests never reach it) + Redirect Rule "Redirect from WWW to root" (301, keeps path and query) |
 | `http://` | Redirect Rule "Redirect from HTTP to HTTPS" (301) |
 | HSTS | **Enabled** (SSL/TLS → Edge Certificates → HSTS): max-age 12 months, include subdomains off, preload off, No-Sniff on. Live header `Strict-Transport-Security: max-age=31536000`, the same as Netlify sent. |
-| Netlify | Site still published and still building main until **Stop builds** below |
+| Netlify | **Paused** by hand on 2026-09-30 (`disabled: true`, "Manually paused by user"). No builds, no credits; `ktcalc.netlify.app` returns 404. Last deploy kept: `6abcfa6d`, 2026-09-30 12:02 UTC (the #81 merge). |
 
 The rest of this file is the plan as written before the cutover, then the
 rollback and the Netlify switch-off.
@@ -131,8 +131,14 @@ recommended setup when the Worker is the whole site:
 
 ## Rollback
 
-Works while the Netlify site is still published and its certificate is valid
-(expires 2026-11-21; Netlify renews it once traffic reaches it again).
+Works while Netlify still has the site and its certificate is valid (expires
+2026-11-21; Netlify renews it once traffic reaches it again). The Netlify site
+is **paused**, so un-pause it first:
+
+0. Netlify → site **ktcalc** → un-pause (resume) the site, and check that
+   <https://ktcalc.netlify.app/> loads the calculator instead of a 404. It
+   serves the last Netlify deploy (2026-09-30 12:02 UTC); anything merged
+   since then only exists on Cloudflare.
 
 1. Workers & Pages → **ktcalc** → Settings → Domains & Routes → remove the
    `ktcalc.com` Custom Domain. This also deletes its DNS record.
@@ -151,10 +157,13 @@ Works while the Netlify site is still published and its certificate is valid
 
 Do these once the site has been good on Cloudflare for a day or two:
 
-1. Netlify → site **ktcalc** → Site configuration → Build & deploy →
-   Continuous deployment → Build settings → **Configure** → **Stop builds** →
-   Save. This stops every production, deploy-preview and branch build, so no
-   more credits are spent. The last deploy stays published for rollback.
+1. **Done 2026-09-30, by pausing the whole site** instead of Stop builds.
+   Pausing also stops every production, deploy-preview and branch build (no
+   Netlify build ran for the #82 and #83 merges), and it takes
+   `ktcalc.netlify.app` offline, which is why the rollback now starts with
+   un-pausing. The lighter option, if an instant rollback is ever wanted
+   again: un-pause, then Site configuration → Build & deploy → Continuous
+   deployment → Build settings → **Configure** → **Stop builds** → Save.
 2. Later, optional, once rollback is no longer wanted: remove `ktcalc.com`
    from the Netlify site's domains, delete the Netlify DNS zone for
    ktcalc.com, and delete `public/_redirects` and `scripts/strip-netlify-redirects.js`
