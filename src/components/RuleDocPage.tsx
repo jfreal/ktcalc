@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -215,17 +215,23 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
   const seqIndex = RULES_SEQUENCE.findIndex((d) => d.path === routePath);
   const next = seqIndex >= 0 ? RULES_SEQUENCE[seqIndex + 1] : undefined;
 
-  const { body, lastUpdated } = state.status === 'ok' ? splitLastUpdated(state.text) : { body: '', lastUpdated: undefined };
-  const toc = state.status === 'ok' ? extractToc(body) : [];
+  const text = state.status === 'ok' ? state.text : '';
+  const { body, lastUpdated } = useMemo(() => splitLastUpdated(text), [text]);
+  const toc = useMemo(() => extractToc(body), [body]);
   const meta = [helpDoc?.title, lastUpdated && `Last updated ${lastUpdated}`].filter(Boolean).join(' · ');
 
   // The Markdown H1 becomes the title block, with the meta line under it.
-  const TitleH1 = ({ node, children, ...rest }: React.ComponentPropsWithoutRef<'h1'> & { node?: unknown }) => (
-    <div className="RuleDoc-titleBlock">
-      <h1 {...rest}>{children}</h1>
-      {meta && <div className="RuleDoc-meta">{meta}</div>}
-    </div>
-  );
+  // Memoized so a re-render (e.g. a hash change) doesn't swap the component
+  // type and remount the heading.
+  const markdownComponents = useMemo(() => {
+    const TitleH1 = ({ node, children, ...rest }: React.ComponentPropsWithoutRef<'h1'> & { node?: unknown }) => (
+      <div className="RuleDoc-titleBlock">
+        <h1 {...rest}>{children}</h1>
+        {meta && <div className="RuleDoc-meta">{meta}</div>}
+      </div>
+    );
+    return { a: MarkdownLink, h1: TitleH1 };
+  }, [meta]);
 
   return (
     <main className="RuleDoc" style={themeVars}>
@@ -246,7 +252,7 @@ const RuleDocPage: React.FC<RuleDocPageProps> = ({ file }) => {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeHeadingIds]}
-              components={{ a: MarkdownLink, h1: TitleH1 }}
+              components={markdownComponents}
             >
               {body}
             </ReactMarkdown>
