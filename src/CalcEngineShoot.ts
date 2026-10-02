@@ -5,10 +5,10 @@ import ShootOptions from "src/ShootOptions";
 import { maxRelicIgnoresPerBattle } from 'src/SaintlyRelics';
 import {
   DamageResult,
-  calcDamage,
   calcDefenderFinalDiceStuff,
   calcPostFnpDamages,
   calcRelicsOutcomes,
+  calcScenarioDamage,
   defenceDiceFor,
   hitScorerForDefender,
 } from 'src/CalcEngineShootInternal'
@@ -35,7 +35,7 @@ export function calcDmgProbs(
         continue;
       }
       for (const def of defenceDiceFor(defenderStuff, atk.crits)) {
-        const result = calcDamage(attacker, defender, atk.crits, atk.norms, def.crits, def.norms);
+        const result = calcScenarioDamage(attacker, defender, atk.crits, atk.norms, def);
         visit(result, atk.prob * def.prob);
       }
     }

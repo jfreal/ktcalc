@@ -24,6 +24,7 @@ export enum Ability {
     ObscuredTarget = "ObscuredTarget", // all crits become norms; can't do crit-triggered abilities; discard a success at the end
     PuritySeal = "PuritySeal", // 2024; if at least 2 dice fail, discard one fail and change another fail to a normal success; attack only. Rule strictly requires two unmodified 1s; implementation triggers on any 2 fails.
     MysticScryBuff = "MysticScryBuff", // attack only; retain one fail as a norm OR one norm as a crit, attacker's choice (best per damage). In-game: the "Mystic Scry" ability.
+    CurseOfRot = "CurseOfRot", // Plague Marines firefight ploy; set on the PLAGUE MARINE: each 3 the ENEMY rolls on its attack or defence dice is a fail it can't re-roll, and inflicts 1 damage on that enemy
     Indomitus = "Indomitus", // 2024; if at least 2 dice fail, discard one fail and change another fail to a normal success; defense only (Space Marines defending ANGEL OF DEATH). Rule strictly requires two unmodified 1s; implementation triggers on any 2 fails.
 
     // fight stuff relevant to 2024

@@ -1,28 +1,29 @@
 import React from "react";
 import AdvancedMarker from "src/components/AdvancedMarker";
-import 'src/components/Controls.css';
+import CheckItem from "src/components/CheckItem";
 
 export function useCheckboxAndVariable(
   label: string,
   initialCheckedState: boolean = false,
   // when true, append the gear marker so this toggle matches the advanced controls it shows/hides
   advancedMarker: boolean = false,
+  // ties the label to the box so clicking the text toggles it; must be unique on the page
+  id?: string,
   // when true, show only the gear; the label text stays for screen readers (narrow blocks)
   iconOnly: boolean = false,
 ) : [JSX.Element, boolean]
 {
   const [checked, setChecked] = React.useState(initialCheckedState);
   return [
-    // The input sits inside the label so the whole label toggles it.
-    <label className='CheckItem' style={{ fontSize: '12px', color: '#4b5563', gap: '5px' }}>
-      <input
-        type='checkbox'
-        checked={checked}
-        onChange={() => setChecked(!checked)}
-      />
+    <CheckItem
+      id={id ?? `check-${label}`}
+      checked={checked}
+      onChange={() => setChecked(!checked)}
+      style={{ fontSize: '12px', color: '#4b5563', gap: '5px' }}
+    >
       {iconOnly ? <span className='sr-only'>{label}</span> : label}
       {advancedMarker && <AdvancedMarker />}
-    </label>,
+    </CheckItem>,
     checked,
   ];
 }

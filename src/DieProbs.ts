@@ -4,15 +4,73 @@ export default class DieProbs {
   public crit: number;
   public norm: number;
   public fail: number;
+  // Odds for a die that is re-rolled later (Balanced, Ceaseless). Normally the same as the first
+  // roll; after Curse of Rot the first roll is conditioned on "not a 3" but a re-roll is a fresh D6.
+  public rerollProbs: DieProbs;
+  // How many faces fail on the first roll; Ceaseless spreads fails evenly across them.
+  public failFaces: number;
 
   public constructor(
     crit: number,
     norm: number,
     fail: number = -1,
+    rerollProbs?: DieProbs,
+    failFaces?: number,
   ) {
     this.crit = crit;
     this.norm = norm;
     this.fail = fail === -1 ? 1 - crit - norm : fail;
+    this.rerollProbs = rerollProbs ?? this;
+    this.failFaces = failFaces ?? Math.round(this.fail * 6);
+  }
+
+  // Curse of Rot: every 3 on the first roll is a fail that can't be re-rolled. The engines split
+  // those dice off (one in six, binomially) and use these odds for the dice that did NOT roll a 3.
+  // Re-rolls that happen inside the first-roll odds (Ones, Relentless, CritFishRelentless) use a
+  // fresh D6, and so does any later Balanced or Ceaseless re-roll (rerollProbs).
+  // RerollOnesPlusBalanced keeps its Balanced step's closed-form 7/6 maths, so it is approximate here.
+  public static fromSkillsAfterCurse(critSkill: number, normSkill: number, reroll: Ability): DieProbs {
+    const cursedFace = 3;
+    const effCritSkill = Math.max(critSkill, normSkill);
+    const fresh = DieProbs.fromSkills(critSkill, normSkill, Ability.None);
+    const isCrit = (face: number) => face >= effCritSkill;
+    const isNorm = (face: number) => !isCrit(face) && face >= normSkill;
+    const isFail = (face: number) => !isCrit(face) && !isNorm(face);
+    const rerolledInFirstRoll = (face: number): boolean => {
+      switch (reroll) {
+        case Ability.RerollOnes:
+        case Ability.RerollOnesPlusBalanced:
+          return face === 1;
+        case Ability.Relentless:
+          return isFail(face);
+        case Ability.CritFishRelentless:
+          return !isCrit(face);
+        default:
+          return false;
+      }
+    };
+
+    const faces = [1, 2, 3, 4, 5, 6].filter(face => face !== cursedFace);
+    const faceProb = 1 / faces.length;
+    let crit = 0;
+    let norm = 0;
+    let failFaces = 0;
+    for (const face of faces) {
+      if (isFail(face)) {
+        failFaces++;
+      }
+      if (rerolledInFirstRoll(face)) {
+        crit += faceProb * fresh.crit;
+        norm += faceProb * fresh.norm;
+      }
+      else if (isCrit(face)) {
+        crit += faceProb;
+      }
+      else if (isNorm(face)) {
+        norm += faceProb;
+      }
+    }
+    return new DieProbs(crit, norm, 1 - crit - norm, fresh, failFaces);
   }
 
   public static fromSkills(critSkill: number, normSkill: number, reroll: Ability) {

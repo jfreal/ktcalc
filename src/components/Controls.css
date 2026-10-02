@@ -248,3 +248,16 @@
 .SmallBtn:hover {
   background-color: #4a525c;
 }
+
+/* CheckItem renders as .form-check; drop Bootstrap's indent and keep our row. */
+.CheckItem.form-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 0;
+}
+
+.CheckItem label {
+  margin: 0;
+  cursor: pointer;
+}

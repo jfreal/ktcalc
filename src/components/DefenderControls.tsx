@@ -27,6 +27,7 @@ import {
   notedControlsFromCheckboxes,
   notedControlsFromParams,
 } from 'src/components/controlNotes';
+import CheckItem from 'src/components/CheckItem';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 import 'src/components/Controls.css';
 
@@ -68,6 +69,7 @@ export const defenderBasicCheckboxes: readonly AbilityCheckbox[] = [
   { note: N.ObscuredTarget, ability: Ability.ObscuredTarget, label: 'Obscured' },
   { note: N.JustAScratch2021, ability: Ability.JustAScratch },
   { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
+  { note: N.CurseOfRot, ability: Ability.CurseOfRot },
 ];
 
 export const defenderNotedControls: readonly NotedControl[] = [
@@ -79,7 +81,7 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
   const def = props.defender;
   const textHandler = makeTextChangeHandler(props.defender, props.changeHandler);
   const numHandler = makeNumChangeHandler(props.defender, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true, true);
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true, `${props.idPrefix}-advanced`, true);
 
   function singleHandler(ability: Ability) {
     return makeSetChangeHandlerForSingle<Model,Ability>(
@@ -145,14 +147,15 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
       </div>
       <div className='CheckCol'>
         {defenderBasicCheckboxes.map(box => (
-          <label key={box.note.name} className='CheckItem' title={box.note.description}>
-            <input
-              type="checkbox"
-              checked={def.has(box.ability)}
-              onChange={() => singleHandler(box.ability)(def.has(box.ability) ? 'X' : '✔')}
-            />
+          <CheckItem
+            key={box.note.name}
+            id={`${props.idPrefix}-${box.ability}`}
+            title={box.note.description}
+            checked={def.has(box.ability)}
+            onChange={() => singleHandler(box.ability)(def.has(box.ability) ? 'X' : '✔')}
+          >
             {box.label ?? box.note.name}
-          </label>
+          </CheckItem>
         ))}
       </div>
     </div>

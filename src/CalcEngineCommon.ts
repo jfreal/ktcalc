@@ -5,7 +5,7 @@ import Ability from "src/Ability";
 import Model from "src/Model";
 import DieProbs from "src/DieProbs";
 import FinalDiceProb from 'src/FinalDiceProb';
-import { addMapValues, addToMapValue, upTo } from 'src/Util';
+import { addMapValues, addToMapValue, binomialPmf, upTo } from 'src/Util';
 
 // Two retain candidates whose scores differ by less than this are a tie. Defender-scored
 // expected damage is a float sum, so mathematically equal lines can differ by rounding noise.
@@ -48,6 +48,7 @@ export function calcFinalDiceProbsForAttacker(
     attacker.normDmg,
     attacker.critDmg + attacker.mwx,
     scoreHits,
+    defender?.has(Ability.CurseOfRot) ? attacker.toCursedAttackerDieProbs() : undefined,
   );
 }
 
@@ -63,11 +64,12 @@ export function calcFinalDiceProbs(
   normDmg: number = 0,
   critDmgPlusMwx: number = 0,
   scoreHits?: (crits: number, norms: number) => number,
+  cursedDieProbs?: DieProbs, // set when the enemy uses Curse of Rot; see buildFinalDiceProbs
 ): FinalDiceProb[]
 {
   return bestAutoNormPlan(
     singleDieProbs, numDice, reroll, autoCrits, autoNorms,
-    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, scoreHits).probs;
+    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, scoreHits, cursedDieProbs).probs;
 }
 
 // Builds the distribution for an exact number of retained Accurate/cover dice.
@@ -83,31 +85,46 @@ function buildFinalDiceProbs(
   normDmg: number,
   critDmgPlusMwx: number,
   scoreHits?: (crits: number, norms: number) => number,
+  cursedDieProbs?: DieProbs,
 ): FinalDiceProb[] {
   const finalDiceProbs: FinalDiceProb[] = [];
 
-  for (let crits = 0; crits <= rolledDice; crits++) {
-    for (let norms = 0; norms <= rolledDice - crits; norms++) {
-      const fails = rolledDice - crits - norms;
+  // Curse of Rot: each rolled 3 is a fail that can't be re-rolled (and costs the roller 1 damage).
+  // Split those dice off first: `cursed` of the rolled dice came up 3 (one in six each), and the rest
+  // roll with odds conditioned on "not a 3" (cursedDieProbs). Retained dice (Accurate, cover) are
+  // not rolled, so they can't be cursed.
+  const maxCursed = cursedDieProbs ? rolledDice : 0;
+  for (let cursed = 0; cursed <= maxCursed; cursed++) {
+    const cursedProb = cursedDieProbs ? binomialPmf(rolledDice, cursed, 1 / 6) : 1;
+    const dieProbs = cursedDieProbs ?? singleDieProbs;
+    const freeDice = rolledDice - cursed;
 
-      const finalDiceProb = calcFinalDiceProb(
-        singleDieProbs,
-        crits,
-        norms,
-        fails,
-        reroll,
-        autoCrits,
-        usedAutoNorms,
-        failsToNorms,
-        normsToCrits,
-        abilities,
-        normDmg,
-        critDmgPlusMwx,
-        scoreHits,
-      );
+    for (let crits = 0; crits <= freeDice; crits++) {
+      for (let norms = 0; norms <= freeDice - crits; norms++) {
+        const fails = freeDice - crits - norms;
 
-      if (finalDiceProb.prob > 0) {
-        finalDiceProbs.push(finalDiceProb);
+        const finalDiceProb = calcFinalDiceProb(
+          dieProbs,
+          crits,
+          norms,
+          fails,
+          reroll,
+          autoCrits,
+          usedAutoNorms,
+          failsToNorms,
+          normsToCrits,
+          abilities,
+          normDmg,
+          critDmgPlusMwx,
+          scoreHits,
+          cursed,
+        );
+
+        if (finalDiceProb.prob > 0) {
+          finalDiceProb.prob *= cursedProb;
+          finalDiceProb.cursed = cursed;
+          finalDiceProbs.push(finalDiceProb);
+        }
       }
     }
   }
@@ -140,6 +157,7 @@ function bestAutoNormPlan(
   normDmg: number,
   critDmgPlusMwx: number,
   scoreHits?: (crits: number, norms: number) => number,
+  cursedDieProbs?: DieProbs,
 ): { used: number; probs: FinalDiceProb[] } {
   const cappedAutoCrits = Math.min(autoCrits, numDice);
   const diceAfterAutoCrits = numDice - cappedAutoCrits;
@@ -147,7 +165,7 @@ function bestAutoNormPlan(
 
   const build = (used: number) => buildFinalDiceProbs(
     singleDieProbs, diceAfterAutoCrits - used, reroll, cappedAutoCrits, used,
-    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, scoreHits);
+    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, scoreHits, cursedDieProbs);
 
   if (maxAutoNorms === 0 || !canRankByDamage(normDmg, critDmgPlusMwx)) {
     return { used: maxAutoNorms, probs: build(maxAutoNorms) };
@@ -203,10 +221,11 @@ export function chooseAutoNorms(
   abilities: Set<Ability>,
   normDmg: number,
   critDmgPlusMwx: number,
+  cursedDieProbs?: DieProbs,
 ): number {
   return bestAutoNormPlan(
     singleDieProbs, numDice, reroll, autoCrits, autoNorms,
-    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx).used;
+    failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, undefined, cursedDieProbs).used;
 }
 
 export function calcFinalDiceProb(
@@ -223,6 +242,7 @@ export function calcFinalDiceProb(
   normDmg: number = 0,
   critDmgPlusMwx: number = 0,
   scoreHits?: (crits: number, norms: number) => number,
+  cursedFails: number = 0, // Curse of Rot 3s: not part of the roll odds above, but still fails afterwards
 ): FinalDiceProb
 {
   let prob = 0
@@ -287,7 +307,7 @@ export function calcFinalDiceProb(
   }
 
   const modified = applyPostRollModifications(
-    crits, norms, fails,
+    crits, norms, fails + cursedFails,
     additionalCrits, additionalNorms,
     failsToNorms, normsToCrits,
     abilities,
@@ -354,7 +374,7 @@ export function calcFinalDiceProbBalanced(
           origNorms,
           origFails);
         const balancedRollsProb = calcMultiRollProb(
-          dieProbs,
+          dieProbs.rerollProbs,
           rerolledCrits,
           rerolledNorms,
           rerolledFails);
@@ -373,7 +393,7 @@ export function calcFinalDiceProbRerollMostCommonFail(
   finalFails: number,
 ): number {
   let prob = 0;
-  const numFailFaces = Math.round(dieProbs.fail * 6);
+  const numFailFaces = dieProbs.failFaces;
   const numDice = finalCrits + finalNorms + finalFails;
 
   // given finalFails, the lowest-reroll scenario is evenly-split-as-possible fails
@@ -402,7 +422,7 @@ export function calcFinalDiceProbRerollMostCommonFail(
           origNorms,
           origFails);
         const rerollProb = calcMultiRollProb(
-          dieProbs,
+          dieProbs.rerollProbs,
           rerolledCrits,
           rerolledNorms,
           rerolledFails);
@@ -423,7 +443,7 @@ export function calcFinalDiceProbRerollMostCommonFailPlusBalanced(
   finalFails: number,
 ): number {
   let totalProb = 0;
-  const numFailFaces = Math.round(dieProbs.fail * 6);
+  const numFailFaces = dieProbs.failFaces;
   const numDice = finalCrits + finalNorms + finalFails;
 
   // Enumerate all possible "beforeBalanced" states (differ from final by at most 1 Balanced reroll)
@@ -451,9 +471,9 @@ export function calcFinalDiceProbRerollMostCommonFailPlusBalanced(
         targetType = 'none'; // No change (either no fails to reroll, or fail stayed fail)
         balancedOutcomeProb = 1;
       } else if(critDiff === 1 && normDiff === 0 && failDiff === -1) {
-        targetType = 'fail'; balancedOutcomeProb = dieProbs.crit; // fail→crit
+        targetType = 'fail'; balancedOutcomeProb = dieProbs.rerollProbs.crit; // fail→crit
       } else if(critDiff === 0 && normDiff === 1 && failDiff === -1) {
-        targetType = 'fail'; balancedOutcomeProb = dieProbs.norm; // fail→norm
+        targetType = 'fail'; balancedOutcomeProb = dieProbs.rerollProbs.norm; // fail→norm
       } else {
         continue; // Invalid - Balanced only targets fails
       }
@@ -479,14 +499,14 @@ export function calcFinalDiceProbRerollMostCommonFailPlusBalanced(
 
             const probOfNumRerolls = getProbOfNumTediousRerolls(numFailFaces, origFails, rerolls);
             const preRerollProb = calcMultiRollProb(dieProbs, origCrits, origNorms, origFails);
-            const rerollProb = calcMultiRollProb(dieProbs, rerolledCrits, rerolledNorms, rerolledFails);
+            const rerollProb = calcMultiRollProb(dieProbs.rerollProbs, rerolledCrits, rerolledNorms, rerolledFails);
             const ceaselessProb = probOfNumRerolls * preRerollProb * rerollProb;
 
             if(targetType === 'none') {
               // No change case: either no fails to reroll, or rerolled fail stayed fail
               if(availFails > 0) {
                 // Had fails to reroll, but rolled fail again
-                totalProb += ceaselessProb * dieProbs.fail;
+                totalProb += ceaselessProb * dieProbs.rerollProbs.fail;
               } else {
                 // No fails available - Balanced can't reroll anything useful
                 totalProb += ceaselessProb;

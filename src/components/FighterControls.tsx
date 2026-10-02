@@ -97,6 +97,7 @@ export const fighterAdvancedCheckboxes: readonly AbilityCheckbox[] = [
   { note: N.JustAScratch2021, ability: Ability.JustAScratch },
   { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
   { note: N.HalfDamageFirstStrike, ability: Ability.HalfDamageFirstStrike },
+  { note: N.CurseOfRot, ability: Ability.CurseOfRot },
 ];
 
 export const fighterNotedControls: readonly NotedControl[] = [
@@ -109,7 +110,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
   const atk = props.attacker;
   const textHandler = makeTextChangeHandler(atk, props.changeHandler);
   const numHandler = makeNumChangeHandler(atk, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true, `${props.idPrefix}-advanced`);
 
   function subsetHandler(subset: Iterable<Ability>) {
     return makeSetChangeHandler<Model,Ability>(
@@ -134,6 +135,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
     return (
       <Form.Check
         key={box.note.name}
+        id={`${props.idPrefix}-${box.ability}`}
         type="checkbox"
         label={advanced ? <>{box.note.name} <AdvancedMarker /></> : box.note.name}
         title={box.note.description}

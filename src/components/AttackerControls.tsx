@@ -28,6 +28,7 @@ import {
   notedControlsFromCheckboxes,
   notedControlsFromParams,
 } from 'src/components/controlNotes';
+import CheckItem from 'src/components/CheckItem';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
 import 'src/components/Controls.css';
 
@@ -83,6 +84,7 @@ export const attackerBasicCheckboxes: readonly AbilityCheckbox[] = [
 export const attackerAdvancedCheckboxes: readonly AbilityCheckbox[] = [
   { note: N.MysticScryBuff, ability: Ability.MysticScryBuff },
   { note: N.CloseAssault2021, ability: Ability.FailToNormIfAtLeastTwoSuccesses },
+  { note: N.CurseOfRot, ability: Ability.CurseOfRot },
 ];
 
 export const attackerNotedControls: readonly NotedControl[] = [
@@ -95,7 +97,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   const atk = props.attacker;
   const textHandler = makeTextChangeHandler(atk, props.changeHandler);
   const numHandler = makeNumChangeHandler(atk, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true, `${props.idPrefix}-advanced`);
 
   function singleHandler(ability: Ability) {
     return makeSetChangeHandlerForSingle<Model,Ability>(
@@ -169,15 +171,16 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
 
   function abilityCheckbox(box: AbilityCheckbox, advanced: boolean) {
     return (
-      <label key={box.note.name} className='CheckItem' title={box.note.description}>
-        <input
-          type="checkbox"
-          checked={atk.has(box.ability)}
-          onChange={() => singleHandler(box.ability)(atk.has(box.ability) ? 'X' : '✔')}
-        />
+      <CheckItem
+        key={box.note.name}
+        id={`${props.idPrefix}-${box.ability}`}
+        title={box.note.description}
+        checked={atk.has(box.ability)}
+        onChange={() => singleHandler(box.ability)(atk.has(box.ability) ? 'X' : '✔')}
+      >
         {box.note.name}
         {advanced && <AdvancedMarker />}
-      </label>
+      </CheckItem>
     );
   }
 
