@@ -35,6 +35,36 @@ describe('IncDecSelect label marker', () => {
   });
 });
 
+describe('IncDecSelect width', () => {
+  function selectMaxWidth(values: string[], selectedValue: string): string {
+    const { container } = render(
+      <IncDecSelect
+        id="Thing"
+        values={values}
+        selectedValue={selectedValue}
+        valueChangeHandler={() => {}}
+      />,
+    );
+    return (container.querySelector('select') as HTMLSelectElement).style.maxWidth;
+  }
+
+  it('keeps the 70px cap on numeric steppers, including X and dice-stat plus', () => {
+    expect(selectMaxWidth(['1', '2', '10'], '2')).toBe('70px');
+    expect(selectMaxWidth(['X', '2+', '3+', '4+'], '3+')).toBe('70px');
+  });
+
+  it('does not cap fight strategies or reroll names', () => {
+    expect(selectMaxWidth(
+      ['Max Dmg To Enemy', 'Min Dmg To Self', 'Strike', 'Parry'],
+      'Max Dmg To Enemy',
+    )).toBe('none');
+    expect(selectMaxWidth(
+      ['X', 'CeaselessPlusBalanced', 'CritFishRelentless', 'BothOnesAndBalanced'],
+      'CeaselessPlusBalanced',
+    )).toBe('none');
+  });
+});
+
 describe('IncDecSelect ids', () => {
   it('prefixes the DOM id so each label points at its own select', () => {
     const { container } = render(
