@@ -84,7 +84,7 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
   const def = props.defender;
   const textHandler = makeTextChangeHandler(props.defender, props.changeHandler);
   const numHandler = makeNumChangeHandler(props.defender, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true, `${props.idPrefix}-advanced`);
 
   function singleHandler(ability: Ability) {
     return makeSetChangeHandlerForSingle<Model,Ability>(
@@ -155,6 +155,7 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
         {defenderBasicCheckboxes.map(box => (
           <Col key={box.note.name}>
             <Form.Check
+              id={`${props.idPrefix}-${box.ability}`}
               type="checkbox"
               label={box.label ?? box.note.name}
               title={box.note.description}

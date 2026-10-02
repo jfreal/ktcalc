@@ -6,6 +6,7 @@
 - Each 3 the enemy rolls is a fail it can't re-roll. On Shoot, a Plague Marine attacker adds 1 damage per defence-dice 3 (Feel No Pain applies to each); a Plague Marine defender turns the attacker's 3s into fails. On Fight, the other fighter takes 1 damage per 3 before any strike.
 - Exact on Shoot: the engine splits off the 3s and re-rolls only the other dice with a fresh D6. Tests check it against brute-force enumeration for no re-roll, Ones, Relentless, Balanced, and Double Balanced.
 - Share links carry it as `curse`.
+- Clicking a checkbox's text now ticks it (Shoot and Fight ability boxes, and the Advanced toggles). Before, only the box itself responded.
 
 ## September 2026 - Cloudflare Workers deploy, side by side with Netlify
 
