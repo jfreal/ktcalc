@@ -6,9 +6,8 @@
   margin: 0 auto;
   padding: 20px 16px 8px;
   display: flex;
-  flex-wrap: wrap-reverse;
-  /* wrap-reverse flips the cross axis: flex-end is the top. */
-  align-items: flex-end;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 24px 40px;
   color: var(--rule-doc-ink);
 }
@@ -59,8 +58,8 @@
   color: var(--rule-doc-error);
 }
 
-/* Sticky "On this page" + rules-doc list. wrap-reverse puts it above the
-   article on narrow screens. */
+/* Sticky "On this page" + rules-doc list. On narrow screens it wraps below
+   the article, keeping DOM order. */
 .RuleDoc-sidebar {
   flex: 0 0 220px;
   position: sticky;

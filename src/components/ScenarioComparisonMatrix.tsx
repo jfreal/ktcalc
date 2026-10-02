@@ -124,7 +124,7 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
 
   const matrixTable = (
     <div style={{ ...softBox, flex: '1 1 600px', minWidth: 0, overflowX: 'auto' }}>
-      <table style={{ ...tableBase, width: '100%' }}>
+      <table aria-label='Comparison matrix: average damage and kill chance by wounds' style={{ ...tableBase, width: '100%' }}>
         <thead style={lightTheadStyle}>
           <tr>
             <th rowSpan={2} style={{ ...cellBase, verticalAlign: 'middle', width: '50px', borderBottom: `2px solid ${T.borderMuted}` }}>W</th>
@@ -193,7 +193,7 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
       <div style={{ background: T.subtleBg, padding: '5px 10px', fontSize: '12px', borderBottom: `1px solid ${T.borderSoft}` }}>
         <b>S1 &amp; S2 Combined</b> <span style={{ color: T.textMuted }}>· vs W={comboWounds}</span>
       </div>
-      <table style={tableBase}>
+      <table aria-label='Combined average damage and kill chance by save' style={tableBase}>
         <thead>
           <tr>
             <th style={{ ...comboCell, textAlign: 'left', borderTop: 0 }}>Sv</th>

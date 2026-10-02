@@ -132,6 +132,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
     <>
       {histogram}
       <table className='DataTable'>
+        <caption>Damage probabilities for the chosen Sv and W</caption>
         <thead>
           <tr>
             <th>Dmg</th>
