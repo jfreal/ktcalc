@@ -1,10 +1,5 @@
 import React from 'react';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Form from 'react-bootstrap/Form';
-
-import {Props as IncProps, propsToRows} from 'src/components/IncDecSelect';
+import {Props as IncProps, propsToFields} from 'src/components/IncDecSelect';
 import Model from 'src/Model';
 import Ability, {rerollAbilities as rerolls} from 'src/Ability';
 import * as N from 'src/Notes';
@@ -33,6 +28,7 @@ import {
   notedControlsFromParams,
 } from 'src/components/controlNotes';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
+import 'src/components/Controls.css';
 
 export interface Props {
   defender: Model;
@@ -83,7 +79,7 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
   const def = props.defender;
   const textHandler = makeTextChangeHandler(props.defender, props.changeHandler);
   const numHandler = makeNumChangeHandler(props.defender, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true, true);
 
   function singleHandler(ability: Ability) {
     return makeSetChangeHandlerForSingle<Model,Ability>(
@@ -135,35 +131,31 @@ const DefenderControls: React.FC<Props> = (props: Props) => {
   const usedAdvancedParams = advancedParams.filter(p => incDecPropsHasNondefaultSelectedValue(p));
   const advancedParamsToShow = wantShowAdvanced ? advancedParams : usedAdvancedParams;
   const paramsToShow = basicParams.concat(advancedParamsToShow);
-  const elemsCol0 = propsToRows(paramsToShow, props.idPrefix);
+  const fields = propsToFields(paramsToShow, props.idPrefix);
 
   return (
-    <Container style={{width: '150px', maxWidth: '100%'}}>
-      <Row>
-        <Col>Defender</Col>
-        <Col>{advancedCheckbox}</Col>
-      </Row>
-      <Row>
-        <Col>
-          <Container className='p-0' style={{width: 'fit-content'}}>
-            {elemsCol0}
-          </Container>
-        </Col>
-      </Row>
-      <Row>
+    <div style={{ width: '152px', maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className='CtlBlock-header'>
+        <span className='CtlBlock-title'>Defender</span>
+        {/* Gear only: "Advanced" doesn't fit at this width. */}
+        {advancedCheckbox}
+      </div>
+      <div className='CtlStack'>
+        {fields}
+      </div>
+      <div className='CheckCol'>
         {defenderBasicCheckboxes.map(box => (
-          <Col key={box.note.name}>
-            <Form.Check
+          <label key={box.note.name} className='CheckItem' title={box.note.description}>
+            <input
               type="checkbox"
-              label={box.label ?? box.note.name}
-              title={box.note.description}
               checked={def.has(box.ability)}
               onChange={() => singleHandler(box.ability)(def.has(box.ability) ? 'X' : '✔')}
             />
-          </Col>
+            {box.label ?? box.note.name}
+          </label>
         ))}
-      </Row>
-    </Container>
+      </div>
+    </div>
   );
 };
 

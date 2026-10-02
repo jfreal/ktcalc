@@ -103,7 +103,7 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
       </Row>
       <Row>
         <Col className='p-1'>
-          <Panel title="Notes" fullWidth>
+          <Panel title="Notes" fullWidth bodyStyle={{ padding: '10px 12px 12px', fontSize: '13px', lineHeight: 1.45 }}>
             <NotesList notes={notes} advancedNotes={advancedNotes}>
               <li>
                 All strategies will do certain no-downside actions, with the consequence that

@@ -18,6 +18,8 @@ export interface PanelProps {
   bodyScrollX?: boolean;              // allow horizontal scroll for wide content (mobile)
   className?: string;
   style?: React.CSSProperties;
+  titleStyle?: React.CSSProperties;   // merged over the title bar defaults
+  bodyStyle?: React.CSSProperties;    // merged over the body defaults
   children: React.ReactNode;
 }
 
@@ -31,6 +33,8 @@ const Panel: React.FC<PanelProps> = ({
   bodyScrollX = false,
   className,
   style,
+  titleStyle: titleStyleOverride,
+  bodyStyle: bodyStyleOverride,
   children,
 }) => {
   const muted = variant === 'muted';
@@ -57,11 +61,13 @@ const Panel: React.FC<PanelProps> = ({
     minHeight: '34px',
     display: 'flex',
     alignItems: 'center',
+    ...titleStyleOverride,
   };
 
   const bodyStyle: React.CSSProperties = {
     padding: noPadding ? 0 : '4px 8px',
     overflowX: bodyScrollX ? 'auto' : undefined,
+    ...bodyStyleOverride,
   };
 
   // Truthiness, not `!== undefined`: a falsy node (e.g. `right={cond && <X/>}`

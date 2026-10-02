@@ -1,5 +1,4 @@
 import React from 'react';
-import Table from 'react-bootstrap/Table';
 import { killProb, weightedAverage } from 'src/Util';
 import { range } from 'lodash';
 import * as T from 'src/theme';
@@ -19,9 +18,22 @@ const equalStyle: React.CSSProperties = { backgroundColor: T.equal };
 const betterStyleAlt: React.CSSProperties = { backgroundColor: T.betterAlt };
 const worseStyleAlt: React.CSSProperties = { backgroundColor: T.worseAlt };
 const equalStyleAlt: React.CSSProperties = { backgroundColor: T.equalAlt };
-const cellStyle: React.CSSProperties = { width: '50px', maxWidth: '50px' };
+const lightTheadStyle: React.CSSProperties = { backgroundColor: T.subtleBg, color: T.textInk };
 
-const themedTheadStyle: React.CSSProperties = { backgroundColor: T.dark, color: 'white' };
+const softBox: React.CSSProperties = { border: `1px solid ${T.borderSoft}`, borderRadius: '4px', background: T.panelBg };
+const tableBase: React.CSSProperties = {
+  fontSize: '12px',
+  fontVariantNumeric: 'tabular-nums',
+  borderCollapse: 'collapse',
+  margin: 0,
+};
+
+const legendChip = (bg: string): React.CSSProperties => ({
+  backgroundColor: bg,
+  color: T.textInk,
+  padding: '1px 6px',
+  borderRadius: '2px',
+});
 
 // Epsilon for treating a diff as zero; kept in sync with getComparisonStyles
 // so that cells styled as "Equal" never render a misleading signed zero (e.g.
@@ -72,8 +84,8 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
   const globalLastNonZeroWound = Math.max(0, ...perSave.map(p => p.lastNonZeroWound));
   const visibleWounds = woundRange.filter(w => w <= globalLastNonZeroWound);
 
-  const cellBase: React.CSSProperties = { textAlign: 'center', padding: '4px 4px' };
-  const subHeaderStyle: React.CSSProperties = { ...cellBase, fontSize: '10px', fontWeight: 'normal' };
+  const cellBase: React.CSSProperties = { textAlign: 'center', padding: '3px 4px', borderBottom: `1px solid ${T.hairline}` };
+  const subHeaderStyle: React.CSSProperties = { ...cellBase, fontSize: '11px', fontWeight: 600, color: T.textMuted, borderBottom: `2px solid ${T.borderMuted}` };
   // 2px divider between save-groups — an internal table rule, not a card accent.
   const groupHeaderStyle: React.CSSProperties = {
     ...cellBase,
@@ -110,28 +122,12 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
     );
   };
 
-  const unifiedTable = (
-    <Panel
-      title="Comparison Matrix (Avg Dmg + Kill % vs W)"
-      right={
-        <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 'normal', cursor: 'pointer', marginBottom: 0 }}>
-          <input
-            type="checkbox"
-            checked={showSv6}
-            onChange={e => setShowSv6(e.target.checked)}
-            style={{ cursor: 'pointer' }}
-          />
-          Show Sv 6+
-        </label>
-      }
-      fullWidth
-      noPadding
-      bodyScrollX
-    >
-      <Table bordered style={{ fontSize: '11px', marginTop: 0, marginBottom: 0, width: '100%' }}>
-        <thead style={themedTheadStyle}>
+  const matrixTable = (
+    <div style={{ ...softBox, flex: '1 1 600px', minWidth: 0, overflowX: 'auto' }}>
+      <table style={{ ...tableBase, width: '100%' }}>
+        <thead style={lightTheadStyle}>
           <tr>
-            <th rowSpan={2} style={{ ...cellBase, verticalAlign: 'middle', width: '50px' }}>W</th>
+            <th rowSpan={2} style={{ ...cellBase, verticalAlign: 'middle', width: '50px', borderBottom: `2px solid ${T.borderMuted}` }}>W</th>
             {perSave.map(p => (
               <th key={`gh_${p.save}`} colSpan={3} style={groupHeaderStyle}>
                 Sv {p.save}+
@@ -187,18 +183,22 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
             </tr>
           )}
         </tbody>
-      </Table>
-    </Panel>
+      </table>
+    </div>
   );
 
+  const comboCell: React.CSSProperties = { padding: '3px 10px', textAlign: 'right', borderTop: `1px solid ${T.hairline}` };
   const comboBlock = (
-    <Panel title={`S1 & S2 Combined Shots (Kill chance vs W=${comboWounds})`} titleFontSize="15px" style={{ margin: '4px' }}>
-      <Table bordered style={{ fontSize: '11px', marginTop: '2px', marginBottom: 0, tableLayout: 'fixed', width: 'auto' }}>
-        <thead style={themedTheadStyle}>
+    <div style={{ ...softBox, flex: 'none', overflow: 'hidden' }}>
+      <div style={{ background: T.subtleBg, padding: '5px 10px', fontSize: '12px', borderBottom: `1px solid ${T.borderSoft}` }}>
+        <b>S1 &amp; S2 Combined</b> <span style={{ color: T.textMuted }}>· vs W={comboWounds}</span>
+      </div>
+      <table style={tableBase}>
+        <thead>
           <tr>
-            <th style={cellStyle}>Sv</th>
-            <th style={cellStyle}>Avg</th>
-            <th style={cellStyle}>Kill%</th>
+            <th style={{ ...comboCell, textAlign: 'left', borderTop: 0 }}>Sv</th>
+            <th style={{ ...comboCell, borderTop: 0 }}>Avg</th>
+            <th style={{ ...comboCell, borderTop: 0 }}>Kill%</th>
           </tr>
         </thead>
         <tbody>
@@ -208,35 +208,47 @@ const ScenarioComparisonMatrix: React.FC<Props> = (props: Props) => {
             const kill = killProb(dmgToProb, comboWounds);
             return (
               <tr key={`combo_${save}`}>
-                <td style={cellStyle}>{save}+</td>
-                <td style={cellStyle}>{avgDmg.toFixed(2)}</td>
-                <td style={cellStyle}>{toPercentString(kill)}%</td>
+                <td style={{ ...comboCell, textAlign: 'left', fontWeight: 600 }}>{save}+</td>
+                <td style={comboCell}>{avgDmg.toFixed(2)}</td>
+                <td style={comboCell}>{toPercentString(kill)}%</td>
               </tr>
             );
           })}
         </tbody>
-      </Table>
-    </Panel>
+      </table>
+    </div>
+  );
+
+  // Legend and the Sv 6+ toggle live in the title bar.
+  const headerRight = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px', fontWeight: 'normal', flexWrap: 'wrap' }}>
+      <span style={{ display: 'flex', gap: '6px' }}>
+        <span style={legendChip(T.better)}>Better</span>
+        <span style={legendChip(T.worse)}>Worse</span>
+        <span style={legendChip(T.equal)}>Equal</span>
+      </span>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', marginBottom: 0 }}>
+        <input
+          type="checkbox"
+          checked={showSv6}
+          onChange={e => setShowSv6(e.target.checked)}
+          style={{ cursor: 'pointer', margin: 0 }}
+        />
+        Show Sv 6+
+      </label>
+    </div>
   );
 
   return (
-    <div style={{ padding: '8px', maxWidth: '100%' }}>
-      <div style={{ marginBottom: '16px' }}>
-        {comboBlock}
-      </div>
-
-      <div style={{ fontSize: '11px', marginBottom: '8px', color: T.textMuted }}>
-        <span style={{ backgroundColor: T.better, padding: '2px 4px' }}>Green = Better</span>
-        {' | '}
-        <span style={{ backgroundColor: T.worse, padding: '2px 4px' }}>Red = Worse</span>
-        {' | '}
-        <span style={{ backgroundColor: T.equal, padding: '2px 4px' }}>Gray = Equal</span>
-      </div>
-
-      <div style={{ width: '100%' }}>
-        {unifiedTable}
-      </div>
-    </div>
+    <Panel
+      title="Comparison Matrix (Avg Dmg + Kill % vs W)"
+      right={headerRight}
+      fullWidth
+      bodyStyle={{ padding: '12px', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-start' }}
+    >
+      {comboBlock}
+      {matrixTable}
+    </Panel>
   );
 };
 

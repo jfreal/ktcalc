@@ -45,7 +45,7 @@ const Layout: React.FC = () => {
       <AppHeader onCalculator={onCalculator} rightContent={onCalculator ? <ShareButtons /> : undefined} />
       <AuspexPromo />
       <Outlet />
-      <Footer />
+      <Footer compact={!onCalculator} />
     </>
   );
 };

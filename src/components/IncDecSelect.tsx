@@ -1,10 +1,9 @@
 import React from 'react';
-import Button from 'react-bootstrap/Button';
-import InputGroup from 'react-bootstrap/InputGroup';
 import * as Util from 'src/Util';
 import Note from 'src/Notes';
 import { Col, Row } from 'react-bootstrap';
 import AdvancedMarker from 'src/components/AdvancedMarker';
+import 'src/components/Controls.css';
 
 export interface IProps {
   id: string;
@@ -71,28 +70,28 @@ const IncDecSelect: React.FC<IProps> = (props: IProps) => {
   }
 
   return (
-    <div>
+    <div className='IncDec'>
       <label
         htmlFor={domId}
         title={props.hoverText}
-        style={{ fontSize: '11px', display: 'inline', verticalAlign: 'middle' }}
+        className='IncDec-label'
       >
         {props.label ?? props.id}
         {props.advanced ? <AdvancedMarker /> : (props.hoverText ? '*' : '')}
       </label>
-      <InputGroup className='mb-1' style={{flexWrap: 'nowrap'}}>
-        <Button variant='danger' onClick={() => handleIncDec(-1)}>-</Button>
+      <div className='IncDec-row'>
+        <button type='button' className='IncDec-btn IncDec-btn--dec' aria-label='decrease' onClick={() => handleIncDec(-1)}>&minus;</button>
         <select
           name={props.id}
           id={domId}
           value={selectedText}
           onChange={handleUserSelect}
-          style={{maxWidth: '70px'}}
+          className='IncDec-select'
         >
           {options}
         </select>
-        <Button variant='danger' onClick={() => handleIncDec(1)}>+</Button>
-      </InputGroup>
+        <button type='button' className='IncDec-btn IncDec-btn--inc' aria-label='increase' onClick={() => handleIncDec(1)}>+</button>
+      </div>
     </div>
   );
 }
@@ -100,7 +99,12 @@ const IncDecSelect: React.FC<IProps> = (props: IProps) => {
 // idPrefix is required: every caller renders alongside another panel that
 // uses the same stat names, so an unprefixed id would collide.
 export function propsToRows(props: Props[], idPrefix: string): JSX.Element[] {
-  return props.map(p => <Row key={p.id}><Col className='pr-0'><IncDecSelect {...p} idPrefix={idPrefix}/></Col></Row>);
+  return props.map(p => <Row key={p.id} className='mb-1'><Col className='pr-0' style={{ maxWidth: '160px' }}><IncDecSelect {...p} idPrefix={idPrefix}/></Col></Row>);
+}
+
+// Bare fields for a CSS grid or stack container (no Bootstrap row/col gutters).
+export function propsToFields(props: Props[], idPrefix: string): JSX.Element[] {
+  return props.map(p => <IncDecSelect key={p.id} {...p} idPrefix={idPrefix}/>);
 }
 
 export default IncDecSelect;

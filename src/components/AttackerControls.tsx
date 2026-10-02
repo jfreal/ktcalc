@@ -1,10 +1,5 @@
 import React from 'react';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Form from 'react-bootstrap/Form';
-
-import {Props as IncProps, propsToRows} from 'src/components/IncDecSelect';
+import {Props as IncProps, propsToFields} from 'src/components/IncDecSelect';
 import {
   Accepter,
   boolToCheckX,
@@ -34,8 +29,11 @@ import {
   notedControlsFromParams,
 } from 'src/components/controlNotes';
 import { useCheckboxAndVariable } from 'src/hooks/useCheckboxAndVariable';
+import 'src/components/Controls.css';
 
 export interface Props {
+  // Extra content under the abilities (Shoot puts Rounds here).
+  children?: React.ReactNode;
   attacker: Model;
   changeHandler: Accepter<Model>;
   idPrefix: string;
@@ -159,53 +157,47 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   const [paramsCol0, paramsCol1] = requiredAndOptionalItemsToTwoCols(
     basicParams, advancedParamsToShow);
 
-  const elemsCol0 = propsToRows(paramsCol0, props.idPrefix);
-  const elemsCol1 = propsToRows(paramsCol1, props.idPrefix);
+  // Fill the grid row-wise from the two column lists, so each visual column
+  // keeps today's order while rows line up across both columns.
+  const elemsCol0 = propsToFields(paramsCol0, props.idPrefix);
+  const elemsCol1 = propsToFields(paramsCol1, props.idPrefix);
+  const gridCells: JSX.Element[] = [];
+  for (let i = 0; i < Math.max(elemsCol0.length, elemsCol1.length); i++) {
+    gridCells.push(elemsCol0[i] ?? <div key={`empty0-${i}`} />);
+    gridCells.push(elemsCol1[i] ?? <div key={`empty1-${i}`} />);
+  }
 
   function abilityCheckbox(box: AbilityCheckbox, advanced: boolean) {
     return (
-      <Form.Check
-        type="checkbox"
-        label={advanced ? <>{box.note.name} <AdvancedMarker /></> : box.note.name}
-        title={box.note.description}
-        checked={atk.has(box.ability)}
-        onChange={() => singleHandler(box.ability)(atk.has(box.ability) ? 'X' : '✔')}
-      />
+      <label key={box.note.name} className='CheckItem' title={box.note.description}>
+        <input
+          type="checkbox"
+          checked={atk.has(box.ability)}
+          onChange={() => singleHandler(box.ability)(atk.has(box.ability) ? 'X' : '✔')}
+        />
+        {box.note.name}
+        {advanced && <AdvancedMarker />}
+      </label>
     );
   }
 
+  const advancedBoxesToShow = attackerAdvancedCheckboxes.filter(box => wantShowAdvanced || atk.has(box.ability));
+
   return (
-    <Container style={{width: '310px', maxWidth: '100%'}}>
-      <Row>
-        <Col>Attacker</Col>
-        <Col>{advancedCheckbox}</Col>
-      </Row>
-      <Row>
-        <Col>
-          <Container className='p-0'>
-            {elemsCol0}
-          </Container>
-        </Col>
-        <Col>
-          <Container className='p-0'>
-            {elemsCol1}
-          </Container>
-        </Col>
-      </Row>
-      <Row>
-        {attackerBasicCheckboxes.map(box => (
-          <Col key={box.note.name}>{abilityCheckbox(box, false)}</Col>
-        ))}
-      </Row>
-      {attackerAdvancedCheckboxes.map(box => {
-        const show = wantShowAdvanced || atk.has(box.ability);
-        return show ? (
-          <Row key={box.note.name}>
-            <Col>{abilityCheckbox(box, true)}</Col>
-          </Row>
-        ) : null;
-      })}
-    </Container>
+    <div style={{ width: '288px', maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className='CtlBlock-header'>
+        <span className='CtlBlock-title'>Attacker</span>
+        {advancedCheckbox}
+      </div>
+      <div className='CtlGrid'>
+        {gridCells}
+      </div>
+      <div className='CheckRow'>
+        {attackerBasicCheckboxes.map(box => abilityCheckbox(box, false))}
+        {advancedBoxesToShow.map(box => abilityCheckbox(box, true))}
+      </div>
+      {props.children}
+    </div>
   );
 }
 

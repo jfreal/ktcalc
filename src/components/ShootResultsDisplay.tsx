@@ -1,11 +1,5 @@
 import React from 'react';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Table from 'react-bootstrap/Table';
-import Accordion from 'react-bootstrap/Accordion';
-
-import 'src/components/Accordion.css'
+import 'src/components/Controls.css';
 import ProbabilityHistogram from 'src/components/ProbabilityHistogram';
 
 import Model from 'src/Model';
@@ -48,8 +42,8 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
 
   const killChanceTable =
     <>
-      <span style={{ fontSize: '13px' }}>KillChances for various Sv&amp;W...</span>
-      <Table bordered striped style={{ fontSize: '11px' }}>
+      <table className='DataTable'>
+        <caption>KillChances for various Sv&amp;W...</caption>
         <thead>
           <tr>
             <th>W</th>
@@ -59,7 +53,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
         <tbody>
           {killChanceTableBody}
         </tbody>
-      </Table>
+      </table>
     </>;
 
   const saveToAvgDmgTableBody: JSX.Element[] = [];
@@ -80,8 +74,8 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
 
   const saveToAvgDmgTable =
     <>
-      <span style={{ fontSize: '13px' }}>AvgDmg for various Sv...</span>
-      <Table bordered={true} striped={true} style={{ fontSize: '11px' }}>
+      <table className='DataTable'>
+        <caption>AvgDmg for various Sv...</caption>
         <thead>
           <tr>
             <th>Sv</th>
@@ -92,7 +86,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
         <tbody>
           {saveToAvgDmgTableBody}
         </tbody>
-      </Table>
+      </table>
     </>;
 
   let avgDmgUnbounded = 0;
@@ -130,13 +124,14 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
       xLabel="Dmg"
       ariaLabel="Damage probability distribution"
       digitsPastDecimal={digitsPastDecimal}
+      height={150}
     />
   );
 
   const dmgProbTable =
     <>
       {histogram}
-      <Table bordered={true} striped={true} style={{ fontSize: '11px' }}>
+      <table className='DataTable'>
         <thead>
           <tr>
             <th>Dmg</th>
@@ -148,53 +143,54 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
         <tbody>
           {dmgProbTableBody}
         </tbody>
-      </Table>
+      </table>
     </>;
 
+  // Header strings keep today's "Name: value" format; the row shows them split.
+  const rows: { key: string; header: string; body: React.ReactNode }[] = [
+    { key: 'avg', header: `Average Damage: ${avgDmgUnbounded.toFixed(digitsPastDecimal)}`, body: saveToAvgDmgTable },
+    {
+      key: 'injury',
+      header: `Injury Chance: ${toPercentString(injuryChance)}%`,
+      body: <>Probability of doing more than {(props.defender.wounds / 2).toFixed(1)} but less than {props.defender.wounds} wounds (injured but not killed)</>,
+    },
+    { key: 'kill', header: `Kill Chance: ${toPercentString(killChance)}%`, body: killChanceTable },
+    { key: 'dist', header: 'Dmg probs for exact scenario', body: dmgProbTable },
+  ];
+
   return (
-    <Container className='p-2' style={{width: '100%'}}>
-      <Row>
-        <Col className='p-0'>
-          <Accordion flush>
-            <Accordion.Item eventKey='0'>
-              <Accordion.Header as="p">Average Damage: {avgDmgUnbounded.toFixed(digitsPastDecimal)}</Accordion.Header>
-              <Accordion.Body>{saveToAvgDmgTable}</Accordion.Body>
-            </Accordion.Item>
-          </Accordion>
-        </Col>
-      </Row>
-      <Row>
-        <Col className='p-0'>
-          <Accordion flush>
-            <Accordion.Item eventKey='1'>
-              <Accordion.Header as="p">Injury Chance: {toPercentString(injuryChance)}%</Accordion.Header>
-              <Accordion.Body>Probability of doing more than {(props.defender.wounds / 2).toFixed(1)} but less than {props.defender.wounds} wounds (injured but not killed)</Accordion.Body>
-            </Accordion.Item>
-          </Accordion>
-        </Col>
-      </Row>
-      <Row>
-        <Col className='p-0'>
-          <Accordion flush>
-            <Accordion.Item eventKey='2'>
-              <Accordion.Header as="p">Kill Chance: {toPercentString(killChance)}%</Accordion.Header>
-              <Accordion.Body>{killChanceTable}</Accordion.Body>
-            </Accordion.Item>
-          </Accordion>
-        </Col>
-      </Row>
-      <Row>
-        <Col className='p-0'>
-          <Accordion flush>
-            <Accordion.Item eventKey='3'>
-              <Accordion.Header as="p">Dmg probs for exact scenario</Accordion.Header>
-              <Accordion.Body>{dmgProbTable}</Accordion.Body>
-            </Accordion.Item>
-          </Accordion>
-        </Col>
-      </Row>
-    </Container>
+    <div className='ResultList'>
+      {rows.map(row => <ResultRow key={row.key} header={row.header}>{row.body}</ResultRow>)}
+    </div>
   );
 }
+
+// One expandable result. Each row toggles on its own, like the separate
+// accordions it replaces.
+const ResultRow: React.FC<{ header: string; children: React.ReactNode }> = ({ header, children }) => {
+  const [open, setOpen] = React.useState(false);
+  const sep = header.indexOf(': ');
+  const name = sep >= 0 ? header.slice(0, sep) : header;
+  const value = sep >= 0 ? header.slice(sep + 2) : '';
+
+  return (
+    <div className='ResultRow'>
+      <button
+        type='button'
+        className='ResultRow-btn'
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
+        {/* The hidden ": " keeps the row's text reading "Average Damage: 5.67". */}
+        <span className='ResultRow-name'>{name}{value && <span className='sr-only'>: </span>}</span>
+        {value && <span className='ResultRow-value'>{value}</span>}
+        <svg className='ResultRow-chevron' width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'>
+          <path fillRule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z' />
+        </svg>
+      </button>
+      {open && <div className='ResultRow-body'>{children}</div>}
+    </div>
+  );
+};
 
 export default ShootResultsDisplay;

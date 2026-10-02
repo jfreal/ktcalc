@@ -1,73 +1,115 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Panel from 'src/components/Panel';
 import * as T from 'src/theme';
-import kofiIcon from 'src/images/kofi.svg';
 
-const Footer: React.FC = () => {
-  return (
-    <div style={{ fontSize: '12px', color: T.textMuted, textAlign: 'center', padding: '16px 0', borderTop: `1px solid ${T.borderFaint}`, marginTop: '16px', maxWidth: '900px', marginLeft: 'auto', marginRight: 'auto' }}>
-      <a href="https://github.com/jfreal/ktcalc" target="_blank" rel="noopener noreferrer">
-        Open source on GitHub
-      </a> — Pull requests welcome!
-      <div style={{ margin: '8px 0' }}>
-        <a
-          href='https://ko-fi.com/jfreal'
-          target='_blank'
-          rel='noopener noreferrer'
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', whiteSpace: 'nowrap', fontSize: '14px', fontWeight: 600 }}
-        >
-          <img src={kofiIcon} alt='Ko-fi' width='18' height='18' />
-          buy me <s>a coffee</s> grey plastic
-        </a>
-      </div>
-      Forked from <a href="https://jmegner.github.io/KT21Calculator/" target="_blank" rel="noopener noreferrer">
-        https://jmegner.github.io/KT21Calculator/
-      </a>
-      <div style={{ maxWidth: '420px', margin: '16px auto', textAlign: 'left' }}>
-        <Panel title="⚔️ Alternative Tools" titleFontSize="14px" fullWidth>
-          <div style={{ marginBottom: '8px' }}>
-            <a
-              href="https://brandongreen00.github.io/ballistica-imperialis/"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontSize: '14px', fontWeight: 600 }}
-            >
-              Ballistica Imperialis →
-            </a>
-            <div style={{ fontSize: '12px', color: T.textMuted, marginTop: '2px' }}>
-              Alternative KT math tool with preloaded weapon &amp; defence profiles and a cool design.
-            </div>
-          </div>
-          <div>
-            <a
-              href="https://nemesisforge.netlify.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontSize: '14px', fontWeight: 600 }}
-            >
-              NemesisForge →
-            </a>
-            <div style={{ fontSize: '12px', color: T.textMuted, marginTop: '2px' }}>
-              Build your own nemesis operatives.
-            </div>
-          </div>
-        </Panel>
-      </div>
-      <Link
-        to="/help"
-        target="_blank"
-        rel="noopener noreferrer"
-        title="How KT Calc works (opens in a new tab)"
-        style={{ fontWeight: 600 }}
+const GITHUB_URL = 'https://github.com/jfreal/ktcalc';
+const UPSTREAM_URL = 'https://jmegner.github.io/KT21Calculator/';
+
+const githubLine = (
+  <span>
+    <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">Open source on GitHub</a> — Pull requests welcome!
+  </span>
+);
+
+const forkedLine = (
+  <span>
+    Forked from <a href={UPSTREAM_URL} target="_blank" rel="noopener noreferrer">jmegner.github.io/KT21Calculator</a>
+  </span>
+);
+
+interface AltTool {
+  name: string;
+  href: string;
+  blurb: string;
+}
+
+const altTools: AltTool[] = [
+  {
+    name: 'Ballistica Imperialis',
+    href: 'https://brandongreen00.github.io/ballistica-imperialis/',
+    blurb: 'Alternative KT math tool with preloaded weapon & defence profiles and a cool design.',
+  },
+  {
+    name: 'NemesisForge',
+    href: 'https://nemesisforge.netlify.app/',
+    blurb: 'Build your own nemesis operatives.',
+  },
+];
+
+interface FooterProps {
+  // Docs pages (/help, /rules, /notes) get a one-line footer without the tools box.
+  compact?: boolean;
+}
+
+const Footer: React.FC<FooterProps> = ({ compact = false }) => {
+  if (compact) {
+    return (
+      <footer
+        style={{
+          maxWidth: '1040px',
+          margin: '28px auto 0',
+          padding: '16px',
+          borderTop: `1px solid ${T.borderFaint}`,
+          fontSize: '12px',
+          color: T.textMuted,
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '6px 20px',
+        }}
       >
-        How KT Calc works &rarr;
-        <span className="sr-only"> (opens in a new tab)</span>
-      </Link>
-      <div style={{ marginTop: '2px' }}>
-        Deep-dive notes and the Kill Team rules the calculator is built on.
+        {githubLine}
+        {forkedLine}
+      </footer>
+    );
+  }
+
+  return (
+    <footer
+      style={{
+        maxWidth: '1320px',
+        margin: '20px auto 0',
+        padding: '16px 12px 24px',
+        borderTop: `1px solid ${T.borderFaint}`,
+        fontSize: '12px',
+        color: T.textMuted,
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: '16px 40px',
+      }}
+    >
+      <div style={{ maxWidth: '340px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <Link
+          to="/help"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="How KT Calc works (opens in a new tab)"
+          style={{ fontSize: '14px', fontWeight: 600 }}
+        >
+          How KT Calc works &rarr;
+          <span className="sr-only"> (opens in a new tab)</span>
+        </Link>
+        <span>Deep-dive notes and the Kill Team rules the calculator is built on.</span>
+        <span style={{ marginTop: '8px' }}>{githubLine}</span>
+        {forkedLine}
       </div>
-    </div>
+      <div style={{ width: '380px', maxWidth: '100%', border: `1px solid ${T.borderSoft}`, borderRadius: '4px', overflow: 'hidden', background: T.panelBg }}>
+        <div style={{ background: T.subtleBg, fontSize: '13px', fontWeight: 700, color: T.textInk, padding: '6px 10px', borderBottom: `1px solid ${T.borderSoft}` }}>
+          ⚔️ Alternative Tools
+        </div>
+        <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {altTools.map(tool => (
+            <div key={tool.href}>
+              <a href={tool.href} target="_blank" rel="noopener noreferrer" style={{ fontSize: '14px', fontWeight: 600 }}>
+                {tool.name} →
+              </a>
+              <div style={{ fontSize: '12px', color: T.textMuted, marginTop: '2px' }}>{tool.blurb}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </footer>
   );
 };
 

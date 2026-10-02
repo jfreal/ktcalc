@@ -88,7 +88,8 @@ const AppHeader = (props: AppHeaderProps) => {
       </div>
       <Link
         to="/help"
-        className="AppHeader-help"
+        className={'AppHeader-help' + (location.pathname.startsWith('/help') ? ' is-active' : '')}
+        aria-current={location.pathname.startsWith('/help') ? 'page' : undefined}
         title="How KT Calc works (opens in a new tab)"
         target="_blank"
         rel="noopener noreferrer"

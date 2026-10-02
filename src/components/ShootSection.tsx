@@ -1,12 +1,6 @@
 import React from 'react';
-import {
-  Button,
-  Col,
-  Container,
-  Row,
-} from 'react-bootstrap';
 import Panel from 'src/components/Panel';
-import * as T from 'src/theme';
+import 'src/components/Controls.css';
 
 import { clone } from 'lodash';
 import Note, * as N from 'src/Notes';
@@ -80,67 +74,60 @@ const ShootSection: React.FC<ShootSectionProps> = ({ isActive }) => {
     setShootOptions2(clone(shootOptions1));
   };
 
+  const situationTitleStyle: React.CSSProperties = { padding: '0 8px 0 12px' };
+  const situationBodyStyle: React.CSSProperties = { padding: '10px 12px 12px' };
+  const situationStyle: React.CSSProperties = { flex: '1 1 520px', minWidth: 0 };
+
   return (
-    <Container fluid style={{maxWidth: '1320px', margin: '0 auto'}}>
-      <Row>
-        <Col className='p-1'>
-          Kill Team 2024 Edition, Shooting&nbsp;
-          <a href='https://assets.warhammer-community.com/killteam_keydownloads_literules_eng-jfhe9v0j7c-n0x6ozmgo9.pdf'>[Lite Rules]</a>
-        </Col>
-      </Row>
-      <Row>
-        <Col xs={12} lg={6} className='p-1'>
-          <Panel title="Situation 1" fullWidth bodyScrollX>
-            <ShootSituation
-              idPrefix="s1"
-              attacker={attacker1}
-              setAttacker={setAttacker1}
-              defender={defender1}
-              setDefender={setDefender1}
-              shootOptions={shootOptions1}
-              setShootOptions={setShootOptions1}
-              saveToDmgToProb={saveToDmgToProb1}
-              />
-          </Panel>
-        </Col>
-        <Col xs={12} lg={6} className='p-1'>
-          <Panel
-            title="Situation 2"
-            right={<Button variant="dark" size="sm" onClick={copyS1toS2} style={{ backgroundColor: T.darkHover, borderColor: '#5a6470' }}>Copy From Situation 1</Button>}
-            fullWidth
-            bodyScrollX
-          >
-            <ShootSituation
-              idPrefix="s2"
-              attacker={attacker2}
-              setAttacker={setAttacker2}
-              defender={defender2}
-              setDefender={setDefender2}
-              shootOptions={shootOptions2}
-              setShootOptions={setShootOptions2}
-              saveToDmgToProb={saveToDmgToProb2}
-              />
-          </Panel>
-        </Col>
-      </Row>
-      <Row>
-        <Col className='p-1'>
-          <ScenarioComparisonMatrix
-            saveToDmgToProb1={saveToDmgToProb1}
-            saveToDmgToProb2={saveToDmgToProb2}
-            saveToDmgToProbCombined={saveToDmgToProbCombined}
-            comboWounds={defender1.wounds}
-          />
-        </Col>
-      </Row>
-      <Row>
-        <Col className='p-1'>
-          <Panel title="Notes" fullWidth>
-            <NotesList notes={notes} advancedNotes={advancedNotes} />
-          </Panel>
-        </Col>
-      </Row>
-    </Container>
+    <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '12px 12px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', fontSize: '15px' }}>
+        <span style={{ fontWeight: 600 }}>Kill Team 2024 Edition, Shooting</span>
+        <a href='https://assets.warhammer-community.com/killteam_keydownloads_literules_eng-jfhe9v0j7c-n0x6ozmgo9.pdf' style={{ fontSize: '13px' }}>Lite Rules ↗</a>
+      </div>
+      {/* Side by side when both fit (~1064px), stacked below that. */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+        <Panel title="Situation 1" bodyScrollX style={situationStyle} titleStyle={situationTitleStyle} bodyStyle={situationBodyStyle}>
+          <ShootSituation
+            idPrefix="s1"
+            attacker={attacker1}
+            setAttacker={setAttacker1}
+            defender={defender1}
+            setDefender={setDefender1}
+            shootOptions={shootOptions1}
+            setShootOptions={setShootOptions1}
+            saveToDmgToProb={saveToDmgToProb1}
+            />
+        </Panel>
+        <Panel
+          title="Situation 2"
+          right={<button type="button" className="SmallBtn" onClick={copyS1toS2}>Copy From Situation 1</button>}
+          bodyScrollX
+          style={situationStyle}
+          titleStyle={situationTitleStyle}
+          bodyStyle={situationBodyStyle}
+        >
+          <ShootSituation
+            idPrefix="s2"
+            attacker={attacker2}
+            setAttacker={setAttacker2}
+            defender={defender2}
+            setDefender={setDefender2}
+            shootOptions={shootOptions2}
+            setShootOptions={setShootOptions2}
+            saveToDmgToProb={saveToDmgToProb2}
+            />
+        </Panel>
+      </div>
+      <ScenarioComparisonMatrix
+        saveToDmgToProb1={saveToDmgToProb1}
+        saveToDmgToProb2={saveToDmgToProb2}
+        saveToDmgToProbCombined={saveToDmgToProbCombined}
+        comboWounds={defender1.wounds}
+      />
+      <Panel title="Notes" fullWidth bodyStyle={{ padding: '10px 12px 12px', fontSize: '13px', lineHeight: 1.45 }}>
+        <NotesList notes={notes} advancedNotes={advancedNotes} />
+      </Panel>
+    </div>
   );
 };
 
