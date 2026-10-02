@@ -29,6 +29,7 @@ function encodeAttacker(atk: Model): string {
   if (atk.has(Ability.PuritySeal)) abilities.push('purity');
   if (atk.has(Ability.MysticScryBuff)) abilities.push('mscry');
   if (atk.has(Ability.FailToNormIfAtLeastTwoSuccesses)) abilities.push('close');
+  if (atk.has(Ability.CurseOfRot)) abilities.push('curse');
 
   return [
     atk.numDice,
@@ -56,6 +57,7 @@ function encodeDefender(def: Model): string {
   if (def.has(Ability.JustAScratch)) abilities.push('jasc');
   if (def.has(Ability.JustAScratchNorms)) abilities.push('jasn');
   if (def.has(Ability.Punishing)) abilities.push('pun');
+  if (def.has(Ability.CurseOfRot)) abilities.push('curse');
 
   return [
     def.diceStat,
@@ -117,6 +119,7 @@ function decodeAttacker(param: string): Model {
     if (abilities.includes('purity')) atk.abilities.add(Ability.PuritySeal);
     if (abilities.includes('mscry')) atk.abilities.add(Ability.MysticScryBuff);
     if (abilities.includes('close')) atk.abilities.add(Ability.FailToNormIfAtLeastTwoSuccesses);
+    if (abilities.includes('curse')) atk.abilities.add(Ability.CurseOfRot);
   } else {
     // Old 11-field format (backward compat)
     const abilities = parts[10] || '';
@@ -153,6 +156,7 @@ function decodeDefender(param: string): Model {
     if (abilities.includes('jasc')) def.abilities.add(Ability.JustAScratch);
     if (abilities.includes('jasn')) def.abilities.add(Ability.JustAScratchNorms);
     if (abilities.includes('pun')) def.abilities.add(Ability.Punishing);
+    if (abilities.includes('curse')) def.abilities.add(Ability.CurseOfRot);
   } else {
     // Old 4-field format (backward compat)
     const abilities = parts[3] || '';
@@ -180,6 +184,7 @@ function encodeFighter(f: Model): string {
   // Keep this token distinct from 'jas', which enables the other scratch ability.
   if (f.has(Ability.JustAScratchNorms)) abilities.push('scratchnorm');
   if (f.has(Ability.HalfDamageFirstStrike)) abilities.push('halfstrike');
+  if (f.has(Ability.CurseOfRot)) abilities.push('curse');
 
   // Niche ability (mutually exclusive fight abilities)
   const nicheAbility = mutuallyExclusiveFightAbilities.find(a => a !== Ability.None && f.abilities.has(a));
@@ -241,6 +246,7 @@ function decodeFighter(param: string): Model {
   if (abilities.includes('shock')) f.abilities.add(Ability.Shock);
   if (abilities.includes('scratchnorm')) f.abilities.add(Ability.JustAScratchNorms);
   if (abilities.includes('halfstrike')) f.abilities.add(Ability.HalfDamageFirstStrike);
+  if (abilities.includes('curse')) f.abilities.add(Ability.CurseOfRot);
 
   // appended after abilities; absent in older URLs and sanitized to off for unrecognized values
   f.saintlyRelics = parseRelicMode(parts[13]);

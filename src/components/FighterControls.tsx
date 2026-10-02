@@ -97,6 +97,7 @@ export const fighterAdvancedCheckboxes: readonly AbilityCheckbox[] = [
   { note: N.JustAScratch2021, ability: Ability.JustAScratch },
   { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
   { note: N.HalfDamageFirstStrike, ability: Ability.HalfDamageFirstStrike },
+  { note: N.CurseOfRot, ability: Ability.CurseOfRot },
 ];
 
 export const fighterNotedControls: readonly NotedControl[] = [

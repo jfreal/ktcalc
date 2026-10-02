@@ -25,7 +25,7 @@ const accurateChoiceCache = new Map<string, number>();
 // setAbility mutates the ability Set in place, so a cache keyed on (model, abilities) identity
 // would hand back a stale retention count after any such edit. Building the key is cheap next to
 // that risk, and the early return below keeps it off the path entirely unless Accurate is in play.
-function accurateDiceToRetain(model: Model, abilities: Set<Ability>): number {
+function accurateDiceToRetain(model: Model, abilities: Set<Ability>, cursed: boolean): number {
   const critDmgPlusMwx = model.critDmg + model.mwx;
   if (model.autoNorms <= 0 || !canRankByDamage(model.normDmg, critDmgPlusMwx)) {
     return model.autoNorms;
@@ -36,6 +36,7 @@ function accurateDiceToRetain(model: Model, abilities: Set<Ability>): number {
     model.autoCrits, model.autoNorms, model.failsToNorms, model.normsToCrits,
     model.normDmg, critDmgPlusMwx,
     Array.from(abilities).sort().join('.'),
+    cursed,
   ].join('|');
 
   const cached = accurateChoiceCache.get(key);
@@ -45,7 +46,8 @@ function accurateDiceToRetain(model: Model, abilities: Set<Ability>): number {
 
   const chosen = chooseAutoNorms(
     model.toAttackerDieProbs(), model.numDice, model.reroll, model.autoCrits, model.autoNorms,
-    model.failsToNorms, model.normsToCrits, abilities, model.normDmg, critDmgPlusMwx);
+    model.failsToNorms, model.normsToCrits, abilities, model.normDmg, critDmgPlusMwx,
+    cursed ? model.toCursedAttackerDieProbs() : undefined);
   accurateChoiceCache.set(key, chosen);
   return chosen;
 }
@@ -54,7 +56,7 @@ export function simulateFighterDice(
   model: Model,
   defender: Model | undefined,
   rng: RngFunction = Math.random,
-): { crits: number; norms: number } {
+): { crits: number; norms: number; cursed: number } {
   // lethal must not promote a die that would have failed: clamp critThreshold >= normThreshold
   const critThreshold = Math.max(model.critSkill(), model.diceStat);
   const normThreshold = model.diceStat;
@@ -73,13 +75,23 @@ export function simulateFighterDice(
   // Accurate is "retain UP TO x", and retaining fewer is sometimes better (a retained norm can't be
   // promoted). The choice is made before rolling, so it must be the same for every simulation -
   // hence it is decided from the exact distributions and cached, never re-decided per roll.
-  const autoNorms = Math.min(accurateDiceToRetain(model, abilities), numDice);
+  const enemyCurses = defender?.has(Ability.CurseOfRot) ?? false;
+  const autoNorms = Math.min(accurateDiceToRetain(model, abilities, enemyCurses), numDice);
   numDice -= autoNorms;
 
   // Roll raw d6 values (inlined rollD6 to avoid function call overhead)
-  const dice = new Array<number>(numDice);
+  let dice = new Array<number>(numDice);
   for (let i = 0; i < numDice; i++) {
     dice[i] = (rng() * 6 | 0) + 1;
+  }
+
+  // Curse of Rot (enemy's ploy): each 3 on the roll is a fail that can't be re-rolled, and costs
+  // this fighter 1 damage (the caller applies it). Set those dice aside before re-rolling.
+  let cursed = 0;
+  if (enemyCurses) {
+    const uncursed = dice.filter(die => die !== 3);
+    cursed = dice.length - uncursed.length;
+    dice = uncursed;
   }
 
   // Apply rerolls
@@ -96,8 +108,10 @@ export function simulateFighterDice(
     else fails++;
   }
 
+  fails += cursed;
+
   // Apply post-roll modifications (shared with exact engine)
-  return applyPostRollModifications(
+  const modified = applyPostRollModifications(
     crits, norms, fails,
     autoCrits, autoNorms,
     model.failsToNorms, model.normsToCrits,
@@ -105,6 +119,7 @@ export function simulateFighterDice(
     model.normDmg,
     model.critDmg + model.mwx,
   );
+  return { crits: modified.crits, norms: modified.norms, cursed };
 }
 
 function applyRerolls(

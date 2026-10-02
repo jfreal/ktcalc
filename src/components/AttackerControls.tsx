@@ -85,6 +85,7 @@ export const attackerBasicCheckboxes: readonly AbilityCheckbox[] = [
 export const attackerAdvancedCheckboxes: readonly AbilityCheckbox[] = [
   { note: N.MysticScryBuff, ability: Ability.MysticScryBuff },
   { note: N.CloseAssault2021, ability: Ability.FailToNormIfAtLeastTwoSuccesses },
+  { note: N.CurseOfRot, ability: Ability.CurseOfRot },
 ];
 
 export const attackerNotedControls: readonly NotedControl[] = [

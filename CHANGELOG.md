@@ -1,5 +1,12 @@
 # Changelog
 
+## October 2026 - Curse of Rot
+
+- Added the Plague Marines firefight ploy **Curse of Rot**. Tick it on the Plague Marine: the Shoot attacker or defender (advanced checkbox on the attacker), or a Fight fighter (advanced).
+- Each 3 the enemy rolls is a fail it can't re-roll. On Shoot, a Plague Marine attacker adds 1 damage per defence-dice 3 (Feel No Pain applies to each); a Plague Marine defender turns the attacker's 3s into fails. On Fight, the other fighter takes 1 damage per 3 before any strike.
+- Exact on Shoot: the engine splits off the 3s and re-rolls only the other dice with a fresh D6. Tests check it against brute-force enumeration for no re-roll, Ones, Relentless, Balanced, and Double Balanced.
+- Share links carry it as `curse`.
+
 ## September 2026 - Cloudflare Workers deploy, side by side with Netlify
 
 - The site now also deploys to Cloudflare Workers static assets on every push to main, with a Preview URL on each pull request. Netlify still serves ktcalc.com until the DNS cutover in `CLOUDFLARE_CUTOVER.md`. No change to the app itself.

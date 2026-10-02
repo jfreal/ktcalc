@@ -72,6 +72,7 @@ export const defenderBasicCheckboxes: readonly AbilityCheckbox[] = [
   { note: N.ObscuredTarget, ability: Ability.ObscuredTarget, label: 'Obscured' },
   { note: N.JustAScratch2021, ability: Ability.JustAScratch },
   { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
+  { note: N.CurseOfRot, ability: Ability.CurseOfRot },
 ];
 
 export const defenderNotedControls: readonly NotedControl[] = [
