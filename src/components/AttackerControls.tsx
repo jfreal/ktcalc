@@ -19,7 +19,7 @@ import Ability, {
   rerollAbilities as rerolls,
 } from 'src/Ability';
 import * as N from 'src/Notes';
-import AdvancedMarker from 'src/components/AdvancedMarker';
+import { LabelWithMarker } from 'src/components/AdvancedMarker';
 import {
   AbilityCheckbox,
   NotedControl,
@@ -178,8 +178,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
         checked={atk.has(box.ability)}
         onChange={() => singleHandler(box.ability)(atk.has(box.ability) ? 'X' : '✔')}
       >
-        {box.note.name}
-        {advanced && <AdvancedMarker />}
+        {advanced ? <LabelWithMarker text={box.note.name} /> : box.note.name}
       </CheckItem>
     );
   }

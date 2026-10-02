@@ -1,5 +1,5 @@
 import React from "react";
-import AdvancedMarker from "src/components/AdvancedMarker";
+import AdvancedMarker, { LabelWithMarker } from "src/components/AdvancedMarker";
 import CheckItem from "src/components/CheckItem";
 
 export function useCheckboxAndVariable(
@@ -21,8 +21,9 @@ export function useCheckboxAndVariable(
       onChange={() => setChecked(!checked)}
       style={{ fontSize: '12px', color: '#4b5563', gap: '5px' }}
     >
-      {iconOnly ? <span className='sr-only'>{label}</span> : label}
-      {advancedMarker && <AdvancedMarker />}
+      {iconOnly
+        ? <><span className='sr-only'>{label}</span>{advancedMarker && <AdvancedMarker />}</>
+        : advancedMarker ? <LabelWithMarker text={label} /> : label}
     </CheckItem>,
     checked,
   ];

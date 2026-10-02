@@ -19,6 +19,8 @@ export interface IProps {
   valueChangeHandler: Util.Accepter<string>;
   // true when this control only appears under the panel's "Advanced" checkbox; shows the gear marker.
   advanced?: boolean;
+  // caps the select width so a long option can't widen (and wrap) a Bootstrap column
+  capped?: boolean;
 }
 
 export class Props implements IProps {
@@ -70,7 +72,7 @@ const IncDecSelect: React.FC<IProps> = (props: IProps) => {
   }
 
   return (
-    <div className='IncDec'>
+    <div className={props.capped ? 'IncDec IncDec--capped' : 'IncDec'}>
       <label
         htmlFor={domId}
         title={props.hoverText}
@@ -99,7 +101,7 @@ const IncDecSelect: React.FC<IProps> = (props: IProps) => {
 // idPrefix is required: every caller renders alongside another panel that
 // uses the same stat names, so an unprefixed id would collide.
 export function propsToRows(props: Props[], idPrefix: string): JSX.Element[] {
-  return props.map(p => <Row key={p.id} className='mb-1'><Col className='pr-0' style={{ maxWidth: '160px' }}><IncDecSelect {...p} idPrefix={idPrefix}/></Col></Row>);
+  return props.map(p => <Row key={p.id} className='mb-1'><Col className='pr-0' style={{ maxWidth: '160px' }}><IncDecSelect {...p} idPrefix={idPrefix} capped/></Col></Row>);
 }
 
 // Bare fields for a CSS grid or stack container (no Bootstrap row/col gutters).

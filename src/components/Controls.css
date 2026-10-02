@@ -65,6 +65,12 @@
   color: #1f2329;
 }
 
+/* Bootstrap-column layouts (Fight): a long option must not set the column's
+   minimum width, or the row wraps. Zero base width; flex: 1 fills the column. */
+.IncDec--capped .IncDec-select {
+  width: 0;
+}
+
 /* "ATTACKER" / "DEFENDER" block header with the Advanced toggle on the right. */
 .CtlBlock-header {
   display: flex;
@@ -118,7 +124,8 @@
 
 .CheckItem {
   display: flex;
-  align-items: center;
+  /* baseline keeps the box on the first line when a label wraps */
+  align-items: baseline;
   gap: 6px;
   font-size: 14px;
   margin: 0;
@@ -256,7 +263,7 @@
 /* CheckItem renders as .form-check; drop Bootstrap's indent and keep our row. */
 .CheckItem.form-check {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 6px;
   padding-left: 0;
 }
