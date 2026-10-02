@@ -103,6 +103,15 @@ export default class Model {
     return DieProbs.fromSkills(this.critSkill(), this.relevantSave(), this.reroll);
   }
 
+  // odds for this model's dice that did not roll a 3, when the enemy uses Curse of Rot
+  public toCursedAttackerDieProbs(): DieProbs {
+    return DieProbs.fromSkillsAfterCurse(this.critSkill(), this.diceStat, this.reroll);
+  }
+
+  public toCursedDefenderDieProbs(): DieProbs {
+    return DieProbs.fromSkillsAfterCurse(this.critSkill(), this.relevantSave(), this.reroll);
+  }
+
   public setProp(propName: keyof Model, value: number | Ability | boolean | Set<Ability>) : Model {
     (this[propName] as any) = value;
     return this;

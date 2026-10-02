@@ -28,6 +28,10 @@ export function calcDefenderFinalDiceStuff(
 ): DefenderFinalDiceStuff
 {
   const defenderSingleDieProbs = defender.toDefenderDieProbs();
+  // Curse of Rot on the attacker: the defender's 3s fail, can't be re-rolled, and each deals 1 damage
+  const defenderCursedDieProbs = attacker.has(Ability.CurseOfRot)
+    ? defender.toCursedDefenderDieProbs()
+    : undefined;
 
   const numDefDiceWithoutPx = Math.max(0, defender.numDice - attacker.apx);
 
@@ -47,6 +51,10 @@ export function calcDefenderFinalDiceStuff(
     defender.failsToNorms,
     defender.normsToCrits,
     defenderAbilitiesForSaves,
+    0,
+    0,
+    undefined,
+    defenderCursedDieProbs,
     );
 
   let defenderFinalDiceProbsWithPx: FinalDiceProb[] = [];
@@ -68,6 +76,10 @@ export function calcDefenderFinalDiceStuff(
       defender.failsToNorms,
       defender.normsToCrits,
       defenderAbilitiesForSaves,
+      0,
+      0,
+      undefined,
+      defenderCursedDieProbs,
     );
   }
 
@@ -106,7 +118,7 @@ export function hitScorerForDefender(
     let total = 0;
     if (crits + norms > 0) {
       for (const def of defenceDiceFor(stuff, crits)) {
-        total += def.prob * calcDamage(attacker, defender, crits, norms, def.crits, def.norms).damage;
+        total += def.prob * calcScenarioDamage(attacker, defender, crits, norms, def).damage;
       }
     }
     cache.set(key, total);
@@ -151,6 +163,23 @@ export interface DamageOutcome {
   numHits: number;
   prob: number; // conditional probability within the scenario (sums to 1 across outcomes)
   ignored: boolean; // whether this outcome spent the relic to ignore an attack dice
+}
+
+// Damage for one attack-dice outcome against one defence-dice outcome, including the 1 damage
+// per defence-dice 3 that Curse of Rot inflicts. Those are separate 1-damage instances: each gets
+// its own Feel No Pain roll, and Saintly Relics can't ignore them (they aren't attack dice).
+export function calcScenarioDamage(
+  attacker: Model,
+  defender: Model,
+  critHits: number,
+  normHits: number,
+  def: FinalDiceProb,
+): DamageResult {
+  const result = calcDamage(attacker, defender, critHits, normHits, def.crits, def.norms);
+  if (def.cursed <= 0) {
+    return result;
+  }
+  return { ...result, damage: result.damage + def.cursed, numHits: result.numHits + def.cursed };
 }
 
 export function calcDamage(

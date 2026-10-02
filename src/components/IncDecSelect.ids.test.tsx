@@ -56,17 +56,28 @@ function expectDistinctControls(idA: string, idB: string) {
 }
 
 function showAdvanced(container: HTMLElement) {
-  // The Advanced toggle is a react-bootstrap checkbox. Its label is a sibling
-  // of the input and has no htmlFor, so click the input next to that label.
+  // Click the label text, as a user does; it must be tied to its own box.
   const labels = [...container.querySelectorAll('label')].filter(label =>
     (label.textContent ?? '').trim().startsWith('Advanced'));
   expect(labels.length).toBeGreaterThan(0);
   for (const label of labels) {
-    const input = label.parentElement?.querySelector('input[type="checkbox"]');
-    if (!input) {
-      throw new Error('Advanced label has no checkbox');
-    }
-    fireEvent.click(input);
+    fireEvent.click(label);
+  }
+}
+
+// Every checkbox label must be tied (htmlFor) to the box beside it, by an id no other
+// element on the page shares, so clicking the text ticks that box and no other.
+function assertCheckboxLabelsTickTheirOwnBox(container: HTMLElement) {
+  const boxes = [...container.querySelectorAll<HTMLInputElement>('.form-check input[type="checkbox"]')];
+  expect(boxes.length).toBeGreaterThan(0);
+  const ids = boxes.map(box => box.id);
+  expect(ids.every(id => id !== '')).toBe(true);
+  expect(new Set(ids).size).toBe(ids.length);
+
+  for (const box of boxes) {
+    const label = box.parentElement!.querySelector('label')!;
+    expect(label.htmlFor).toBe(box.id);
+    expect(document.getElementById(box.id)).toBe(box);
   }
 }
 
@@ -100,11 +111,34 @@ describe('mounted IncDecSelect ids', () => {
     expect(shoot.querySelector('label[for="s1-atk-Attacks"]')).not.toBeNull();
     expect(shoot.querySelector('label[for="s2-atk-Attacks"]')).not.toBeNull();
 
+    assertCheckboxLabelsTickTheirOwnBox(container);
     showAdvanced(container);
     assertLabelsPointAtTheirOwnSelect(container);
+    assertCheckboxLabelsTickTheirOwnBox(container);
     expectDistinctControls('s1-atk-Reroll', 's1-def-Reroll');
     expectDistinctControls('s2-atk-FailsToNorms', 's2-def-FailsToNorms');
     expectDistinctControls('fa-FailsToNorms', 'fb-FailsToNorms');
     expectDistinctControls('s1-def-NormsToCrits', 'fa-NormsToCrits');
+  });
+});
+
+describe('ability checkbox labels', () => {
+  it('ticks and unticks only their own box when the text is clicked', () => {
+    const { container } = renderCalculators();
+    for (const id of ['s1-def-CurseOfRot', 's2-def-CurseOfRot', 's1-atk-Rending', 'fb-Rending']) {
+      const box = document.getElementById(id) as HTMLInputElement;
+      const label = container.querySelector(`label[for="${id}"]`)!;
+      const othersBefore = [...container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')]
+        .filter(other => other !== box).map(other => other.checked);
+
+      fireEvent.click(label);
+      expect(box.checked).toBe(true);
+      const othersAfter = [...container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')]
+        .filter(other => other !== box).map(other => other.checked);
+      expect(othersAfter).toEqual(othersBefore);
+
+      fireEvent.click(label);
+      expect(box.checked).toBe(false);
+    }
   });
 });

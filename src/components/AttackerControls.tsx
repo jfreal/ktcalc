@@ -85,6 +85,7 @@ export const attackerBasicCheckboxes: readonly AbilityCheckbox[] = [
 export const attackerAdvancedCheckboxes: readonly AbilityCheckbox[] = [
   { note: N.MysticScryBuff, ability: Ability.MysticScryBuff },
   { note: N.CloseAssault2021, ability: Ability.FailToNormIfAtLeastTwoSuccesses },
+  { note: N.CurseOfRot, ability: Ability.CurseOfRot },
 ];
 
 export const attackerNotedControls: readonly NotedControl[] = [
@@ -97,7 +98,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   const atk = props.attacker;
   const textHandler = makeTextChangeHandler(atk, props.changeHandler);
   const numHandler = makeNumChangeHandler(atk, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true, `${props.idPrefix}-advanced`);
 
   function singleHandler(ability: Ability) {
     return makeSetChangeHandlerForSingle<Model,Ability>(
@@ -165,6 +166,7 @@ const AttackerControls: React.FC<Props> = (props: Props) => {
   function abilityCheckbox(box: AbilityCheckbox, advanced: boolean) {
     return (
       <Form.Check
+        id={`${props.idPrefix}-${box.ability}`}
         type="checkbox"
         label={advanced ? <>{box.note.name} <AdvancedMarker /></> : box.note.name}
         title={box.note.description}
