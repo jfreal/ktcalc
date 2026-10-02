@@ -1,3 +1,4 @@
+import React from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
@@ -5,6 +6,8 @@ import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import { CalculatorViewChoice, calculatorCanonicalPath, getCalculatorView } from 'src/CalculatorViewChoice';
 import LegacyFightViewRedirect from 'src/LegacyFightViewRedirect';
 import { centerHoriz, } from 'src/Util';
+import kofiIcon from 'src/images/kofi.svg';
+import * as T from 'src/theme';
 import FightSection from 'src/components/FightSection';
 import HelpPage from 'src/components/HelpPage';
 import Layout from 'src/components/Layout';
@@ -74,28 +77,56 @@ const AppContent = () => {
   }
 
   return (
-        <Container fluid>
-          <Seo title={viewSeo.title} description={viewSeo.description} path={canonicalPath} />
-          <Row>
-            <Col className={centerHoriz + ' p-0'} style={{ paddingTop: '6px' }}>
-              <div style={{ textAlign: 'center', maxWidth: '680px' }}>
-                <h1 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 2px' }}>{viewSeo.h1}</h1>
-              </div>
-            </Col>
-          </Row>
-          <Row>
-            <Col className={centerHoriz + ' p-0'} style={{fontSize: '11px'}}>
-              Starred (*) items have explanations in hovertext and 'Notes' at bottom; geared (⚙️) items are advanced — tick 'Advanced' to show them.
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              {sectionDiv(CalculatorViewChoice.KtShoot, <ShootSection isActive={currentView === CalculatorViewChoice.KtShoot} />)}
-              {sectionDiv(CalculatorViewChoice.KtFight, <FightSection isActive={currentView === CalculatorViewChoice.KtFight} />)}
-              {sectionDiv(CalculatorViewChoice.KtShootMassAnalysis, <ShootMassAnalysisSection/>)}
-            </Col>
-          </Row>
-        </Container>
+    <>
+      <Seo title={viewSeo.title} description={viewSeo.description} path={canonicalPath} />
+      {/* Helper strip: one full-width row under the header. */}
+      <div style={{ background: T.stripBg, borderBottom: `1px solid ${T.hairline}` }}>
+        <div
+          style={{
+            maxWidth: '1320px',
+            margin: '0 auto',
+            padding: '5px 12px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '4px 16px',
+            fontSize: '12px',
+            color: T.textMuted,
+            textAlign: 'center',
+            textWrap: 'pretty',
+          } as React.CSSProperties}
+        >
+          <span>Starred (*) items have explanations in hovertext and 'Notes' at bottom; geared (⚙️) items are advanced — tick 'Advanced' to show them.</span>
+          <a
+            href='https://ko-fi.com/jfreal'
+            target='_blank'
+            rel='noopener noreferrer'
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}
+          >
+            <img src={kofiIcon} alt='Ko-fi' width='16' height='16' />
+            buy me <s>a coffee</s> grey plastic
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        </div>
+      </div>
+      <Container fluid>
+        <Row>
+          <Col className={centerHoriz + ' p-0'} style={{ paddingTop: '8px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '680px' }}>
+              <h1 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>{viewSeo.h1}</h1>
+            </div>
+          </Col>
+        </Row>
+        <Row>
+          <Col className='p-0'>
+            {sectionDiv(CalculatorViewChoice.KtShoot, <ShootSection isActive={currentView === CalculatorViewChoice.KtShoot} />)}
+            {sectionDiv(CalculatorViewChoice.KtFight, <FightSection isActive={currentView === CalculatorViewChoice.KtFight} />)}
+            {sectionDiv(CalculatorViewChoice.KtShootMassAnalysis, <ShootMassAnalysisSection/>)}
+          </Col>
+        </Row>
+      </Container>
+    </>
   );
 };
 

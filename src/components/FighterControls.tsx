@@ -4,7 +4,6 @@ import {
   Container,
   Row,
 } from 'react-bootstrap';
-import Form from 'react-bootstrap/Form';
 
 import Ability, {
   mutuallyExclusiveFightAbilities as nicheAbilities,
@@ -29,7 +28,8 @@ import {
   xspan,
 } from 'src/Util';
 import { relicModeToLabel } from 'src/SaintlyRelics';
-import AdvancedMarker from 'src/components/AdvancedMarker';
+import { LabelWithMarker } from 'src/components/AdvancedMarker';
+import CheckItem from 'src/components/CheckItem';
 import {
   AbilityCheckbox,
   NotedControl,
@@ -133,15 +133,15 @@ const FighterControls: React.FC<Props> = (props: Props) => {
 
   function abilityCheckbox(box: AbilityCheckbox, advanced: boolean) {
     return (
-      <Form.Check
+      <CheckItem
         key={box.note.name}
         id={`${props.idPrefix}-${box.ability}`}
-        type="checkbox"
-        label={advanced ? <>{box.note.name} <AdvancedMarker /></> : box.note.name}
         title={box.note.description}
         checked={atk.has(box.ability)}
         onChange={() => singleHandler(box.ability)(atk.has(box.ability) ? 'X' : '✔')}
-      />
+      >
+        {advanced ? <LabelWithMarker text={box.note.name} /> : box.note.name}
+      </CheckItem>
     );
   }
 
@@ -221,10 +221,14 @@ const FighterControls: React.FC<Props> = (props: Props) => {
       </Row>
       <Row>
         <Col>
-          {allCheckboxes.filter((_, i) => i % 2 === 0).map(c => abilityCheckbox(c.box, c.advanced))}
+          <div className='CheckCol'>
+            {allCheckboxes.filter((_, i) => i % 2 === 0).map(c => abilityCheckbox(c.box, c.advanced))}
+          </div>
         </Col>
         <Col>
-          {allCheckboxes.filter((_, i) => i % 2 === 1).map(c => abilityCheckbox(c.box, c.advanced))}
+          <div className='CheckCol'>
+            {allCheckboxes.filter((_, i) => i % 2 === 1).map(c => abilityCheckbox(c.box, c.advanced))}
+          </div>
         </Col>
       </Row>
     </Container>

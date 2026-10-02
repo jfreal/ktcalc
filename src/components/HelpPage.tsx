@@ -1,7 +1,7 @@
 import React from 'react';
-import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
+import 'src/components/HelpPage.css';
 import Panel from 'src/components/Panel';
 import Seo from 'src/components/Seo';
 import * as T from 'src/theme';
@@ -13,7 +13,7 @@ interface DocLink {
 }
 
 // In-app deep-dive notes (React pages) explaining non-obvious calculator results.
-const notes: DocLink[] = [
+export const notes: DocLink[] = [
   {
     title: 'Lethal + Relentless: why kill chance can rise as BS gets worse',
     href: '/notes/lethal-relentless',
@@ -45,7 +45,7 @@ const notes: DocLink[] = [
 
 // Game-rules reference docs (rendered in-app from rules/*.md) that the engine
 // is validated against.
-const rulesDocs: DocLink[] = [
+export const rulesDocs: DocLink[] = [
   {
     title: 'Combat rules — defense & the shooting save sequence',
     href: '/rules/combat',
@@ -81,50 +81,58 @@ const rulesDocs: DocLink[] = [
 ];
 
 const DocItem: React.FC<{ doc: DocLink }> = ({ doc }) => (
-  <div style={{ marginBottom: '14px' }}>
-    <Link to={doc.href} style={{ fontSize: '15px', fontWeight: 600 }}>
-      {doc.title} &rarr;
-    </Link>
-    <div style={{ fontSize: '13px', color: T.textMuted, marginTop: '2px' }}>{doc.blurb}</div>
-  </div>
+  <Link to={doc.href} className='HelpDoc'>
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div className='HelpDoc-title'>{doc.title}</div>
+      <div className='HelpDoc-blurb'>{doc.blurb}</div>
+    </div>
+    <span className='HelpDoc-arrow' aria-hidden='true'>&rarr;</span>
+  </Link>
+);
+
+const DocGroup: React.FC<{ title: string; docs: DocLink[] }> = ({ title, docs }) => (
+  <Panel
+    title={title}
+    right={<span style={{ fontWeight: 400, color: '#c7ccd3', fontSize: '12px' }}>{docs.length} docs</span>}
+    fullWidth
+    titleStyle={{ padding: '0 12px' }}
+    noPadding
+  >
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {docs.map((doc) => (
+        <DocItem key={doc.href} doc={doc} />
+      ))}
+    </div>
+  </Panel>
 );
 
 const HelpPage: React.FC = () => (
-  <Container style={{ maxWidth: '760px', padding: '24px 16px', fontSize: '14px', lineHeight: 1.55 }}>
+  <main style={{ maxWidth: '760px', margin: '0 auto', padding: '20px 16px 8px', fontSize: '14px', lineHeight: 1.55, color: T.textInk }}>
     <Seo
       title="How the Kill Team 2024 Calculator Works | ktcalc"
       description="How ktcalc models Kill Team 2024 shooting and fighting: deep-dive notes on surprising results and the KT24 rules the engine is built and validated against."
       path="/help/"
     />
-    <p><Link to="/">&larr; Back to calculator</Link></p>
+    <div style={{ fontSize: '13px', marginBottom: '14px' }}>
+      <Link to="/">&larr; Back to calculator</Link>
+    </div>
 
-    <h1>How KT Calc works</h1>
+    <h1 style={{ fontSize: '26px', fontWeight: 700, lineHeight: 1.2, letterSpacing: '-0.01em', margin: '0 0 8px' }}>
+      How KT Calc works
+    </h1>
 
-    <p>
+    <p style={{ fontSize: '15px', color: T.textBody, maxWidth: '640px', margin: '0 0 22px', textWrap: 'pretty' } as React.CSSProperties}>
       KT Calc is open about its math. These pages explain the logic behind the numbers — the
       surprising results worth a closer look, and the Kill Team 2024 rules the engine is built and
       validated against. Read through if you want to check the calculator by hand or understand why a
       result came out the way it did.
     </p>
 
-    <div style={{ maxWidth: '620px', margin: '16px 0' }}>
-      <Panel title="Deep-dive notes" titleFontSize="14px" fullWidth>
-        {notes.map((doc) => (
-          <DocItem key={doc.href} doc={doc} />
-        ))}
-      </Panel>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <DocGroup title="Deep-dive notes" docs={notes} />
+      <DocGroup title="Game rules reference" docs={rulesDocs} />
     </div>
-
-    <div style={{ maxWidth: '620px', margin: '16px 0' }}>
-      <Panel title="Game rules reference" titleFontSize="14px" fullWidth>
-        {rulesDocs.map((doc) => (
-          <DocItem key={doc.href} doc={doc} />
-        ))}
-      </Panel>
-    </div>
-
-    <p><Link to="/">&larr; Back to calculator</Link></p>
-  </Container>
+  </main>
 );
 
 export default HelpPage;

@@ -1,7 +1,4 @@
 import React from 'react';
-import Col from 'react-bootstrap/Col';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
 
 import ShootOptions from 'src/ShootOptions';
 import {
@@ -9,7 +6,7 @@ import {
   makeNumChangeHandler,
   span,
 } from 'src/Util';
-import { Props as IncProps, propsToRows } from 'src/components/IncDecSelect';
+import { Props as IncProps, propsToFields } from 'src/components/IncDecSelect';
 
 export interface Props {
   shootOptions: ShootOptions;
@@ -26,19 +23,13 @@ const ShootOptionControls: React.FC<Props> = (props: Props) => {
     new IncProps('Rounds',        opts.numRounds,                 span(1, 9), numHandler('numRounds')),
   ];
 
-  const paramElems = propsToRows(params, props.idPrefix);
+  const paramElems = propsToFields(params, props.idPrefix);
 
+  // Sits under the attacker block, below a hairline, in the same 2-col grid.
   return (
-    <Container style={{width: '310px', maxWidth: '100%'}}>
-      <Row>
-
-        <Col>
-          <Container className='p-0'>
-            {paramElems}
-          </Container>
-        </Col>
-      </Row>
-    </Container>
+    <div className='CtlGrid' style={{ borderTop: '1px solid #e5e7eb', paddingTop: '8px' }}>
+      {paramElems}
+    </div>
   );
 }
 

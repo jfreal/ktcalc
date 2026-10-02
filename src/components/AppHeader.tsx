@@ -26,6 +26,8 @@ const AppHeader = (props: AppHeaderProps) => {
   // A view is only "active" on the calculator route; other pages highlight nothing.
   // `/fight` is the fight calculator (no ?view= required).
   const activeView = props.onCalculator ? getCalculatorView(location.pathname, params.get('view')) : null;
+  // Segment match, so a route like /helpful never marks the help link active.
+  const onHelp = location.pathname === '/help' || location.pathname.startsWith('/help/');
 
   function makeButton(
     view: CalculatorViewChoice,
@@ -88,7 +90,8 @@ const AppHeader = (props: AppHeaderProps) => {
       </div>
       <Link
         to="/help"
-        className="AppHeader-help"
+        className={'AppHeader-help' + (onHelp ? ' is-active' : '')}
+        aria-current={onHelp ? 'page' : undefined}
         title="How KT Calc works (opens in a new tab)"
         target="_blank"
         rel="noopener noreferrer"
