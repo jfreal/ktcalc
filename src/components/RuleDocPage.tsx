@@ -109,14 +109,22 @@ export interface TocEntry {
 export function extractToc(markdown: string): TocEntry[] {
   const slugger = new HeadingSlugger();
   const toc: TocEntry[] = [];
-  let fence: string | null = null;
+  // CommonMark: a fence closes only on the same character, at least as long
+  // as the opener, with nothing but spaces after it.
+  let fence: { marker: string; length: number } | null = null;
   for (const line of markdown.split(/\r?\n/)) {
-    const fenceMatch = /^\s{0,3}(`{3,}|~{3,})/.exec(line);
+    const fenceMatch = /^\s{0,3}(`{3,}|~{3,})(.*)$/.exec(line);
     if (fenceMatch) {
       const marker = fenceMatch[1][0];
-      if (fence === null) fence = marker;
-      else if (fence === marker) fence = null;
-      continue;
+      const length = fenceMatch[1].length;
+      if (fence === null) {
+        fence = { marker, length };
+        continue;
+      }
+      if (marker === fence.marker && length >= fence.length && fenceMatch[2].trim() === '') {
+        fence = null;
+        continue;
+      }
     }
     if (fence !== null) continue;
     const heading = /^\s{0,3}(#{1,6})\s+(.*)$/.exec(line);

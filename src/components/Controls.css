@@ -22,7 +22,8 @@
 
 .IncDec-row {
   display: flex;
-  height: 30px;
+  /* min-height, not height, so text zoom can grow the select. */
+  min-height: 30px;
 }
 
 .IncDec-btn {
@@ -52,7 +53,7 @@
 .IncDec-select {
   flex: 1;
   min-width: 0;
-  height: 30px;
+  min-height: 30px;
   border: 1px solid #9ca3af;
   border-left: 0;
   border-right: 0;
@@ -121,12 +122,13 @@
   gap: 6px;
   font-size: 14px;
   margin: 0;
-  white-space: nowrap;
   cursor: pointer;
 }
 
+/* Labels may wrap under text zoom; the box itself keeps its size. */
 .CheckItem input {
   margin: 0;
+  flex-shrink: 0;
 }
 
 /* Results: one bordered list of expandable rows. */
@@ -193,6 +195,8 @@
   padding: 4px 12px 12px;
   font-size: 13px;
   color: #4b5563;
+  /* .ResultList clips overflow; let a wide table scroll instead. */
+  overflow-x: auto;
 }
 
 /* Light data tables inside results. */

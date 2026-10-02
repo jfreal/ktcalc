@@ -155,6 +155,10 @@ describe('extractToc', () => {
       '```',
       '## Defense Mechanics',
       '## `fail_to_norm` and _emphasis_',
+      '````',
+      '```',
+      '## still inside the four-backtick block',
+      '````',
     ].join('\n');
     expect(extractToc(md)).toEqual([
       { id: 'defense-mechanics', text: 'Defense Mechanics' },
