@@ -1,5 +1,11 @@
 # Changelog
 
+## October 2026 - Injured fighters in multi-round fights
+
+- **Fight with Rounds above 1 now applies the Injured rule.** A fighter that starts a round below half its starting wounds rolls with its WS worsened by 1 (no worse than 6+). Before, a fighter wounded in round 1 kept hitting as if unhurt, so damage after two rounds came out as about double round 1's.
+- Example: WS 4+, 1 attack, 10 wounds, taking a 6-damage crit each round. Round 2 now hits on 5+, so its expected damage over two rounds is 1/2 + 1/3 of a hit, not 1.
+- Exactly half wounds is not injured. Round 1 is unchanged. Shoot is unchanged (an injured defender's saves are not affected).
+
 ## October 2026 - Curse of Rot
 
 - Added the Plague Marines firefight ploy **Curse of Rot**. Tick it on the Plague Marine: the Shoot attacker or defender (advanced checkbox on the attacker), or a Fight fighter (advanced).
