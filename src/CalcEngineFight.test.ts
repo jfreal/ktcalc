@@ -481,6 +481,58 @@ describe(calcDieChoice.name + ', lethal strike respects damage prevention', () =
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
   });
 
+  it('Parry strikes when a Murderous Entrance bonus normal kills and a second crit would not', () => {
+    // 1 crit at 2, 1 normal at 5, enemy on 6 with 1 normal, no Shock. The bonus die is
+    // the normal, so the crit plus that normal is 7 and lands before the enemy acts.
+    // Pricing the bonus as another crit (4) skips the lethal check. Parrying spends the
+    // normal and leaves a 2-damage crit, which also fails the parry-then-kill check.
+    const chooser = newFighterState(1, 1, 10, FightStrategy.Parry,
+      new Set<Ability>([Ability.MurderousEntrance2021]));
+    chooser.profile.critDmg = 2;
+    chooser.profile.normDmg = 5;
+    const enemy = newFighterState(0, 1, 6, FightStrategy.Strike);
+
+    expect(chooser.nextDmg()).toBe(7);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritStrike);
+
+    resolveFight(chooser, enemy);
+    expect(enemy.currentWounds).toBe(0);
+    expect(chooser.currentWounds).toBe(10);
+  });
+
+  it('prices a Murderous Entrance bonus as the die that is actually spent', () => {
+    const withBonus = (crits: number, norms: number, critStruck = false) => {
+      const chooser = newFighterState(crits, norms, 10, FightStrategy.Parry,
+        new Set<Ability>([Ability.MurderousEntrance2021]));
+      chooser.profile.critDmg = 2;
+      chooser.profile.normDmg = 5;
+      chooser.hasCritStruck = critStruck;
+      return chooser;
+    };
+
+    // A second crit is the follow-up, not the fatter normal.
+    expect(withBonus(2, 1).nextDmg()).toBe(4);
+    // No second success: the ploy does not invent a die.
+    expect(withBonus(1, 0).nextDmg()).toBe(2);
+    // Already spent: no further bonus.
+    expect(withBonus(1, 1, true).nextDmg()).toBe(2);
+    // Hammerhand stays on the first strike: 2 + 1 + bonus normal 5.
+    const hammer = withBonus(1, 1);
+    hammer.profile.setAbility(Ability.Hammerhand2021, true);
+    expect(hammer.nextDmg()).toBe(8);
+  });
+
+  it('Parry still parries when the Murderous Entrance bonus normal is not lethal', () => {
+    const chooser = newFighterState(1, 1, 10, FightStrategy.Parry,
+      new Set<Ability>([Ability.MurderousEntrance2021]));
+    chooser.profile.critDmg = 2;
+    chooser.profile.normDmg = 5;
+    const enemy = newFighterState(0, 1, 8, FightStrategy.Strike);
+
+    expect(chooser.nextDmg()).toBe(7);
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormParry);
+  });
+
   it('estimates a potentially lethal strike without consuming rng or changing live state', () => {
     const chooser = newFighterState(1, 0, 10, FightStrategy.Parry);
     const enemy = newFighterState(2, 0, 2);
