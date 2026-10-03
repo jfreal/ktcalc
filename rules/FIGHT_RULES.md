@@ -44,6 +44,18 @@ up front — see `handleDuelist`).
 
 ---
 
+## Multiple rounds and Injured
+
+With **Rounds** above 1, the fight is repeated with each fighter's wounds carried over, and it
+stops once either fighter is incapacitated. Each round rolls fresh dice.
+
+A fighter that starts a round with **fewer than half its starting wounds** is **injured**: its
+weapon's Hit stat (WS) is worsened by 1 for that round's roll, to no worse than 6+. Exactly
+half is not injured. Round 1 always starts uninjured, so only later rounds can change. Damage
+taken during a round does not change that round's roll, because the dice are already rolled.
+
+---
+
 ## What a parry can cancel
 
 This is the heart of the order-of-operations questions.

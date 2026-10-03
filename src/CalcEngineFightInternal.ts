@@ -79,6 +79,13 @@ export function consolidateWoundPairProbs(woundPairProbs: Map<string,number>): [
   return [guy1WoundProbs, guy2WoundProbs];
 }
 
+// KT2024 Injured: fewer than half its starting wounds remaining worsens the Hit stat by 1.
+// A Hit stat can't be worsened past 6+.
+export function injuredHitStat(hitStat: number, currentWounds: number, startingWounds: number): number {
+  const injured = currentWounds * 2 < startingWounds;
+  return injured ? Math.max(hitStat, Math.min(hitStat + 1, 6)) : hitStat;
+}
+
 export function calcRemainingWoundPairProbs(
   guy1: Model,
   guy2: Model,
@@ -103,6 +110,8 @@ export function calcRemainingWoundPairProbs(
 
   const guy1OrigWounds = guy1.wounds;
   const guy2OrigWounds = guy2.wounds;
+  const guy1OrigDiceStat = guy1.diceStat;
+  const guy2OrigDiceStat = guy2.diceStat;
 
   for (let sim = 0; sim < numSimulations; sim++) {
     let guy1Wounds = guy1OrigWounds;
@@ -133,6 +142,10 @@ export function calcRemainingWoundPairProbs(
       // Temporarily set wounds to avoid cloning Model objects
       guy1.wounds = guy1Wounds;
       guy2.wounds = guy2Wounds;
+      // Injured: a fighter that starts this round below half its starting wounds has its
+      // weapon's Hit stat worsened by 1. Only a later round can start injured.
+      guy1.diceStat = injuredHitStat(guy1OrigDiceStat, guy1Wounds, guy1OrigWounds);
+      guy2.diceStat = injuredHitStat(guy2OrigDiceStat, guy2Wounds, guy2OrigWounds);
 
       const guy1Dice = simulateFighterDice(guy1, guy2, guy1DiceRng);
       const guy2Dice = simulateFighterDice(guy2, guy1, guy2DiceRng);
@@ -158,9 +171,11 @@ export function calcRemainingWoundPairProbs(
     woundPairCounts.set(key, prev !== undefined ? prev + 1 : 1);
   }
 
-  // Restore original wounds
+  // Restore original wounds and Hit stats
   guy1.wounds = guy1OrigWounds;
   guy2.wounds = guy2OrigWounds;
+  guy1.diceStat = guy1OrigDiceStat;
+  guy2.diceStat = guy2OrigDiceStat;
 
   // Convert numeric counts to string-keyed probabilities
   const woundPairProbs = new Map<string, number>();

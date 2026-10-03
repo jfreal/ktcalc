@@ -8,6 +8,7 @@ import {
   calcRemainingWoundPairProbs,
   consolidateWoundPairProbs,
   handleDuelist,
+  injuredHitStat,
   preferredStrikeChoice,
   resolveDieChoice,
   resolveFight,
@@ -1403,6 +1404,44 @@ describe(calcRemainingWounds.name + ' multiple rounds', () => {
     expect(woundPairProbs.get(toWoundPairKey(dc, dc))).toBeCloseTo(Math.pow(pf, 4), requiredPrecision);
     expect(woundPairProbs.get(toWoundPairKey(0, dc))).toBeCloseTo(Math.pow(pf, 3) * pc + pf * pc, requiredPrecision);
     expect(woundPairProbs.get(toWoundPairKey(dc, 0))).toBeCloseTo(pf * pf * pc + pc, requiredPrecision);
+  });
+});
+
+describe('Injured in multi-round fights', () => {
+  it('worsens the Hit stat by 1 below half starting wounds, never past 6+', () => {
+    expect(injuredHitStat(4, 5, 10)).toBe(4); // exactly half is not injured
+    expect(injuredHitStat(4, 4, 10)).toBe(5);
+    expect(injuredHitStat(3, 5, 11)).toBe(4); // 5 < 5.5
+    expect(injuredHitStat(5, 1, 10)).toBe(6);
+    expect(injuredHitStat(6, 1, 10)).toBe(6);
+    expect(injuredHitStat(7, 1, 10)).toBe(7); // never-hit sentinel stays put
+  });
+
+  // guy1 (WS 4+, 1 attack for 1) is hit for 6 every round by guy2 (1 auto-crit for 6, 100 wounds).
+  const makeGuys = (guy1Wounds: number) => {
+    const guy1 = new Model(1, 4, 1, 1).setProp('wounds', guy1Wounds);
+    const guy2 = new Model(1, 4, 6, 6).setProp('wounds', 100).setProp('autoCrits', 1);
+    return [guy1, guy2];
+  };
+
+  it('a fighter injured in round 1 hits on 5+ in round 2', () => {
+    const [guy1, guy2] = makeGuys(10); // 10 - 6 = 4 left, below half
+    const probs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 2, highSimCount, 12345);
+    const [, guy2Wounds] = consolidateWoundPairProbs(probs);
+    expect(guy2Wounds.get(100)).toBeCloseTo(1/2 * 2/3, requiredPrecision);
+    expect(guy2Wounds.get(99)).toBeCloseTo(1/2 * 1/3 + 1/2 * 2/3, requiredPrecision);
+    expect(guy2Wounds.get(98)).toBeCloseTo(1/2 * 1/3, requiredPrecision);
+    // The engine restores the caller's models
+    expect(guy1.diceStat).toBe(4);
+    expect(guy1.wounds).toBe(10);
+  });
+
+  it('a fighter left on exactly half wounds is not injured', () => {
+    const [guy1, guy2] = makeGuys(12); // 12 - 6 = 6 left, exactly half
+    const probs = calcRemainingWoundPairProbs(guy1, guy2, FightStrategy.Strike, FightStrategy.Strike, 2, highSimCount, 12345);
+    const [, guy2Wounds] = consolidateWoundPairProbs(probs);
+    expect(guy2Wounds.get(100)).toBeCloseTo(1/4, requiredPrecision);
+    expect(guy2Wounds.get(98)).toBeCloseTo(1/4, requiredPrecision);
   });
 });
 
