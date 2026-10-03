@@ -208,6 +208,8 @@ Mystic Scry, Severe, and Rending are decided per roll.** On a shoot, each candid
 its expected damage against that defender's saves, cover, and Piercing, and Devastating is part of
 the crit's value; with no defender, and in a fight, they fall back to pre-save damage. For save
 dice, where there is no damage to score, the fallback counts a critical save as two normal saves.
+The shoot score includes saves, cover, and Piercing, and does not include Feel No Pain or Saintly
+Relics.
 
 **FailsToNorms is treated as a change, not a retention.** The generic input is worded as a
 modification, so the norms it produces stay promotable. If your rule is worded "retain one of your

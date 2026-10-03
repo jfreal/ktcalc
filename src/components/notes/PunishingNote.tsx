@@ -208,7 +208,8 @@ const PunishingNote: React.FC = () => (
       is expected damage after the defender&apos;s saves, cover, and Piercing, so a locked normal that
       wins on raw damage can still lose once a save blocks it. The decision is made in the dice step,
       once, before defence dice are rolled — it uses the defender&apos;s profile, not the save roll
-      that comes up.
+      that comes up. The shoot score includes saves, cover, and Piercing, and does not include Feel
+      No Pain or Saintly Relics.
     </p>
 
     <h3>The wider lesson</h3>
