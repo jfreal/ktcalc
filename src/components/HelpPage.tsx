@@ -76,7 +76,8 @@ export const rulesDocs: DocLink[] = [
     title: 'Weapon rules — all weapon rule effects',
     href: '/rules/weapon',
     blurb:
-      'Reference for every weapon rule the calculator supports: Accurate, Balanced, Brutal, Ceaseless, Devastating, Heavy, Lethal, Piercing, Punishing, Relentless, Rending, Saturate, Severe, Shock.',
+      'Reference for the weapon rules the calculator scores: Accurate, Balanced, Brutal, Ceaseless, Devastating, Lethal, Piercing, Punishing, Relentless, Rending, Severe, Shock. ' +
+      'Heavy is a movement restriction with no dice effect. Saturate is represented by setting cover saves to 0.',
   },
 ];
 
