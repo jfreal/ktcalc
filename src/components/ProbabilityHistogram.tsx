@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 
 import { ThemeAccentOrange } from 'src/KtMisc';
 import { toPercentString } from 'src/Util';
+import * as T from 'src/theme';
 
 export interface Props {
   // Each datum: { [xKey]: number; prob: number } where prob is 0..1
@@ -25,14 +26,14 @@ const ProbabilityHistogram: React.FC<Props> = ({
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 20 }} aria-label={ariaLabel} role="img">
-        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={T.hairline} />
         <XAxis
           dataKey={xKey}
-          tick={{ fontSize: 10 }}
-          label={{ value: xLabel, position: 'insideBottom', offset: -15, fontSize: 10 }}
+          tick={{ fontSize: 10, fill: T.textMuted }}
+          label={{ value: xLabel, position: 'insideBottom', offset: -15, fontSize: 10, fill: T.textMuted }}
         />
         <YAxis
-          tick={{ fontSize: 10 }}
+          tick={{ fontSize: 10, fill: T.textMuted }}
           tickFormatter={(v: number) => `${toPercentString(v, 0)}%`}
         />
         <Tooltip

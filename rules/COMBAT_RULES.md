@@ -119,6 +119,17 @@ Whenever an attack dice would inflict damage, roll to ignore all of that dice's 
 - **Fight (Monte Carlo)**: spends the ignore on a strike only when no larger strike is still pending from that attacker (so it lands on the biggest)
 - **Not modeled**: MWx (Devastating) damage is never ignored (matching Just a Scratch)
 
+### Curse of Rot
+
+Plague Marines firefight ploy. Tick it on the PLAGUE MARINE. After the enemy rolls its attack or defence dice, each **3** is a fail that can't be re-rolled, and deals 1 damage to that enemy:
+- **Shoot, on the attacker**: the defender's 3s fail and each adds 1 damage. Each of those is its own 1-damage instance for Feel No Pain; Saintly Relics can't ignore it (it isn't an attack dice). If every attack misses, no defence dice are rolled, so there is no curse damage
+- **Shoot, on the defender**: the attacker's 3s fail. The damage this deals to the attacker is not shown
+- **Fight**: the other fighter's 3s fail and deal 1 damage each straight after the roll, before any strike
+- Only the first roll counts. A die re-rolled later (Balanced, Ceaseless, Relentless) uses its new result normally, even a 3. Accurate and cover dice are retained, not rolled, so they can't be cursed
+- A cursed die is a fail like any other for later rules (Punishing, FailsToNorms, Indomitus, Purity Seal)
+- **Approximate**: with the BothOnesAndBalanced re-roll, the Balanced step keeps its usual formula
+- Assumes the range condition (within 3", or 7" of an enemy with a Poison token) is met
+
 ---
 
 ## Key Principles

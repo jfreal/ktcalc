@@ -59,12 +59,16 @@ export const CloseAssault2021 = new Note(
 export const Rending = new Note(
   `Rending`,
   `If you have >=1 crit, you can retain a norm as a crit instead. Since a dice can only be retained once, it cannot `
-    + `promote an Accurate or Punishing retention (only a rolled norm).`,
+    + `promote an Accurate or Punishing retention (only a rolled norm). Rending is optional, so the calculator `
+    + `declines the promotion when it deals less damage. On a shoot that comparison is expected damage after the `
+    + `defender's saves, cover, Devastating, and Piercing Crits, not the raw dice total.`,
 );
 export const Severe = new Note(
   `Severe`,
   `If you have no crits, you can change a norm to a crit. Because it changes (rather than retains) a success, it can `
-    + `take an already-retained norm such as Accurate. Devastating and Piercing Crits still work, but Punishing and Rending don't.`,
+    + `take an already-retained norm such as Accurate. The calculator declines the change when it deals less damage; `
+    + `on a shoot that comparison includes saves, cover, Devastating, and Piercing Crits. When Severe does fire, `
+    + `Devastating and Piercing Crits still work, but Punishing and Rending don't.`,
 );
 export const Punishing = new Note(
   `Punishing`,
@@ -112,6 +116,15 @@ export const Indomitus = new Note(
   `Note: KT2024 rule strictly requires two unmodified 1s; this calculator triggers on any 2 failed dice, ` +
   `so the benefit is slightly overstated on rolls where fails include non-1 values (e.g. 2s on a 3+ save).`,
 );
+export const CurseOfRot = new Note(
+  `Curse of Rot`,
+  `Plague Marines firefight ploy. Tick it on the PLAGUE MARINE. Each 3 the enemy rolls on its attack or defence dice ` +
+  `is a fail it can't re-roll, and deals 1 damage to that enemy. Shoot: on the attacker, the defender's 3s ` +
+  `fail and add 1 damage each (Feel No Pain applies, Saintly Relics doesn't); on the defender, the attacker's 3s ` +
+  `fail (the damage to the attacker isn't shown). Fight: the other fighter's 3s fail and deal 1 damage each before ` +
+  `any strike. Only the first roll counts: a 3 on a re-roll is an ordinary result. Assumes the range condition ` +
+  `(within 3", or 7" of a poisoned enemy) is met.`,
+);
 export const HardyX = new Note(
   `HardyX`,
   `HardyX is like Lethal (changes what values give you a critical success), but for defense. Name comes from Intercession Squad chapter tactic Hardy.`,
@@ -156,7 +169,7 @@ export const Duelist = new Note(
 );
 export const HalfDamageFirstStrike = new Note(
   `Half Dmg 1st Strike`,
-  `First strike damage is halved and rounded up, but never below 2 and never above the strike, so a 2 stays 2 and a 0 or 1 is unchanged.`,
+  `First strike damage is halved and rounded up. Strikes of 0, 1, and 2 stay as they are, and a larger strike is not raised.`,
 );
 export const Dummy = new Note(
   ``,

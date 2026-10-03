@@ -17,4 +17,16 @@ const AdvancedMarker: React.FC = () => (
   </span>
 );
 
+// Label text with the gear glued to its last word, so a wrapping label never
+// leaves the gear alone on its own line.
+export const LabelWithMarker: React.FC<{ text: string }> = ({ text }) => {
+  const split = text.lastIndexOf(' ') + 1;
+  return (
+    <>
+      {text.slice(0, split)}
+      <span style={{ whiteSpace: 'nowrap' }}>{text.slice(split)}<AdvancedMarker /></span>
+    </>
+  );
+};
+
 export default AdvancedMarker;

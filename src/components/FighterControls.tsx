@@ -4,7 +4,6 @@ import {
   Container,
   Row,
 } from 'react-bootstrap';
-import Form from 'react-bootstrap/Form';
 
 import Ability, {
   mutuallyExclusiveFightAbilities as nicheAbilities,
@@ -29,7 +28,8 @@ import {
   xspan,
 } from 'src/Util';
 import { relicModeToLabel } from 'src/SaintlyRelics';
-import AdvancedMarker from 'src/components/AdvancedMarker';
+import { LabelWithMarker } from 'src/components/AdvancedMarker';
+import CheckItem from 'src/components/CheckItem';
 import {
   AbilityCheckbox,
   NotedControl,
@@ -97,6 +97,7 @@ export const fighterAdvancedCheckboxes: readonly AbilityCheckbox[] = [
   { note: N.JustAScratch2021, ability: Ability.JustAScratch },
   { note: N.JustAScratchNorms, ability: Ability.JustAScratchNorms },
   { note: N.HalfDamageFirstStrike, ability: Ability.HalfDamageFirstStrike },
+  { note: N.CurseOfRot, ability: Ability.CurseOfRot },
 ];
 
 export const fighterNotedControls: readonly NotedControl[] = [
@@ -109,7 +110,7 @@ const FighterControls: React.FC<Props> = (props: Props) => {
   const atk = props.attacker;
   const textHandler = makeTextChangeHandler(atk, props.changeHandler);
   const numHandler = makeNumChangeHandler(atk, props.changeHandler);
-  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true);
+  const [advancedCheckbox, wantShowAdvanced] = useCheckboxAndVariable('Advanced', false, true, `${props.idPrefix}-advanced`);
 
   function subsetHandler(subset: Iterable<Ability>) {
     return makeSetChangeHandler<Model,Ability>(
@@ -132,14 +133,15 @@ const FighterControls: React.FC<Props> = (props: Props) => {
 
   function abilityCheckbox(box: AbilityCheckbox, advanced: boolean) {
     return (
-      <Form.Check
+      <CheckItem
         key={box.note.name}
-        type="checkbox"
-        label={advanced ? <>{box.note.name} <AdvancedMarker /></> : box.note.name}
+        id={`${props.idPrefix}-${box.ability}`}
         title={box.note.description}
         checked={atk.has(box.ability)}
         onChange={() => singleHandler(box.ability)(atk.has(box.ability) ? 'X' : '✔')}
-      />
+      >
+        {advanced ? <LabelWithMarker text={box.note.name} /> : box.note.name}
+      </CheckItem>
     );
   }
 
@@ -219,10 +221,14 @@ const FighterControls: React.FC<Props> = (props: Props) => {
       </Row>
       <Row>
         <Col>
-          {allCheckboxes.filter((_, i) => i % 2 === 0).map(c => abilityCheckbox(c.box, c.advanced))}
+          <div className='CheckCol'>
+            {allCheckboxes.filter((_, i) => i % 2 === 0).map(c => abilityCheckbox(c.box, c.advanced))}
+          </div>
         </Col>
         <Col>
-          {allCheckboxes.filter((_, i) => i % 2 === 1).map(c => abilityCheckbox(c.box, c.advanced))}
+          <div className='CheckCol'>
+            {allCheckboxes.filter((_, i) => i % 2 === 1).map(c => abilityCheckbox(c.box, c.advanced))}
+          </div>
         </Col>
       </Row>
     </Container>

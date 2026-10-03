@@ -17,19 +17,42 @@ export interface NotesListProps {
 }
 
 const sectionHeaderStyle: React.CSSProperties = {
-  fontWeight: 'bold',
-  fontSize: '13px',
-  margin: '10px 0 4px',
+  fontWeight: 700,
+  fontSize: '12px',
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+  color: T.textMuted,
+  margin: '0 0 6px',
+};
+
+const advancedHeaderStyle: React.CSSProperties = {
+  ...sectionHeaderStyle,
+  borderTop: `1px solid ${T.hairline}`,
+  margin: '16px 0 6px',
+  paddingTop: '10px',
+};
+
+// The explanation after "Advanced —" reads as a sentence, not a label.
+const sentenceStyle: React.CSSProperties = { textTransform: 'none', letterSpacing: 0, fontWeight: 400 };
+
+const gridStyle: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+  gap: '10px 28px',
 };
 
 // Each note renders as a plain block: bold name on top, description on the line below (no bullets).
 function renderNotes(list: Note[]) {
-  return list.map(note => (
-    <div key={note.name} style={{ marginBottom: '8px' }}>
-      <b>{note.name}</b>
-      <div>{note.description}</div>
+  return (
+    <div style={gridStyle}>
+      {list.map(note => (
+        <div key={note.name}>
+          <b>{note.name}</b>
+          <div style={{ color: T.textBody, textWrap: 'pretty' } as React.CSSProperties}>{note.description}</div>
+        </div>
+      ))}
     </div>
-  ));
+  );
 }
 
 const NotesList: React.FC<NotesListProps> = ({ notes, advancedNotes, children }) => {
@@ -52,14 +75,14 @@ const NotesList: React.FC<NotesListProps> = ({ notes, advancedNotes, children })
     <>
       {hasBasic &&
         <>
-          <div style={{ ...sectionHeaderStyle, marginTop: 0 }}>Basic</div>
+          <div style={sectionHeaderStyle}>Basic</div>
           {children && <ul style={{ marginBottom: '8px' }}>{children}</ul>}
           {renderNotes(basicList)}
         </>
       }
-      <div style={{ ...sectionHeaderStyle, color: T.textMuted }}>
-        <span aria-hidden="true">{advancedMarkerChar}</span> Advanced — only shown when the{' '}
-        <b>Advanced</b> checkbox is ticked
+      <div style={advancedHeaderStyle}>
+        <span aria-hidden="true">{advancedMarkerChar}</span> Advanced{' '}
+        <span style={sentenceStyle}>— only shown when the <b>Advanced</b> checkbox is ticked</span>
       </div>
       {renderNotes(advancedList)}
     </>

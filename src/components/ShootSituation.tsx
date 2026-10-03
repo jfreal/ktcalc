@@ -38,22 +38,14 @@ export const ShootSituation: React.FC<Props> = (props: Props) => {
         flexWrap: 'wrap',
         justifyContent: 'center',
         alignItems: 'flex-start',
-        gap: '8px 16px',
+        gap: '12px 20px',
       }}
     >
-      {/* Plain-div flex items: react-bootstrap's <Container> carries `margin: 0
-          auto`, and an auto side-margin on a flex item swallows the free space
-          (pushing items apart) and defeats justify-content. Wrapping each block
-          in a bare div makes the div the flex item; the inner container's auto
-          margins then just center it harmlessly within the wrapper. */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <AttackerControls idPrefix={`${props.idPrefix}-atk`} attacker={props.attacker} changeHandler={props.setAttacker} />
+      <AttackerControls idPrefix={`${props.idPrefix}-atk`} attacker={props.attacker} changeHandler={props.setAttacker}>
         <ShootOptionControls idPrefix={`${props.idPrefix}-opt`} shootOptions={props.shootOptions} changeHandler={props.setShootOptions} />
-      </div>
-      <div>
-        <DefenderControls idPrefix={`${props.idPrefix}-def`} defender={props.defender} changeHandler={props.setDefender} />
-      </div>
-      <div style={{ flex: '1 1 320px', minWidth: '280px', maxWidth: '560px' }}>
+      </AttackerControls>
+      <DefenderControls idPrefix={`${props.idPrefix}-def`} defender={props.defender} changeHandler={props.setDefender} />
+      <div style={{ flex: '1 1 300px', minWidth: '260px', maxWidth: '560px' }}>
         <ShootResultsDisplay saveToDmgToProb={props.saveToDmgToProb} defender={props.defender} />
       </div>
     </div>

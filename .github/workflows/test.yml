@@ -30,3 +30,21 @@ jobs:
         run: npm ci
       - name: Test
         run: CI=true npm run testq
+
+  # react-snap prerenders /fight (and the other public routes) in postbuild.
+  # That needs the Puppeteer Chromium the test job skips. A green test job
+  # does not mean the production snapshot or lint still passes.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build

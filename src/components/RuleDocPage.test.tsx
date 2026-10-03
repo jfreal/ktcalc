@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import RuleDocPage, { MarkdownLink } from 'src/components/RuleDocPage';
+import RuleDocPage, { MarkdownLink, extractToc, splitLastUpdated } from 'src/components/RuleDocPage';
 
 // react-markdown / remark-gfm are ESM and are not transformed by CRA's Jest, so
 // stub them. The stub renders the raw children, which is enough to assert the
@@ -129,3 +129,43 @@ describe('RuleDocPage', () => {
     backLinks.forEach((link) => expect(link.getAttribute('href')).toBe('/help'));
   });
 });
+
+describe('splitLastUpdated', () => {
+  it('pulls the trailing last-updated line out of the body', () => {
+    const { body, lastUpdated } = splitLastUpdated('# T\n\nText\n\n---\n\n*Last updated: September 2026*\n');
+    expect(lastUpdated).toBe('September 2026');
+    expect(body).not.toContain('Last updated');
+    expect(body).toContain('Text');
+  });
+
+  it('leaves a doc without one unchanged', () => {
+    expect(splitLastUpdated('# T\n\nText\n')).toEqual({ body: '# T\n\nText\n' });
+  });
+});
+
+describe('extractToc', () => {
+  it('lists H2s with the same ids rehypeHeadingIds assigns', () => {
+    const md = [
+      '# Title',
+      '## Defense Mechanics',
+      '### Cover',
+      '## `Code` and **bold**',
+      '```',
+      '## not a heading',
+      '```',
+      '## Defense Mechanics',
+      '## `fail_to_norm` and _emphasis_',
+      '````',
+      '```',
+      '## still inside the four-backtick block',
+      '````',
+    ].join('\n');
+    expect(extractToc(md)).toEqual([
+      { id: 'defense-mechanics', text: 'Defense Mechanics' },
+      { id: 'code-and-bold', text: 'Code and bold' },
+      { id: 'defense-mechanics-1', text: 'Defense Mechanics' },
+      { id: 'fail_to_norm-and-emphasis', text: 'fail_to_norm and emphasis' },
+    ]);
+  });
+});
+

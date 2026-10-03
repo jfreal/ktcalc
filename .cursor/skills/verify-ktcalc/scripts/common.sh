@@ -50,6 +50,30 @@ if [[ -z "${VERIFY_KT_COMMON_LOADED:-}" ]]; then
     return 1
   }
 
+  # Git Bash / MSYS on Windows. There `npm start` is a native Windows tree
+  # (bash -> node npm-cli -> cmd -> node react-scripts -> node start.js) that
+  # POSIX kill and pgrep can't see past, so killing the recorded pid orphans the
+  # dev server and it keeps the port.
+  is_windows() {
+    case "$(uname -s)" in
+      MINGW*|MSYS*|CYGWIN*) return 0 ;;
+    esac
+    return 1
+  }
+
+  # Windows only: stop the recorded pid's whole native process tree. Must run
+  # before anything kills the recorded pid itself, because taskkill /T walks
+  # parent links and an exited parent cuts its children off. The argument must
+  # be a pid this skill recorded.
+  kill_windows_tree() {
+    local pid="$1"
+    local winpid
+    winpid=$(cat "/proc/$pid/winpid" 2>/dev/null || true)
+    if [[ -n "$winpid" ]]; then
+      taskkill //PID "$winpid" //T //F >/dev/null 2>&1 || true
+    fi
+  }
+
   # Stop a process and its children. The argument must be a pid this skill recorded.
   kill_tree() {
     local pid="$1"

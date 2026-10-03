@@ -102,6 +102,9 @@ public/rules/
 # Serverless directories
 .serverless/
 
+# Cloudflare wrangler local state (wrangler dev / deploy)
+.wrangler/
+
 # FuseBox cache
 .fusebox/
 

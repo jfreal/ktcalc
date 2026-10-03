@@ -103,14 +103,20 @@ const FightSection: React.FC<FightSectionProps> = ({ isActive }) => {
       </Row>
       <Row>
         <Col className='p-1'>
-          <Panel title="Notes" fullWidth>
+          <Panel title="Notes" fullWidth bodyStyle={{ padding: '10px 12px 12px', fontSize: '13px', lineHeight: 1.45 }}>
             <NotesList notes={notes} advancedNotes={advancedNotes}>
               <li>
                 All strategies will do certain no-downside actions, with the consequence that
                 "Strike" will still sometimes parry and "Parry" will still sometimes strike.
                 <ul>
-                  <li>If fighter can kill enemy in next strike, they will do so.</li>
-                  <li>If fighter can parry enemy's last success and still kill enemy afterwards, they will do so.</li>
+                  <li>
+                    The next-strike kill check is an estimate. If it says the enemy reaches zero wounds, they strike.
+                    It can miss a kill that depends on a failed Feel No Pain or relic roll.
+                  </li>
+                  <li>
+                    The parry-then-kill check is the same kind of estimate. If it says they can parry the enemy&apos;s last success and still kill afterwards, they will do so.
+                    It can miss that kill when it depends on a failed Feel No Pain or relic roll.
+                  </li>
                 </ul>
               </li>
               <li>

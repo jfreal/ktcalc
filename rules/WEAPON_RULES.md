@@ -79,7 +79,10 @@ If you retain any critical successes, you can retain **one of your normal succes
 *rolled* normal success — never one that was already retained without a roll (Accurate on attack,
 cover on defence) or retained out of the fail pile by Punishing. Severe is worded as a *change*, so
 it is not restricted this way. The same restriction applies to the calculator's NormsToCrits input.
-See [Retained vs Modified Dice](/rules/retained-vs-modified) for the full breakdown.
+Rending is optional ("you can"), so the calculator keeps the normal when converting it deals
+strictly less damage. On a shoot that score includes the defender's saves, cover, Devastating,
+and Piercing Crits; ties still convert. See [Retained vs Modified Dice](/rules/retained-vs-modified)
+for the full breakdown.
 
 ---
 
@@ -93,7 +96,7 @@ If you **don't retain any critical successes**, you can change **one of your nor
 
 **Important:** The Devastating and Piercing Crits weapon rules still take effect, but **Punishing and Rending don't**.
 
-**Calculator implementation:** Severe is evaluated after Punishing, so Punishing only triggers from natural crits. Rending is explicitly blocked when Severe triggers. With the KT2021 Waaagh ploy and three or more normals (no crits), Severe resolves before Waaagh so both land; with exactly two normals Waaagh goes first.
+**Calculator implementation:** Severe is evaluated after Punishing, so Punishing only triggers from natural crits. Severe is optional ("you can"): the calculator scores taking it against declining it and keeps the decline when that deals strictly more damage. Devastating is part of the crit's value, and on a shoot the score is expected damage after saves, cover, and Piercing Crits. Rending is explicitly blocked on the line where Severe fires. With the KT2021 Waaagh ploy and three or more normals (no crits), Severe-before-Waaagh is the line scored against declining, which leaves Waaagh free; with exactly two normals Waaagh goes first.
 
 ---
 
@@ -126,10 +129,12 @@ The first time you strike with a critical success in each sequence, also **disca
 ## Calculator Implementation Notes
 
 ### Reroll Targeting Strategy
-All reroll abilities in this calculator **only target fails**, never norms or crits. This is optimal play because:
+**Fails only** is the shooting default. Shooting reroll abilities in this calculator only target fails, never norms or crits:
 - Rerolling a fail can only improve (to norm/crit) or stay the same
 - Rerolling a norm could get worse (to fail)
 - Rerolling a crit could only get worse (to norm/fail)
+
+Crit-fishing is a fight choice, not this default. The Fight calculator Notes say Balanced and Relentless will not reroll a normal success even if it would be wise to do so. See that note on the [Fight calculator](/?view=fight).
 
 ### Combined Reroll Abilities
 The calculator supports combined reroll abilities where multiple effects apply in sequence:
@@ -164,7 +169,7 @@ For a given scenario, reroll abilities should generally produce results in this 
 ### CeaselessPlusBalanced Implementation
 - **Added** new combined reroll ability: `RerollMostCommonFailPlusBalanced`
 - **Fixed** dice eligibility tracking: Balanced can only target fails that weren't rerolled by Ceaseless
-- **Fixed** optimal targeting: all rerolls only target fails (never norms or crits)
+- **Fixed** optimal targeting for shooting: those rerolls only target fails (never norms or crits)
 - **File:** `CalcEngineCommon.ts` - `calcFinalDiceProbRerollMostCommonFailPlusBalanced()`
 
 ### Severe Rule Fix
@@ -175,8 +180,9 @@ For a given scenario, reroll abilities should generally produce results in this 
 - **File:** `CalcEngineCommon.ts` - `severeTriggered` in `resolveAfterPunishing`
 
 ### Reroll Targeting Strategy
-- **Clarified** all reroll abilities only target fails (optimal play)
-- **Rationale:** Rerolling fails can only improve; rerolling norms/crits can get worse
+- **Clarified** fails only is the shooting default: shooting rerolls only target fails
+- **Rationale:** on a shot, rerolling fails can only improve; rerolling norms/crits can get worse
+- **Fight:** crit-fishing is the Fight calculator Notes, not this default (see the section above)
 - **Applied to:** Balanced, Ceaseless, Relentless, CeaselessPlusBalanced, OnesPlusBalanced
 
 ### No Double Reroll Rule

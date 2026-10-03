@@ -1,0 +1,42 @@
+// Cloudflare Workers static-assets config for ktcalc.com.
+// Assets-only Worker: no `main` script, so every request is served straight
+// from build/ and costs nothing. Built and deployed by Cloudflare Workers
+// Builds, connected to this repo in the Cloudflare dashboard (settings in
+// CLOUDFLARE_CUTOVER.md). Serves ktcalc.com since the 2026-09-30 cutover.
+{
+  "name": "ktcalc",
+  "compatibility_date": "2026-09-22",
+  "assets": {
+    // `npm run build:cloudflare` output: the same CRA build Netlify serves,
+    // with the public routes prerendered by scripts/prerender.js (jsdom, no
+    // browser) instead of react-snap, minus Netlify's _redirects (see
+    // scripts/strip-netlify-redirects.js). _headers is used by both hosts.
+    "directory": "./build",
+    // Replaces Netlify's `/*  /index.html  200` rule: a URL with no file
+    // gets the root index.html and the client router takes over. Prerendered
+    // pages (fight/index.html, rules/*/index.html, ...) are real files, so
+    // they are served first and never fall through to this.
+    "not_found_handling": "single-page-application",
+    // Default, spelled out: folder/index.html is served at `folder/` and
+    // `folder` redirects there, like Netlify's pretty URLs. The canonicals and
+    // sitemap already use the trailing-slash form.
+    "html_handling": "auto-trailing-slash"
+  },
+  // ktcalc.com is a Workers Custom Domain (the Worker is the origin; Cloudflare
+  // owns its DNS record and certificate). It was attached in the dashboard at
+  // cutover and is listed here so every `wrangler deploy` keeps it: Wrangler
+  // treats this file as the source of truth for a Worker's routes. www is not
+  // a route: a proxied `www A 192.0.2.1` record plus the zone's "Redirect from
+  // WWW to root" rule send it to ktcalc.com with a 301.
+  "routes": [
+    { "pattern": "ktcalc.com", "custom_domain": true }
+  ],
+  // Keep ktcalc.<subdomain>.workers.dev too (setting routes would otherwise
+  // turn it off), and allow per-PR Preview URLs.
+  "workers_dev": true,
+  "preview_urls": true,
+  // Required by `wrangler preview` (the Workers Builds preview command for
+  // PRs). Empty: an assets-only Worker has no Preview-specific settings, and
+  // assets and compatibility settings stay at the top level.
+  "previews": {}
+}

@@ -142,6 +142,11 @@ export function calcRemainingWoundPairProbs(
       guy1State.reset(guy1Dice.crits, guy1Dice.norms, guy1Wounds);
       guy2State.reset(guy2Dice.crits, guy2Dice.norms, guy2Wounds);
 
+      // Curse of Rot: each 3 a fighter rolled deals that fighter 1 damage straight after the roll,
+      // before any strike. Feel No Pain rolls for each; Saintly Relics can't (not an attack dice).
+      for (let i = 0; i < guy1Dice.cursed; i++) guy1State.applyDmg(1, false);
+      for (let i = 0; i < guy2Dice.cursed; i++) guy2State.applyDmg(1, false);
+
       resolveFight(guy1State, guy2State);
 
       guy1Wounds = guy1State.currentWounds;
@@ -437,10 +442,13 @@ export function resolveDieChoice(
       }
     }
 
+    // A dead fighter cannot be struck. The bonus die would not change this round's
+    // wounds, but applyDmg still rolls Saintly Relics and can spend a battle ignore.
     if (
       chooser.successes()
       && chooser.profile.has(Ability.MurderousEntrance2021)
       && !chooser.hasCritStruck
+      && enemy.currentWounds > 0
     ) {
       if(chooser.crits > 0) {
         applyDmgWithFirstStrikeHandling(chooser.profile.critDmg, false);

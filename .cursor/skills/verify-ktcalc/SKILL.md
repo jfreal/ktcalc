@@ -113,7 +113,7 @@ Proof standard for a UI change:
 .cursor/skills/verify-ktcalc/scripts/cleanup.sh
 ```
 
-This stops the recorded dev-server pid and, if a drive was interrupted, the recorded Chrome pid, including their child processes. It does not kill by process name, so a user's other `npm start` or Chrome stays up. It does not delete `verify-artifacts/` contents other than the pid and port files. Screenshots, `shoot-result.json`, and `dev-server.log` remain.
+This stops the recorded dev-server pid and, if a drive was interrupted, the recorded Chrome pid, including their child processes. It does not kill by process name, so a user's other `npm start` or Chrome stays up. On Windows (Git Bash), `npm start` runs as a native process tree that POSIX `kill` can't follow, so cleanup first stops the recorded pid's whole tree with `taskkill /T`; otherwise the dev server would outlive cleanup and keep the port. It does not delete `verify-artifacts/` contents other than the pid and port files. Screenshots, `shoot-result.json`, and `dev-server.log` remain.
 
 Run cleanup after a failed attempt before launching again on the same port and artifacts directory.
 

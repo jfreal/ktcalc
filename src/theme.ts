@@ -38,3 +38,15 @@ export const zebraOdd = '#eef1f5';
 export const wColEven = '#e2e8f0';
 export const wColOdd = '#cbd5e1';
 export const labelCellBg = '#eeeeee';
+
+// Quieter secondary chrome (UI cleanup): hairlines, soft boxes, light headers.
+export const hairline = '#e5e7eb';        // internal dividers
+export const borderSoft = '#d1d5db';      // secondary boxes (results list, matrix, alt tools)
+export const subtleBg = '#f3f4f6';        // light table / box headers
+export const stripBg = '#f7f8fa';         // helper strip, row hover
+export const accentTint = '#fdf1e7';      // results row hover / open
+export const accentInk = '#c2410c';       // chevrons and arrows (AA on white)
+export const textBody = '#374151';        // long-form descriptions
+export const link = '#0b63c4';
+export const linkHover = '#084a93';
+export const headerBtnBorder = '#3a414b';

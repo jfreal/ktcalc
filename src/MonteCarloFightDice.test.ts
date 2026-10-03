@@ -110,7 +110,7 @@ describe('simulateFighterDice rerolls', () => {
 
       for (let seed = 0; seed < 20; seed++) {
         expect(simulateFighterDice(model, undefined, mulberry32(seed)))
-          .toStrictEqual({ crits: 0, norms: model.numDice });
+          .toStrictEqual({ crits: 0, norms: model.numDice, cursed: 0 });
       }
     }
 
@@ -185,7 +185,7 @@ describe('simulateFighterDice auto-dice and promotions', () => {
     const model = new Model(1, 6, 1, 2).setProp('autoNorms', 1).setProp('normsToCrits', 1);
     const result = simulateFighterDice(model, undefined, mulberry32(7));
 
-    expect(result).toStrictEqual({ crits: 0, norms: 1 });
+    expect(result).toStrictEqual({ crits: 0, norms: 1, cursed: 0 });
   });
 
   it('normsToCrits promotes a rolled norm', () => {
@@ -193,7 +193,7 @@ describe('simulateFighterDice auto-dice and promotions', () => {
     const model = new Model(1, 1, 1, 2).setProp('lethal', 7).setProp('normsToCrits', 1);
     const result = simulateFighterDice(model, undefined, mulberry32(7));
 
-    expect(result).toStrictEqual({ crits: 1, norms: 0 });
+    expect(result).toStrictEqual({ crits: 1, norms: 0, cursed: 0 });
   });
 
   it('normsToCrits promotes the rolled norm, not the auto-retained one', () => {
@@ -202,7 +202,7 @@ describe('simulateFighterDice auto-dice and promotions', () => {
       .setProp('autoNorms', 1).setProp('normsToCrits', 1);
     const result = simulateFighterDice(model, undefined, mulberry32(7));
 
-    expect(result).toStrictEqual({ crits: 1, norms: 1 });
+    expect(result).toStrictEqual({ crits: 1, norms: 1, cursed: 0 });
   });
 
   it('Severe changes an auto-retained norm, freeing the rolled one for normsToCrits', () => {
@@ -212,7 +212,7 @@ describe('simulateFighterDice auto-dice and promotions', () => {
 
     // Severe takes the retained norm; normsToCrits then takes the rolled one. Had Severe taken the
     // rolled norm, the retained one would be unpromotable and this would be {1c,1n}.
-    expect(result).toStrictEqual({ crits: 2, norms: 0 });
+    expect(result).toStrictEqual({ crits: 2, norms: 0, cursed: 0 });
   });
 
   // Accurate is "retain up to x": the Fight engine must make the same decline-when-worse choice as
@@ -233,6 +233,22 @@ describe('simulateFighterDice auto-dice and promotions', () => {
 
     expect(avgCrits).toBeCloseTo(0, 1);
     expect(avgNorms).toBeCloseTo(1, 1);
+  });
+
+  it('Severe declines when the crit deals less than the normal', () => {
+    const model = new Model(1, 1, 5, 3, 0, new Set([Ability.Severe])).setProp('lethal', 7);
+    const result = simulateFighterDice(model, undefined, mulberry32(7));
+
+    expect(result).toStrictEqual({ crits: 0, norms: 1, cursed: 0 });
+  });
+
+  it('Rending declines when the crit deals less than the normal', () => {
+    // 1 auto-crit + 1 always-normal. Taking Rending would be two crits (6); declining is 8.
+    const model = new Model(2, 1, 5, 3, 0, new Set([Ability.Rending])).setProp('lethal', 7)
+      .setProp('autoCrits', 1);
+    const result = simulateFighterDice(model, undefined, mulberry32(7));
+
+    expect(result).toStrictEqual({ crits: 1, norms: 1, cursed: 0 });
   });
 
   it('Severe promotes one norm to crit when no crits rolled', () => {

@@ -19,6 +19,9 @@ stop_recorded() {
     return 0
   fi
   if kill -0 "$pid" 2>/dev/null; then
+    if is_windows; then
+      kill_windows_tree "$pid"
+    fi
     # Chrome is started detached, so its pid is a process-group leader.
     # kill the group first; fall back to the recorded tree. Never pkill by name.
     kill -- -"$pid" 2>/dev/null || true

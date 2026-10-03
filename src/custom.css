@@ -20,3 +20,12 @@
   border-color: rgb(37, 43, 50);
   opacity: 0.65;
 }
+
+/* Link color: darker blue than Bootstrap's default, AA on white. */
+a {
+  color: #0b63c4;
+}
+
+a:hover {
+  color: #084a93;
+}

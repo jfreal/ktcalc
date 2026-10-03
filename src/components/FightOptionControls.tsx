@@ -25,7 +25,7 @@ export interface Props {
 const FightOptionControls: React.FC<Props> = (props: Props) => {
   const strategyFighterAId = 'Fighter A Strategy';
   const strategyFighterBId = 'Fighter B Strategy';
-  const firstFighterId = 'Attacker/FirstActer';
+  const firstFighterId = 'Goes first';
   const numRoundsId = 'Rounds';
   const strategies = Object.values(FightStrategy);
   const opts = props.fightOptions;
