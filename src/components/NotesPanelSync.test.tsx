@@ -136,6 +136,10 @@ describe('notes panels follow the controls', () => {
     expect(fightNotes.textContent).toContain('CloseAssault is Imperial Navy');
     expect(fightNotes.textContent).toContain('Waaagh2021 is Kommandos');
     expect(fightNotes.textContent).toContain('All strategies will do certain no-downside actions');
+    expect(fightNotes.textContent).toContain('The next-strike kill check is an estimate');
+    expect(fightNotes.textContent).toContain('can miss a kill that depends on a failed Feel No Pain or relic roll');
+    expect(fightNotes.textContent).toContain('The parry-then-kill check is the same kind of estimate');
+    expect(fightNotes.textContent).toContain('Balanced and Relentless will not reroll a normal success even if it would be wise to do so');
     fight.unmount();
 
     const shootView = render(<MemoryRouter><ShootSection isActive={false} /></MemoryRouter>);

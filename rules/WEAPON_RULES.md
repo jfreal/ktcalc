@@ -129,10 +129,12 @@ The first time you strike with a critical success in each sequence, also **disca
 ## Calculator Implementation Notes
 
 ### Reroll Targeting Strategy
-All reroll abilities in this calculator **only target fails**, never norms or crits. This is optimal play because:
+**Fails only** is the shooting default. Shooting reroll abilities in this calculator only target fails, never norms or crits:
 - Rerolling a fail can only improve (to norm/crit) or stay the same
 - Rerolling a norm could get worse (to fail)
 - Rerolling a crit could only get worse (to norm/fail)
+
+Crit-fishing is a fight choice, not this default. The Fight calculator Notes say Balanced and Relentless will not reroll a normal success even if it would be wise to do so. See that note on the [Fight calculator](/?view=fight).
 
 ### Combined Reroll Abilities
 The calculator supports combined reroll abilities where multiple effects apply in sequence:
@@ -167,7 +169,7 @@ For a given scenario, reroll abilities should generally produce results in this 
 ### CeaselessPlusBalanced Implementation
 - **Added** new combined reroll ability: `RerollMostCommonFailPlusBalanced`
 - **Fixed** dice eligibility tracking: Balanced can only target fails that weren't rerolled by Ceaseless
-- **Fixed** optimal targeting: all rerolls only target fails (never norms or crits)
+- **Fixed** optimal targeting for shooting: those rerolls only target fails (never norms or crits)
 - **File:** `CalcEngineCommon.ts` - `calcFinalDiceProbRerollMostCommonFailPlusBalanced()`
 
 ### Severe Rule Fix
@@ -178,8 +180,9 @@ For a given scenario, reroll abilities should generally produce results in this 
 - **File:** `CalcEngineCommon.ts` - `severeTriggered` in `resolveAfterPunishing`
 
 ### Reroll Targeting Strategy
-- **Clarified** all reroll abilities only target fails (optimal play)
-- **Rationale:** Rerolling fails can only improve; rerolling norms/crits can get worse
+- **Clarified** fails only is the shooting default: shooting rerolls only target fails
+- **Rationale:** on a shot, rerolling fails can only improve; rerolling norms/crits can get worse
+- **Fight:** crit-fishing is the Fight calculator Notes, not this default (see the section above)
 - **Applied to:** Balanced, Ceaseless, Relentless, CeaselessPlusBalanced, OnesPlusBalanced
 
 ### No Double Reroll Rule
