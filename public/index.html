@@ -8,7 +8,11 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'G-WJ8D84NER2');
+  // Only report from the live site: localhost, CI and Netlify preview hits polluted GA.
+  var gaHost = location.hostname.toLowerCase();
+  if (gaHost === 'ktcalc.com' || gaHost === 'www.ktcalc.com') {
+    gtag('config', 'G-WJ8D84NER2');
+  }
 </script>
     <meta charset="utf-8" />
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.png" type="image/png" />
