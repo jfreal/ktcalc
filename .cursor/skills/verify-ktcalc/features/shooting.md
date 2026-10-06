@@ -11,7 +11,7 @@ Observable end state: on `/`, the heading is `Kill Team 2024 Shooting Calculator
 
 ## How to get to it (user POV)
 
-Open the site root. The Shoot header button (`aria-label` `Kill Team Shoot Calculator`) is disabled because this is the default view. The `h1` reads `Kill Team 2024 Shooting Calculator`. Situation 1 is the left panel on a wide window.
+Open the site root. The Shoot header link (`aria-label` `Kill Team Shoot Calculator`) has `aria-current="page"` because this is the default view. The `h1` reads `Kill Team 2024 Shooting Calculator`. Situation 1 is the left panel on a wide window.
 
 ## Driving it with the browser helper
 

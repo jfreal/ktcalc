@@ -20,7 +20,7 @@ const PunishingNote: React.FC = () => (
   <Container style={{ maxWidth: '760px', padding: '24px 16px', fontSize: '14px', lineHeight: 1.55 }}>
     <Seo
       title="Why Punishing Can Lower Your Damage | ktcalc"
-      description="Turning on Kill Team 2024's Punishing sometimes reduced reported damage. Not an arithmetic bug — a retained dice is locked, and Punishing competes for the same fail as effects that leave it promotable."
+      description="Turning on Kill Team 2024's Punishing can lower reported damage. Not a bug: a retained dice is locked, and Punishing competes for the same fail."
       path="/notes/punishing/"
     />
     <p><Link to="/">&larr; Back to calculator</Link></p>
@@ -39,7 +39,7 @@ const PunishingNote: React.FC = () => (
       understanding because it generalises well beyond this one ability.
     </p>
 
-    <h3>The setup</h3>
+    <h2 className="h3">The setup</h2>
 
     <p>
       You roll <strong>1 critical, 0 normals, 1 fail</strong>. Your weapon is 3 damage on a normal,
@@ -85,7 +85,7 @@ const PunishingNote: React.FC = () => (
       the worse one.
     </p>
 
-    <h3>Why: a dice can only be retained once</h3>
+    <h2 className="h3">Why: a dice can only be retained once</h2>
 
     <p>
       Kill Team distinguishes <em>retaining</em> a dice from <em>changing</em> one, and a dice can only
@@ -101,7 +101,7 @@ const PunishingNote: React.FC = () => (
       harmful is the second ingredient.
     </p>
 
-    <h3>The real cause: two effects, one fail</h3>
+    <h2 className="h3">The real cause: two effects, one fail</h2>
 
     <p>
       Punishing and FailsToNorms both want the same resource — a fail — and they produce different
@@ -129,7 +129,7 @@ const PunishingNote: React.FC = () => (
       <li>a promotion — Rending or NormsToCrits — with no other normal to work on.</li>
     </ol>
 
-    <h3>Where it does and doesn&apos;t bite</h3>
+    <h2 className="h3">Where it does and doesn&apos;t bite</h2>
 
     <table style={{ margin: '10px 0', borderCollapse: 'collapse' }}>
       <caption style={captionStyle}>Take vs decline, 3/4 damage weapon</caption>
@@ -193,7 +193,7 @@ const PunishingNote: React.FC = () => (
       the free hit it appears to be.
     </p>
 
-    <h3>What the calculator does</h3>
+    <h2 className="h3">What the calculator does</h2>
 
     <p>
       Punishing is worded &quot;you <em>can</em> retain&quot;, so it is a choice, and a player who saw
@@ -212,7 +212,7 @@ const PunishingNote: React.FC = () => (
       No Pain or Saintly Relics.
     </p>
 
-    <h3>The wider lesson</h3>
+    <h2 className="h3">The wider lesson</h2>
 
     <p>
       An ability that is free in isolation is not free when it consumes something another rule wanted.

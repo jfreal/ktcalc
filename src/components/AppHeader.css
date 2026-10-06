@@ -54,14 +54,17 @@
   font-size: 14px;
   font-weight: 600;
   padding: 5px 12px;
+  text-decoration: none;
 }
 
 .AppHeader .AppHeader-view + .AppHeader-view {
   border-left: 1px solid #3a4048;
 }
 
-.AppHeader .AppHeader-view:hover:not(:disabled) {
+.AppHeader .AppHeader-view:hover:not(.is-active) {
   background-color: #1f2329;
+  color: white;
+  text-decoration: none;
 }
 
 /* turns the white SVG orange */
@@ -69,9 +72,9 @@
   filter: invert(39%) sepia(31%) saturate(6521%) hue-rotate(351deg) brightness(100%) contrast(94%);
 }
 
-/* The active view is "disabled" (clicking it again does nothing); show it as
-   selected rather than greyed out. */
-.AppHeader .AppHeader-view:disabled {
+/* The active view (aria-current="page") shows as the selected segment. */
+.AppHeader .AppHeader-view.is-active,
+.AppHeader .AppHeader-view.is-active:hover {
   background-color: #e8731a;
   color: black;
   opacity: 1;
@@ -79,7 +82,7 @@
 }
 
 /* turns the SVG black */
-.AppHeader .AppHeader-view:disabled img {
+.AppHeader .AppHeader-view.is-active img {
   filter: brightness(0%);
 }
 
@@ -125,7 +128,7 @@
     column-gap: 12px;
   }
 
-  /* Icons alone carry the toggle on phones; each button's aria-label still
+  /* Icons alone carry the toggle on phones; each link's aria-label still
      names the calculator for screen readers. */
   .AppHeader-view-label {
     display: none;

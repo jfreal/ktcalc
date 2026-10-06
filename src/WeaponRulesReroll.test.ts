@@ -16,7 +16,7 @@ describe('WEAPON_RULES reroll targeting', () => {
     expect(section).toMatch(/\*\*Fails only\*\* is the shooting default/);
     expect(section).toMatch(/Crit-fishing is a fight choice/);
     expect(section).toMatch(/Fight calculator Notes/);
-    expect(section).toMatch(/\[Fight calculator\]\(\/\?view=fight\)/);
+    expect(section).toMatch(/\[Fight calculator\]\(\/fight\/\)/);
     expect(section).not.toMatch(/This is optimal play/);
   });
 });

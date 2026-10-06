@@ -18,7 +18,7 @@ const captionStyle: React.CSSProperties = {
 const LethalRelentlessNote: React.FC = () => (
   <Container style={{ maxWidth: '760px', padding: '24px 16px', fontSize: '14px', lineHeight: 1.55 }}>
     <Seo
-      title="Lethal + Relentless: Why Kill Chance Can Rise as BS Worsens | ktcalc"
+      title="Lethal + Relentless: Worse BS, Higher Kill Odds | ktcalc"
       description="A worked Kill Team 2024 example where reported kill chance is higher at BS 5+ than BS 2+ — not a bug. How Lethal and Relentless interact with tail probability."
       path="/notes/lethal-relentless/"
     />
@@ -35,7 +35,7 @@ const LethalRelentlessNote: React.FC = () => (
       versus a 12-wound defender with a 3+ save and (optionally) Indomitus.
     </p>
 
-    <h3>The two rules</h3>
+    <h2 className="h3">The two rules</h2>
 
     <p>
       <strong>Lethal X+</strong> means an attack die scores a critical hit on an unmodified roll of X
@@ -50,7 +50,7 @@ const LethalRelentlessNote: React.FC = () => (
       to the original.
     </p>
 
-    <h3>Per-die crit probability with Lethal 5+, Relentless</h3>
+    <h2 className="h3">Per-die crit probability with Lethal 5+, Relentless</h2>
 
     <p>
       For BS 2+ through 5+, the effective crit threshold is 5 (so crit faces are <code>{'{5, 6}'}</code>,
@@ -101,7 +101,7 @@ const LethalRelentlessNote: React.FC = () => (
       claim does not extend past 5+.)
     </p>
 
-    <h3>Average damage falls, but that is not the same as kill chance</h3>
+    <h2 className="h3">Average damage falls, but that is not the same as kill chance</h2>
 
     <p>Expected damage per die (crit dmg 4, norm dmg 3, before saves):</p>
 
@@ -125,7 +125,7 @@ const LethalRelentlessNote: React.FC = () => (
       probability</strong>, not an average. The shape of the distribution matters more than its mean.
     </p>
 
-    <h3>Why the tail flips</h3>
+    <h2 className="h3">Why the tail flips</h2>
 
     <p>
       Against a 12-wound target with 4 attack dice and 2 defender dice (Piercing 1 strips one save
@@ -159,7 +159,7 @@ const LethalRelentlessNote: React.FC = () => (
       the kill line.
     </p>
 
-    <h3>Indomitus amplifies the inversion (in this setup)</h3>
+    <h2 className="h3">Indomitus amplifies the inversion (in this setup)</h2>
 
     <p>
       Indomitus adds one defender norm save when the defender rolls two fails. A norm save can:
@@ -197,7 +197,7 @@ const LethalRelentlessNote: React.FC = () => (
       Piercing 1 / no-cover scenario.
     </p>
 
-    <h3>Take-aways</h3>
+    <h2 className="h3">Take-aways</h2>
 
     <ol>
       <li>

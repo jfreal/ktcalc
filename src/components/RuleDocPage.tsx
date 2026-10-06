@@ -15,37 +15,37 @@ const DOC_SEO: Record<string, { title: string; description: string; path: string
   'COMBAT_RULES.md': {
     title: 'Kill Team 2024 Combat & Save Rules | ktcalc',
     description:
-      'How ktcalc resolves Kill Team 2024 saves: defense dice, cover, Feel No Pain, Piercing, and Saintly Relics — the combat rules the shoot calculator is validated against.',
+      'How ktcalc resolves Kill Team 2024 saves: defense dice, cover, Feel No Pain, Piercing and Saintly Relics — the rules behind the shoot calculator.',
     path: '/rules/combat/',
   },
   'FIGHT_RULES.md': {
     title: 'Kill Team 2024 Fight Rules — Melee Resolution | ktcalc',
     description:
-      'How ktcalc models Kill Team 2024 melee: the alternating strike/parry sequence, what a parry cancels, the engine’s strike-vs-parry logic, and hand-verifiable scenarios.',
+      'How ktcalc models Kill Team 2024 melee: the strike/parry sequence, what a parry cancels, how the engine chooses, and scenarios you can check by hand.',
     path: '/rules/fight/',
   },
   'WEAPON_RULES.md': {
     title: 'Kill Team 2024 Weapon Rules Reference | ktcalc',
     description:
-      'Reference for every Kill Team 2024 weapon rule ktcalc supports — Accurate, Balanced, Brutal, Ceaseless, Devastating, Lethal, Piercing, Relentless, Rending and more.',
+      'Every Kill Team 2024 weapon rule ktcalc supports: Accurate, Balanced, Brutal, Ceaseless, Devastating, Lethal, Piercing, Relentless, Rending and more.',
     path: '/rules/weapon/',
   },
   'COVER_SAVES.md': {
     title: 'When Not to Take Cover Saves in Kill Team 2024 | ktcalc',
     description:
-      'Cover saves are optional. Measured guidance on the rare matchups where declining cover is correct \u2014 save promotions against a mostly-critical attack \u2014 and why ktcalc always takes them.',
+      'Cover saves are optional in Kill Team 2024. When declining cover is right (save promotions vs mostly-crit attacks), and why ktcalc always takes it.',
     path: '/rules/cover-saves/',
   },
   'WEAPON_BALANCE.md': {
     title: 'Comparing Kill Team 2024 Weapons by Power Level | ktcalc',
     description:
-      'Measured comparison of KT24 melee and heavy weapon profiles against a fixed slate of targets, plain and buffed, with the sets that come out balanced and what the model leaves out.',
+      'KT24 melee and heavy weapon profiles measured against a fixed set of targets, plain and buffed: which come out balanced and what the model leaves out.',
     path: '/rules/weapon-balance/',
   },
   'RETAINED_VS_MODIFIED_DICE.md': {
     title: 'Retained vs Modified Dice in Kill Team 2024 | ktcalc',
     description:
-      'A dice can only be retained once. Why Rending cannot promote a cover save but Severe can, which Kill Team 2024 rules lock a dice, and how ktcalc models the difference.',
+      'A dice can only be retained once. Why Rending cannot promote a cover save but Severe can, which Kill Team 2024 rules lock a dice, and how ktcalc models it.',
     path: '/rules/retained-vs-modified/',
   },
 };

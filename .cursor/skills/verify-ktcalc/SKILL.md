@@ -66,8 +66,8 @@ Doctor prints `instance is worth driving` on success.
 
 Primary surface is the web UI. Header controls:
 
-- `button[aria-label="Kill Team Shoot Calculator"]` — Shoot, route `/` or `/?view=shoot`. Disabled while that view is active.
-- `button[aria-label="Kill Team Fight Calculator"]` — Fight, route `/?view=fight`.
+- `a[aria-label="Kill Team Shoot Calculator"]` — Shoot link, route `/` or `/?view=shoot`. Has `aria-current="page"` while that view is active.
+- `a[aria-label="Kill Team Fight Calculator"]` — Fight link, route `/fight/` (`/?view=fight` is a legacy alias that redirects there).
 - `a.AppHeader-help` — "How it works", route `/help`, `target="_blank"`.
 - `button` "Add Share Params" and `button` "📋 Copy Share Link" — only on calculator routes.
 

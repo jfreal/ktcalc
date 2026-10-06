@@ -69,7 +69,7 @@ it('merges share params through the router so a view switch keeps both calculato
     expect(params.get('a1')).toContain(':5:9:');
     expect(params.get('fa')).toBe('old-fight');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Kill Team Fight Calculator' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Kill Team Fight Calculator' }));
     params = searchOf(router);
     expect(router.state.location.pathname).toBe(FIGHT_CALCULATOR_PATH);
     expect(params.has('view')).toBe(false);
@@ -93,7 +93,7 @@ it('merges share params through the router so a view switch keeps both calculato
     expect(getFightStateFromUrl()!.fighterA.wounds).toBe(8);
     expect(getFightStateFromUrl()!.fighterB.wounds).toBe(9);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Kill Team Shoot Calculator' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Kill Team Shoot Calculator' }));
     params = searchOf(router);
     expect(router.state.location.pathname).toBe('/');
     expect(params.get('view')).toBe('shoot');
