@@ -1,6 +1,6 @@
 import React from "react";
 import { Container } from 'react-bootstrap';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 
 import "src/components/AppHeader.css"
 import { CalculatorViewChoice, calculatorViewLocation, getCalculatorView } from 'src/CalculatorViewChoice';
@@ -17,11 +17,10 @@ type AppHeaderProps = {
   onCalculator: boolean;
 }
 
-// NOTE: the 'type' and 'name' on the buttons are for ac11y reasons
+// NOTE: the aria-label on the view links is for ac11y reasons
 const AppHeader = (props: AppHeaderProps) => {
   const location = useLocation();
   const [params] = useSearchParams();
-  const navigate = useNavigate();
 
   // A view is only "active" on the calculator route; other pages highlight nothing.
   // `/fight` is the fight calculator (no ?view= required).
@@ -29,34 +28,35 @@ const AppHeader = (props: AppHeaderProps) => {
   // Segment match, so a route like /helpful never marks the help link active.
   const onHelp = location.pathname === '/help' || location.pathname.startsWith('/help/');
 
-  function makeButton(
+  // Real links, not buttons, so crawlers can follow the header to /fight/
+  // (a button's onClick is invisible to them, which left /fight/ orphaned).
+  function makeViewLink(
     view: CalculatorViewChoice,
-    buttonName: string,
+    linkName: string,
     label: string,
     img: any,
     imgAlt: string,
-  ) : React.HTMLProps<HTMLButtonElement> {
+  ) {
+    const active = activeView === view;
     return (
-      <button
-        type="button"
-        name={buttonName}
-        title={buttonName}
+      <Link
+        // Merge into the existing params rather than replacing the query
+        // string outright, so switching views doesn't clobber shared
+        // calculator state (a1/d1/fa/fb/etc.) already in the URL.
+        // Fight goes to /fight/; that path is what unfurls as the fight calculator.
+        to={calculatorViewLocation(view, params.toString())}
+        // Re-clicking the active view must not push a duplicate history entry.
+        replace={active}
+        title={linkName}
         // Explicit accessible name: the visible label is hidden on phones, and
         // the icon alt text describes the picture, not the action.
-        aria-label={buttonName}
-        className='AppHeader-view'
-        disabled={activeView === view}
-        onClick={() => {
-          // Merge into the existing params rather than replacing the query
-          // string outright, so switching views doesn't clobber shared
-          // calculator state (a1/d1/fa/fb/etc.) already in the URL.
-          // Fight goes to /fight; that path is what unfurls as the fight calculator.
-          navigate(calculatorViewLocation(view, params.toString()));
-        }}
+        aria-label={linkName}
+        aria-current={active ? 'page' : undefined}
+        className={'AppHeader-view' + (active ? ' is-active' : '')}
         >
         <img src={img} alt={imgAlt} width="26" height="26" />
         <span className='AppHeader-view-label'>{label}</span>
-      </button>);
+      </Link>);
   }
 
   return <nav className='AppHeader'>
@@ -66,21 +66,21 @@ const AppHeader = (props: AppHeaderProps) => {
         <span className='AppHeader-title'>KT Calc</span>
       </Link>
       <div className='AppHeader-views' role='group' aria-label='Calculator'>
-        {makeButton(
+        {makeViewLink(
           CalculatorViewChoice.KtShoot,
           'Kill Team Shoot Calculator',
           'Shoot',
           ktShootIcon,
           'Kill Team ranged weapon icon',
         )}
-        {makeButton(
+        {makeViewLink(
           CalculatorViewChoice.KtFight,
           'Kill Team Fight Calculator',
           'Fight',
           ktFightIcon,
           'Kill Team melee weapon icon',
         )}
-        {/*makeButton(
+        {/*makeViewLink(
           CalculatorViewChoice.KtShootMassAnalysis,
           'Kill Team Shooting Mass Analysis',
           'Mass',

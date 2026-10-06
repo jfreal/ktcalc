@@ -134,7 +134,7 @@ The first time you strike with a critical success in each sequence, also **disca
 - Rerolling a norm could get worse (to fail)
 - Rerolling a crit could only get worse (to norm/fail)
 
-Crit-fishing is a fight choice, not this default. The Fight calculator Notes say Balanced and Relentless will not reroll a normal success even if it would be wise to do so. See that note on the [Fight calculator](/?view=fight).
+Crit-fishing is a fight choice, not this default. The Fight calculator Notes say Balanced and Relentless will not reroll a normal success even if it would be wise to do so. See that note on the [Fight calculator](/fight/).
 
 ### Combined Reroll Abilities
 The calculator supports combined reroll abilities where multiple effects apply in sequence:

@@ -18,7 +18,7 @@ const captionStyle: React.CSSProperties = {
 const MysticScryBuffNote: React.FC = () => (
   <Container style={{ maxWidth: '760px', padding: '24px 16px', fontSize: '14px', lineHeight: 1.55 }}>
     <Seo
-      title="Mystic Scry Buff + Rending: Which Retain Choice Wins | ktcalc"
+      title="Mystic Scry Buff + Rending: Best Retain | ktcalc"
       description="The Kill Team 2024 'retain a fail as a norm, or a norm as a crit' decision isn't fixed. When each choice wins with Rending, and how ktcalc models it."
       path="/notes/mystic-scry-buff/"
     />
@@ -39,7 +39,7 @@ const MysticScryBuffNote: React.FC = () => (
       the dice you rolled. This note walks through why, and how the calculator resolves it.
     </p>
 
-    <h3>The basic choice: one more hit, or one better hit</h3>
+    <h2 className="h3">The basic choice: one more hit, or one better hit</h2>
 
     <p>
       Ignore other abilities for a moment. Relative to the dice you rolled:
@@ -87,7 +87,7 @@ const MysticScryBuffNote: React.FC = () => (
       Piercing, and one big hit loses less to Feel No Pain than two small ones. More on that below.)
     </p>
 
-    <h3>Rending changes the answer &mdash; in both directions</h3>
+    <h2 className="h3">Rending changes the answer &mdash; in both directions</h2>
 
     <p>
       <strong>Rending</strong> lets you upgrade one rolled norm to a crit <em>if you already have at
@@ -97,7 +97,7 @@ const MysticScryBuffNote: React.FC = () => (
       where the isolated rule from the table above says &quot;add a hit.&quot;
     </p>
 
-    <h4>Case A &mdash; no crit yet: seed one so Rending can fire</h4>
+    <h3 className="h4">Case A &mdash; no crit yet: seed one so Rending can fire</h3>
 
     <p>You rolled <code>{'{0 crit, 2 norm}'}</code> with Rending. There is no fail to convert, so the
       choice is &quot;upgrade a norm&quot; vs &quot;do nothing&quot;:</p>
@@ -119,7 +119,7 @@ const MysticScryBuffNote: React.FC = () => (
       upgrades: <code>{'{2c, 0n}'}</code> = 8, versus 6 for leaving the dice alone.
     </p>
 
-    <h4>Case B &mdash; already have a crit: feed Rending a norm instead</h4>
+    <h3 className="h4">Case B &mdash; already have a crit: feed Rending a norm instead</h3>
 
     <p>You rolled <code>{'{1 crit, 1 norm, 1 fail}'}</code> with Rending. Now all three matter:</p>
 
@@ -147,7 +147,7 @@ const MysticScryBuffNote: React.FC = () => (
       cases wrong.
     </p>
 
-    <h3>How the calculator decides</h3>
+    <h2 className="h3">How the calculator decides</h2>
 
     <p>
       Rather than a fixed rule, the calculator treats Mystic Scry Buff as the per-roll choice it actually is.
@@ -184,7 +184,7 @@ const MysticScryBuffNote: React.FC = () => (
       calculator takes the crit.
     </p>
 
-    <h3>What the choice does <em>not</em> weigh</h3>
+    <h2 className="h3">What the choice does <em>not</em> weigh</h2>
 
     <p>
       Feel No Pain is still left out. Concentrating damage into one crit loses less to FNP than
@@ -197,7 +197,7 @@ const MysticScryBuffNote: React.FC = () => (
       weapon with meaningful Devastating will favor the crit upgrade, as the first table shows.
     </p>
 
-    <h3>Take-aways</h3>
+    <h2 className="h3">Take-aways</h2>
 
     <ol>
       <li>

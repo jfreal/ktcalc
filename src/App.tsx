@@ -25,13 +25,13 @@ import { ShareProvider } from 'src/context/ShareContext';
 // description, canonical, and H1 can never disagree about which tool is showing.
 const VIEW_SEO: Record<CalculatorViewChoice, { title: string; description: string; h1: string }> = {
   [CalculatorViewChoice.KtShoot]: {
-    title: 'Kill Team 2024 Shooting Calculator — Ranged Attack Odds | ktcalc',
+    title: 'Kill Team 2024 Shooting Calculator — Ranged Odds | ktcalc',
     description:
       'Calculate Kill Team 2024 shooting odds. Enter BS, attacks, and weapon rules to get the chance of hits, crits, damage, and kills against any defensive profile.',
     h1: 'Kill Team 2024 Shooting Calculator',
   },
   [CalculatorViewChoice.KtFight]: {
-    title: 'Kill Team 2024 Fight Calculator — Melee Combat Odds | ktcalc',
+    title: 'Kill Team 2024 Fight Calculator — Melee Odds | ktcalc',
     description:
       'Calculate Kill Team 2024 fighting odds. Model the alternating strike-and-parry melee sequence between two fighters and see who is likely to win the combat.',
     h1: 'Kill Team 2024 Fight Calculator',

@@ -6,11 +6,11 @@ Observable end state: on the shooting calculator, clicking `Add Share Params` re
 
 - `Add Share Params` writes the current calculator into the query string (shoot or fight, depending on the active view).
 - `📋 Copy Share Link` writes the absolute share URL to the clipboard. If clipboard permission is denied, the page shows `Copy failed — copy the URL manually`. Treat that message as the copy failing, and use the address bar as the source of truth.
-- Fight uses its own query keys when that view is active (`view=fight` plus the fight encoders). Do not expect `a1=` on the fight view.
+- Fight uses its own query keys when that view is active (`/fight/` plus the fight encoders). Do not expect `a1=` on the fight view.
 
 ## How to get to it (user POV)
 
-On `/` or `/?view=fight`, the two buttons are in the header, to the right of "How it works". They are absent on `/help`, `/notes/*`, and `/rules/*`.
+On `/` or `/fight/`, the two buttons are in the header, to the right of "How it works". They are absent on `/help`, `/notes/*`, and `/rules/*`.
 
 ## Driving it with the browser helper
 
