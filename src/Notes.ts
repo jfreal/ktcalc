@@ -118,12 +118,14 @@ export const Indomitus = new Note(
 );
 export const CurseOfRot = new Note(
   `Curse of Rot`,
-  `Plague Marines firefight ploy. Tick it on the PLAGUE MARINE. Each 3 the enemy rolls on its attack or defence dice ` +
-  `is a fail it can't re-roll, and deals 1 damage to that enemy. Shoot: on the attacker, the defender's 3s ` +
-  `fail and add 1 damage each (Feel No Pain applies, Saintly Relics doesn't); on the defender, the attacker's 3s ` +
-  `fail (the damage to the attacker isn't shown). Fight: the other fighter's 3s fail and deal 1 damage each before ` +
-  `any strike. Only the first roll counts: a 3 on a re-roll is an ordinary result. Assumes the range condition ` +
-  `(within 3", or 7" of a poisoned enemy) is met.`,
+  `Plague Marines firefight ploy, used when a PLAGUE MARINE is shooting or fighting. Tick it on the Plague Marine. ` +
+  `Each 3 the enemy rolls on its attack or defence dice is a fail it can't re-roll, and deals 1 damage to that ` +
+  `enemy. Shoot (Plague Marine attacking): the defender's 3s fail and add 1 damage each (Feel No Pain applies, ` +
+  `Saintly Relics doesn't). The defender always rolls its defence dice, even when no attack dice hit, so this ` +
+  `damage doesn't depend on the weapon's damage or how many dice hit, except that a retained crit with Piercing ` +
+  `Crits means fewer defence dice, and so fewer chances to roll a 3. Fight: the other fighter's 3s fail and deal 1 damage each ` +
+  `before any strike. Only the first roll counts: a 3 on a re-roll is an ordinary result. Assumes the range ` +
+  `condition (within 3", or 7" of a poisoned enemy) is met.`,
 );
 export const HardyX = new Note(
   `HardyX`,

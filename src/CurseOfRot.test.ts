@@ -1,6 +1,7 @@
 import Ability from 'src/Ability';
 import DieProbs from 'src/DieProbs';
 import Model from 'src/Model';
+import ShootOptions from 'src/ShootOptions';
 import { calcFinalDiceProbsForAttacker } from 'src/CalcEngineCommon';
 import { calcDmgProbs } from 'src/CalcEngineShoot';
 import { calcRemainingWounds } from 'src/CalcEngineFight';
@@ -150,6 +151,31 @@ describe('Curse of Rot on the defence dice adds damage', () => {
     // 3 defence dice, 1/6 chance each is a 3, half of those damage instances survive 4+ FNP
     expect(avg(calcDmgProbs(attacker, defender))).toBeCloseTo(3 * (1 / 6) * (1 / 2), 10);
   });
+
+  // The defender rolls its defence dice whether or not any attack dice hit, so the curse
+  // damage is the same however many hits the weapon scores.
+  const avg = (dist: Map<number, number>) => Array.from(dist).reduce((sum, [d, p]) => sum + d * p, 0);
+  it.each([
+    ['a 0/0 weapon', new Model(4, 3, 0, 0)],
+    ['a 0/0 weapon at BS 6+', new Model(1, 6, 0, 0)],
+    ['a weapon that never hits', new Model(4, 7, 3, 4)],
+  ])('deals curse damage from %s', (_, attacker) => {
+    attacker.setAbility(Ability.CurseOfRot);
+    const defender = Model.basicDefender(3, 12);
+    expect(avg(calcDmgProbs(attacker, defender))).toBeCloseTo(3 / 6, 10);
+  });
+
+  it('still adds nothing when the attacker has no curse and no hits', () => {
+    const dist = calcDmgProbs(new Model(4, 3, 0, 0), Model.basicDefender(3, 12));
+    expect(dist.get(0)).toBeCloseTo(1, 10);
+  });
+
+  it('counts curse damage on missed rounds over several rounds', () => {
+    const attacker = new Model(4, 3, 0, 0).setAbility(Ability.CurseOfRot);
+    const options = new ShootOptions();
+    options.numRounds = 2;
+    expect(avg(calcDmgProbs(attacker, Model.basicDefender(3, 12), options))).toBeCloseTo(2 * 3 / 6, 10);
+  });
 });
 
 describe('Curse of Rot in a fight', () => {
@@ -172,11 +198,12 @@ describe('Curse of Rot in a fight', () => {
 describe('Curse of Rot share links', () => {
   afterEach(() => window.history.replaceState({}, '', '/'));
 
-  it('round-trips on the attacker, defender, and fighter', () => {
+  it('round-trips on the attacker and fighter, and drops it from an old defender link', () => {
     window.history.replaceState({}, '', '/?a1=4:3:3:4:0:0:0:X:0:0:0:0:0:curse&d1=3:12:0:0:0:0:0:0:X:curse:0');
     const shoot = getStateFromUrl().s1!;
     expect(shoot.attacker.has(Ability.CurseOfRot)).toBe(true);
-    expect(shoot.defender.has(Ability.CurseOfRot)).toBe(true);
+    // the ploy isn't used when a Plague Marine is being shot
+    expect(shoot.defender.has(Ability.CurseOfRot)).toBe(false);
 
     window.history.replaceState({}, '', '/fight?fa=12:4:3:3:4:X:0:0:0:0:0::curse:0:0');
     expect(getFightStateFromUrl()!.fighterA.has(Ability.CurseOfRot)).toBe(true);

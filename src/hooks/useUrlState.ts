@@ -57,7 +57,6 @@ function encodeDefender(def: Model): string {
   if (def.has(Ability.JustAScratch)) abilities.push('jasc');
   if (def.has(Ability.JustAScratchNorms)) abilities.push('jasn');
   if (def.has(Ability.Punishing)) abilities.push('pun');
-  if (def.has(Ability.CurseOfRot)) abilities.push('curse');
 
   return [
     def.diceStat,
@@ -156,7 +155,6 @@ function decodeDefender(param: string): Model {
     if (abilities.includes('jasc')) def.abilities.add(Ability.JustAScratch);
     if (abilities.includes('jasn')) def.abilities.add(Ability.JustAScratchNorms);
     if (abilities.includes('pun')) def.abilities.add(Ability.Punishing);
-    if (abilities.includes('curse')) def.abilities.add(Ability.CurseOfRot);
   } else {
     // Old 4-field format (backward compat)
     const abilities = parts[3] || '';

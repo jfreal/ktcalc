@@ -115,11 +115,10 @@ export function hitScorerForDefender(
     if (cached !== undefined) {
       return cached;
     }
+    // zero hits still face the defence roll, where Curse of Rot can deal damage
     let total = 0;
-    if (crits + norms > 0) {
-      for (const def of defenceDiceFor(stuff, crits)) {
-        total += def.prob * calcScenarioDamage(attacker, defender, crits, norms, def).damage;
-      }
+    for (const def of defenceDiceFor(stuff, crits)) {
+      total += def.prob * calcScenarioDamage(attacker, defender, crits, norms, def).damage;
     }
     cache.set(key, total);
     return total;

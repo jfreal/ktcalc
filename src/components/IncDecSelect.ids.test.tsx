@@ -125,7 +125,7 @@ describe('mounted IncDecSelect ids', () => {
 describe('ability checkbox labels', () => {
   it('ticks and unticks only their own box when the text is clicked', () => {
     const { container } = renderCalculators();
-    for (const id of ['s1-def-CurseOfRot', 's2-def-CurseOfRot', 's1-atk-Rending', 'fb-Rending']) {
+    for (const id of ['s1-def-Indomitus', 's2-def-Indomitus', 's1-atk-Rending', 'fb-Rending']) {
       const box = document.getElementById(id) as HTMLInputElement;
       const label = container.querySelector(`label[for="${id}"]`)!;
       const othersBefore = [...container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')]
