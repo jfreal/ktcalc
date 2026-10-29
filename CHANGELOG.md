@@ -1,5 +1,10 @@
 # Changelog
 
+## October 2026 - Curse of Rot fixes
+
+- **Curse of Rot is no longer offered on the Shoot defender.** The ploy is used when a Plague Marine is shooting or fighting, not when it is being shot. Old share links that set it on a defender load without it.
+- **Curse of Rot damage no longer depends on the weapon's hits.** The defender always rolls its defence dice, but a Shoot that scored no hits used to skip that roll, so a 0/0 weapon (or a shot that missed) dealt no curse damage. Example: a sure-miss shot against three defence dice now averages 0.5 curse damage (three dice, one in six each a 3), the same as a shot that hits.
+
 ## October 2026 - Injured fighters in multi-round fights
 
 - **Fight with Rounds above 1 now applies the Injured rule.** A fighter that starts a round below half its starting wounds rolls with its WS worsened by 1 (no worse than 6+). Before, a fighter wounded in round 1 kept hitting as if unhurt, so damage after two rounds came out as about double round 1's.

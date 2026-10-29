@@ -121,9 +121,9 @@ Whenever an attack dice would inflict damage, roll to ignore all of that dice's 
 
 ### Curse of Rot
 
-Plague Marines firefight ploy. Tick it on the PLAGUE MARINE. After the enemy rolls its attack or defence dice, each **3** is a fail that can't be re-rolled, and deals 1 damage to that enemy:
-- **Shoot, on the attacker**: the defender's 3s fail and each adds 1 damage. Each of those is its own 1-damage instance for Feel No Pain; Saintly Relics can't ignore it (it isn't an attack dice). If every attack misses, no defence dice are rolled, so there is no curse damage
-- **Shoot, on the defender**: the attacker's 3s fail. The damage this deals to the attacker is not shown
+Plague Marines firefight ploy, used when a friendly PLAGUE MARINE is shooting or fighting. Tick it on the PLAGUE MARINE. After the enemy rolls its attack or defence dice, each **3** is a fail that can't be re-rolled, and deals 1 damage to that enemy:
+- **Shoot (Plague Marine attacking)**: the defender's 3s fail and each adds 1 damage. Each of those is its own 1-damage instance for Feel No Pain; Saintly Relics can't ignore it (it isn't an attack dice). The defender always rolls its defence dice, even when every attack misses, so curse damage depends only on how many defence dice are rolled (Piercing can still reduce that), not on the weapon's hits or damage
+- **Not on a Shoot defender**: the ploy isn't used when a Plague Marine is being shot, so the Shoot defender has no Curse of Rot option
 - **Fight**: the other fighter's 3s fail and deal 1 damage each straight after the roll, before any strike
 - Only the first roll counts. A die re-rolled later (Balanced, Ceaseless, Relentless) uses its new result normally, even a 3. Accurate and cover dice are retained, not rolled, so they can't be cursed
 - A cursed die is a fail like any other for later rules (Punishing, FailsToNorms, Indomitus, Purity Seal)

@@ -30,10 +30,9 @@ export function calcDmgProbs(
 
   // visit every attacker-outcome x defender-save-outcome scenario exactly once
   function forEachScenario(visit: ScenarioVisitor): void {
+    // Zero-hit outcomes are visited too: the defender still rolls defence dice, and Curse of Rot
+    // can deal damage from those dice alone.
     for (const atk of attackerFinalDiceProbs) {
-      if (atk.crits + atk.norms <= 0) {
-        continue;
-      }
       for (const def of defenceDiceFor(defenderStuff, atk.crits)) {
         const result = calcScenarioDamage(attacker, defender, atk.crits, atk.norms, def);
         visit(result, atk.prob * def.prob);
@@ -119,13 +118,11 @@ function calcRelicsMultiRoundDmgProbs(
   const offHits = new Map<string, number>();
   const on0Hits = new Map<string, number>();
   const on1Hits = new Map<string, number>();
-  let iteratedProb = 0;
 
   const add = (hits: Map<string, number>, damage: number, numHits: number, prob: number) =>
     Util.addToMapValue(hits, `${damage},${numHits}`, prob);
 
   forEachScenario((result, currProb) => {
-    iteratedProb += currProb;
     // relic unavailable: full damage, no ignore
     add(offHits, result.damage, result.numHits, currProb);
     // relic available: split outcomes by whether the ignore was spent
@@ -138,14 +135,6 @@ function calcRelicsMultiRoundDmgProbs(
   const off = finalizeHits(offHits, defender.fnp, usesFnp);
   const on0 = finalizeHits(on0Hits, defender.fnp, usesFnp);
   const on1 = finalizeHits(on1Hits, defender.fnp, usesFnp);
-
-  // the all-miss attacker outcome (0 hits) is never iterated; it deals 0 damage and uses no
-  // ignore, so its mass belongs to the relic-unavailable and no-ignore distributions at damage 0
-  const missMass = 1 - iteratedProb;
-  if (missMass > 1e-12) {
-    Util.addToMapValue(off, 0, missMass);
-    Util.addToMapValue(on0, 0, missMass);
-  }
 
   return Common.calcCappedMultiRoundDamage(on0, on1, off, numRounds, maxRelicIgnoresPerBattle);
 }
