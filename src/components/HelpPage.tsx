@@ -110,8 +110,8 @@ const DocGroup: React.FC<{ title: string; docs: DocLink[] }> = ({ title, docs })
 const HelpPage: React.FC = () => (
   <main style={{ maxWidth: '760px', margin: '0 auto', padding: '20px 16px 8px', fontSize: '14px', lineHeight: 1.55, color: T.textInk }}>
     <Seo
-      title="How the Kill Team 2024 Calculator Works | ktcalc"
-      description="How ktcalc models Kill Team 2024 shooting and fighting: deep-dive notes on surprising results and the KT24 rules the engine is built and validated against."
+      title="Kill Team Calculator Help: How ktcalc Works (KT24)"
+      description="Help for the Kill Team calculator: how ktcalc works out KT24 shooting and melee damage, why some results surprise, and the rules behind the math."
       path="/help/"
     />
     <div style={{ fontSize: '13px', marginBottom: '14px' }}>
