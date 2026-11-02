@@ -13,9 +13,9 @@ import * as T from 'src/theme';
 // <head> for each /rules/* page matches the document it renders.
 const DOC_SEO: Record<string, { title: string; description: string; path: string }> = {
   'COMBAT_RULES.md': {
-    title: 'Kill Team 2024 Combat & Save Rules | ktcalc',
+    title: 'Kill Team 2024 Combat Rules: Defense Dice & Saves | ktcalc',
     description:
-      'How ktcalc resolves Kill Team 2024 saves: defense dice, cover, Feel No Pain, Piercing and Saintly Relics — the rules behind the shoot calculator.',
+      'ktcalc combat rules for Kill Team 2024: how defense dice, cover, Piercing, Piercing Crits, Feel No Pain and Saintly Relics resolve when you shoot.',
     path: '/rules/combat/',
   },
   'FIGHT_RULES.md': {
