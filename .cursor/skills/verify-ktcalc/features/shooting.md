@@ -7,7 +7,7 @@ Observable end state: on `/`, the heading is `Kill Team 2024 Shooting Calculator
 - Situation 1 and Situation 2, each with Attacker, Defender, Rounds, and a results column.
 - Attacker knobs: Attacks, BS, Normal Dmg, Crit Dmg, Devastating, Piercing, Piercing Crits, Reroll, Lethal, Auto-successes (the `N.AutoNorms` label), plus Rending, Severe, and Punishing checkboxes. The Advanced checkbox reveals the extra attacker rows.
 - Defender knobs: Save, Wounds, cover saves, Obscured, Indomitus, JaS (Crits), JaS (Normals).
-- Results in each situation: `Average Damage`, `Injury Chance`, `Kill Chance`, and `Dmg probs for exact scenario` (accordion headers). The headers show the numbers without expanding.
+- Results in each situation: `Average Damage`, `Left Injured`, `Operative Incapacitated`, and `Dmg probs for exact scenario` (accordion headers). The headers show the numbers without expanding.
 
 ## How to get to it (user POV)
 

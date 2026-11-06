@@ -64,7 +64,7 @@ function makeFighterResultsSection(
       <Row>{title}</Row>
       <Row>
         <Col style={{fontSize: '11px'}}>
-          DeathChance:
+          Incapacitated:
         </Col>
         <Col>
           {Util.toPercentString(deathProb)}%
