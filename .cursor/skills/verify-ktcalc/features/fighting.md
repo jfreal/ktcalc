@@ -1,6 +1,6 @@
 # Fighting calculator
 
-Observable end state: after switching to Fight, the `h1` is `Kill Team 2024 Fight Calculator`, the Results panel shows `FighterA` and `FighterB`, and each side shows `DeathChance:` and `AvgRemainingWounds:`. Pressing `+` on Fighter A's Attacks select changes Fighter A's `AvgRemainingWounds` (or `AvgDmg`) text. Fighter B's attacks select stays where it was.
+Observable end state: after switching to Fight, the `h1` is `Kill Team 2024 Fight Calculator`, the Results panel shows `FighterA` and `FighterB`, and each side shows `Incapacitated:` and `AvgRemainingWounds:`. Pressing `+` on Fighter A's Attacks select changes Fighter A's `AvgRemainingWounds` (or `AvgDmg`) text. Fighter B's attacks select stays where it was.
 
 ## Sub-features
 

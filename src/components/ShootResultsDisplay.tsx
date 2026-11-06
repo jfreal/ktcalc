@@ -43,7 +43,7 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
   const killChanceTable =
     <>
       <table className='DataTable'>
-        <caption>KillChances for various Sv&amp;W...</caption>
+        <caption>Incapacitated chances for various Sv&amp;W...</caption>
         <thead>
           <tr>
             <th>W</th>
@@ -148,27 +148,28 @@ const ShootResultsDisplay: React.FC<Props> = (props: Props) => {
     </>;
 
   // Header strings keep today's "Name: value" format; the row shows them split.
-  const rows: { key: string; header: string; body: React.ReactNode }[] = [
+  // shortName replaces the name on narrow screens.
+  const rows: { key: string; header: string; shortName?: string; body: React.ReactNode }[] = [
     { key: 'avg', header: `Average Damage: ${avgDmgUnbounded.toFixed(digitsPastDecimal)}`, body: saveToAvgDmgTable },
     {
       key: 'injury',
-      header: `Injury Chance: ${toPercentString(injuryChance)}%`,
-      body: <>Probability of doing more than {(props.defender.wounds / 2).toFixed(1)} but less than {props.defender.wounds} wounds (injured but not killed)</>,
+      header: `Left Injured: ${toPercentString(injuryChance)}%`,
+      body: <>Probability of doing more than {(props.defender.wounds / 2).toFixed(1)} but less than {props.defender.wounds} wounds (injured but not incapacitated)</>,
     },
-    { key: 'kill', header: `Kill Chance: ${toPercentString(killChance)}%`, body: killChanceTable },
+    { key: 'kill', header: `Operative Incapacitated: ${toPercentString(killChance)}%`, shortName: 'Op Incap', body: killChanceTable },
     { key: 'dist', header: 'Dmg probs for exact scenario', body: dmgProbTable },
   ];
 
   return (
     <div className='ResultList'>
-      {rows.map(row => <ResultRow key={row.key} header={row.header}>{row.body}</ResultRow>)}
+      {rows.map(row => <ResultRow key={row.key} header={row.header} shortName={row.shortName}>{row.body}</ResultRow>)}
     </div>
   );
 }
 
 // One expandable result. Each row toggles on its own, like the separate
 // accordions it replaces.
-const ResultRow: React.FC<{ header: string; children: React.ReactNode }> = ({ header, children }) => {
+const ResultRow: React.FC<{ header: string; shortName?: string; children: React.ReactNode }> = ({ header, shortName, children }) => {
   const [open, setOpen] = React.useState(false);
   const sep = header.indexOf(': ');
   const name = sep >= 0 ? header.slice(0, sep) : header;
@@ -183,7 +184,16 @@ const ResultRow: React.FC<{ header: string; children: React.ReactNode }> = ({ he
         onClick={() => setOpen(!open)}
       >
         {/* The hidden ": " keeps the row's text reading "Average Damage: 5.67". */}
-        <span className='ResultRow-name'>{name}{value && <span className='sr-only'>: </span>}</span>
+        <span className='ResultRow-name'>
+          {shortName
+            ? <>
+                {/* Narrow screens hide the full name visually but screen readers still read it. */}
+                <span className='ResultRow-long'>{name}</span>
+                <span className='ResultRow-short' aria-hidden='true'>{shortName}</span>
+              </>
+            : name}
+          {value && <span className='sr-only'>: </span>}
+        </span>
         {value && <span className='ResultRow-value'>{value}</span>}
         <svg className='ResultRow-chevron' width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'>
           <path fillRule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z' />

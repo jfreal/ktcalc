@@ -1,5 +1,11 @@
 # Changelog
 
+## November 2026 - Clearer result names
+
+- **Kill Chance is now Operative Incapacitated.** On phones it shows as `Op Incap`.
+- **Injury Chance is now Left Injured.** It counts only results where the target is below half wounds and still alive, so a high incapacitated chance leaves a small Left Injured chance. The new name makes that clear.
+- The Fight results say `Incapacitated:` instead of `DeathChance:`. The Comparison Matrix title and its combined column say `Incapacitated %` and `Incap%` instead of `Kill %`.
+
 ## October 2026 - Curse of Rot fixes
 
 - **Curse of Rot is no longer offered on the Shoot defender.** The ploy is used when a Plague Marine is shooting or fighting, not when it is being shot. Old share links that set it on a defender load without it.
