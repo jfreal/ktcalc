@@ -1,0 +1,48 @@
+PR #100
+Branch: cursor/parry-killing-normal-8c58
+Result: PASS
+
+Unit commands:
+- CI=true npm run testq -- --testPathPattern=src/CalcEngineFight.test.ts --watchAll=false
+  exit 0
+  Test Suites: 1 passed, 1 total
+  Tests: 147 passed, 147 total
+  Snapshots: 0 total
+  Failed: 0
+  Includes the new plain Parry, Hammerhand, Parry plus Shock, and non-killing control tests, plus the existing lethal-crit and Murderous Entrance Parry tests.
+- CI=true npm run testq
+  exit 0
+  Test Suites: 3 skipped, 37 passed, 37 of 40 total
+  Tests: 3 skipped, 611 passed, 614 total
+  Snapshots: 0 total
+  Failed: 0
+- npx eslint src/CalcEngineFightInternal.ts src/CalcEngineFight.test.ts
+  exit 0
+  0 errors, 4 pre-existing unused-variable warnings in CalcEngineFight.test.ts
+
+UI commands (skill .cursor/skills/verify-ktcalc, app from this branch):
+- .cursor/skills/verify-ktcalc/scripts/launch.sh
+  verify-ktcalc: ready at http://127.0.0.1:4173/
+  dev-server.log: Compiled successfully!
+  copy-rules: copied 6/6 file(s) to public/rules/
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  verify-ktcalc doctor: instance is worth driving
+- .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+  verify-ktcalc drive-shoot: PASS (exit 0)
+  Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04
+  Situation 2 Average Damage stayed 3.29
+- node /tmp/drive-ktcalc-rest.mjs
+  verify-ktcalc drive-rest: PASS (exit 0)
+  Comparison: Avg deltas before copy +1.57, +1.75, +1.90, +2.01. Copy From Situation 1 made both Attacks selects 5 and every Avg delta 0.00. Show Sv 6+ added a Sv 6+ header.
+  Share: Add Share Params wrote view=shoot and a1 first field 5. Reload kept Attacks 5 and Average Damage 5.04.
+  Fight: h1 Kill Team 2024 Fight Calculator, Fight link aria-current=page, path /fight. Fighter A Attacks 4 -> 5, AvgRemainingWounds 3.61 -> 3.95. Fighter B Attacks stayed 4.
+  Help: header link target=_blank, href /help. Opened in a new tab. h1 How KT Calc works. Share buttons absent.
+  Combat rules heading: Kill Team 2024 Combat Rules. Not Loading… and not Could not load this document.
+  Back to How it works restored the help h1.
+  Served public/rules/FIGHT_RULES.md includes the updated lethal-strike wording (normal-plus-Hammerhand, only the normal incapacitates).
+- node /tmp/drive-fight-shots.mjs
+  Full-page fight screenshots retaken so the Attacks control and AvgRemainingWounds readout are both visible. Same numbers: Fighter A 4 -> 5, AvgRemainingWounds 3.61 -> 3.95, Fighter B Attacks stayed 4.
+- .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+  stopped the recorded dev server pid 2544
+
+UI pass/fail/skip: 5 passed, 0 failed, 0 skipped (shooting, comparison matrix, share link, fighting, help and rules).

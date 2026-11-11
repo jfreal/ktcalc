@@ -1,0 +1,97 @@
+{
+  "port": "4173",
+  "origin": "http://127.0.0.1:4173",
+  "features": {
+    "comparison": {
+      "before": {
+        "cells": [
+          "Avg",
+          "3.83",
+          "2.26",
+          "+1.57",
+          "5.04",
+          "3.29",
+          "+1.75",
+          "6.33",
+          "4.43",
+          "+1.90",
+          "7.68",
+          "5.66",
+          "+2.01"
+        ],
+        "header": "W Sv 2+ Sv 3+ Sv 4+ Sv 5+ S1 S2 Δ S1 S2 Δ S1 S2 Δ S1 S2 Δ ",
+        "delta": "+1.57",
+        "s1": "3.83",
+        "s2": "2.26"
+      },
+      "after": {
+        "attacks1": "5",
+        "attacks2": "5",
+        "cells": [
+          "Avg",
+          "3.83",
+          "3.83",
+          "0.00",
+          "5.04",
+          "5.04",
+          "0.00",
+          "6.33",
+          "6.33",
+          "0.00",
+          "7.68",
+          "7.68",
+          "0.00"
+        ],
+        "header": "W Sv 2+ Sv 3+ Sv 4+ Sv 5+ S1 S2 Δ S1 S2 Δ S1 S2 Δ S1 S2 Δ ",
+        "delta": "0.00",
+        "s1": "3.83",
+        "s2": "3.83"
+      },
+      "sv6Header": "W Sv 2+ Sv 3+ Sv 4+ Sv 5+ Sv 6+ S1 S2 Δ S1 S2 Δ S1 S2 Δ S1 S2 Δ S1 S2 Δ ",
+      "pass": true
+    },
+    "share": {
+      "share": {
+        "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1",
+        "a1": "5:3:3:4:0:0:0:X:0:0:0:0:0:",
+        "attacks": "5"
+      },
+      "restored": {
+        "attacks": "5",
+        "averageDamage": "5.04",
+        "search": "?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1"
+      },
+      "pass": true
+    },
+    "fight": {
+      "before": {
+        "attacks": "4",
+        "fighterBAttacks": "4",
+        "fighterAAvg": "3.61",
+        "h1": "Kill Team 2024 Fight Calculator"
+      },
+      "after": {
+        "attacks": "5",
+        "fighterBAttacks": "4",
+        "fighterAAvg": "3.95",
+        "h1": "Kill Team 2024 Fight Calculator"
+      },
+      "pass": true
+    },
+    "help": {
+      "helpHref": {
+        "href": "http://127.0.0.1:4173/help",
+        "target": "_blank",
+        "text": "How it works (opens in a new tab)"
+      },
+      "helpH1": "How KT Calc works",
+      "shareButtonsAbsent": true,
+      "rules": {
+        "headingVisible": true,
+        "path": "/rules/combat"
+      },
+      "helpBack": "How KT Calc works",
+      "pass": true
+    }
+  }
+}
