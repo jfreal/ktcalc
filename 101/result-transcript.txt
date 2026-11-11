@@ -1,0 +1,45 @@
+verify-ktcalc doctor: instance is worth driving
+verify-ktcalc drive-shoot: PASS
+--- shoot-result.json ---
+{
+  "feature": "shooting",
+  "url": "http://127.0.0.1:4173/",
+  "before": {
+    "h1": "Kill Team 2024 Shooting Calculator",
+    "situation1Attacks": "4",
+    "situation1AverageDamage": "3.29",
+    "situation2AverageDamage": "3.29"
+  },
+  "after": {
+    "h1": "Kill Team 2024 Shooting Calculator",
+    "situation1Attacks": "5",
+    "situation1AverageDamage": "5.04",
+    "situation2AverageDamage": "3.29"
+  },
+  "attacksStepped": true,
+  "damageChanged": true,
+  "situation2Unchanged": true,
+  "evidence": {
+    "before": "/agent/repos/ktcalc/verify-artifacts/shoot-before.png",
+    "after": "/agent/repos/ktcalc/verify-artifacts/shoot-after.png"
+  }
+}
+
+--- drive-rest ---
+PASS indomitus hover+checkbox before=3.29 after=3.10 delta=0.19
+hover: If the roll contains at least two unmodified 1s, discard one and change the other to a normal success. A re-rolled 1 does not count. Defense only. Angels of Death Firefight ploy.
+PASS comparison matrix deltas-before=+1.57,+1.75,+1.90,+2.01 deltas-after=0.00,0.00,0.00,0.00
+PASS share link a1 attacks=5 search=?view=shoot&a1=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d1=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so1=1&a2=5%3A3%3A3%3A4%3A0%3A0%3A0%3AX%3A0%3A0%3A0%3A0%3A0%3A&d2=3%3A12%3A0%3A0%3A0%3A0%3A0%3A0%3AX%3A%3A0&so2=1
+PASS fight attacks 4->5 wounds 3.61->3.95
+PASS purity seal hover: If the roll contains at least two unmodified 1s, discard one and change the other to a normal success. A re-rolled 1 does not count. Attack only.
+PASS help (How KT Calc works) and rules (Kill Team 2024 Combat Rules)
+
+Commands:
+  .cursor/skills/verify-ktcalc/scripts/launch.sh
+  .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+  node drive-rest (Indomitus, matrix, share, fight, help, rules)
+  .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+Unit tests: CI=true npm run testq -- --watchAll=false
+Test Suites: 3 skipped, 37 passed, 37 of 40 total
+Tests: 3 skipped, 627 passed, 630 total
