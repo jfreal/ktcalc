@@ -1000,6 +1000,19 @@ describe(calcDmgProbs.name + ', Accurate is optional', () => {
 
     expect(avgDmg(atk, noSaves)).toBeCloseTo(3 * (5 / 6) * 4, requiredPrecision);
   });
+
+  it('rolls Accurate when a cover save wipes the retained norm and Piercing Crits saves the crit', () => {
+    // 1 die at BS 4+ (fail 3/6, norm 2/6, crit 1/6), Accurate 1, damage 3/5, Piercing Crits 2,
+    // into 3 dice at 3+ with one cover save. Retaining the normal leaves Piercing off, and the
+    // cover cancels it: 0. Rolling: a 6 is a crit (5). Piercing Crits 2 leaves one defence die,
+    // which is that cover save, and one normal save cannot cancel the crit. Norms and fails
+    // still deal 0, so expected damage is (1/6)*5. Raw damage prefers the retained 3 over a
+    // roll worth about 1.83 before saves.
+    const atk = new Model(1, 4, 3, 5).setProp('autoNorms', 1).setProp('px', 2);
+    const def = new Model(3, 3).setProp('autoNorms', 1);
+
+    expect(avgDmg(atk, def)).toBeCloseTo(5 / 6, requiredPrecision);
+  });
 });
 
 describe(calcDmgProbs.name + ', defender chitin', () => {
