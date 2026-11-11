@@ -1,0 +1,39 @@
+PR #97
+Branch: cursor/cq-critfish-shoot-rules-8deb
+Result: PASS
+
+Unit commands:
+- CI=true npm run testq -- --testPathPattern=src/WeaponRulesReroll.test.ts --verbose
+  exit 0
+  Test Suites: 1 passed, 1 total
+  Tests: 3 passed, 3 total
+  Snapshots: 0 total
+  Failed: 0
+  Skipped: 0
+
+UI commands:
+- .cursor/skills/verify-ktcalc/scripts/launch.sh
+  verify-ktcalc: ready at http://127.0.0.1:4173/
+  dev-server.log: Compiled successfully (launch waited for Compiled successfully or Compiled with warnings)
+- .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  verify-ktcalc doctor: instance is worth driving
+- .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+  verify-ktcalc drive-shoot: PASS (exit 0)
+  Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04
+  Situation 2 Average Damage stayed 3.29
+- node verify-artifacts/drive-rules.mjs
+  (gitignored helper using .cursor/skills/verify-ktcalc/scripts/lib/browser.mjs; doctor first)
+  verify-ktcalc drive-rules: PASS (exit 0)
+  Help h1: How KT Calc works. Weapon rules link present. Share buttons absent.
+  Combat rules: heading Kill Team 2024 Combat Rules. Not Loading… and not Could not load this document.
+  Back to How it works restored the help h1.
+  Weapon rules: heading Kill Team 2024 Weapon Rules. Not Loading… and not Could not load this document.
+  Reroll Targeting Strategy shows: fails-only applies to Balanced, Ceaseless, Relentless, and the combined rerolls.
+  CritFishRelentless on the Shoot dropdowns rerolls non-crits the same way it does in a fight.
+  Absolute fails-only / "Crit-fishing is a fight choice" sentences absent.
+  December recap section states the same CritFishRelentless sentence.
+- .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+  stopped the recorded dev server
+
+UI pass/fail/skip: 2 passed, 0 failed, 0 skipped (drive-shoot, drive-rules).
+Inside drive-rules: help, combat rules, back to help, and weapon rules all passed; 0 failed; 0 skipped.

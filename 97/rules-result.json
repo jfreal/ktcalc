@@ -1,0 +1,57 @@
+{
+  "feature": "help-and-weapon-rules",
+  "url": "http://127.0.0.1:4173/rules/weapon",
+  "help": {
+    "h1": "How KT Calc works",
+    "hasWeaponLink": true,
+    "hasCombatLink": true,
+    "shareButtons": []
+  },
+  "combat": {
+    "href": "/rules/combat",
+    "heading": "Kill Team 2024 Combat Rules",
+    "loading": false,
+    "failed": false,
+    "ready": true
+  },
+  "weapon": {
+    "href": "/rules/weapon",
+    "heading": "Kill Team 2024 Weapon Rules",
+    "loading": false,
+    "failed": false,
+    "ready": true,
+    "h3s": [
+      "Accurate X",
+      "Balanced",
+      "Brutal",
+      "Ceaseless",
+      "Devastating X",
+      "Heavy",
+      "Lethal X+",
+      "Piercing X",
+      "Punishing",
+      "Relentless",
+      "Rending",
+      "Saturate",
+      "Severe",
+      "Shock",
+      "Reroll Targeting Strategy",
+      "Combined Reroll Abilities",
+      "No Double Reroll Rule",
+      "Expected Ability Ordering (by effectiveness)",
+      "CeaselessPlusBalanced Implementation",
+      "Severe Rule Fix",
+      "Reroll Targeting Strategy",
+      "No Double Reroll Rule"
+    ]
+  },
+  "section": {
+    "first": "Fails only applies to Balanced, Ceaseless, Relentless, and the combined rerolls. Those abilities only target fails, never norms or crits:\nRerolling a fail can only improve (to norm/crit) or stay the same\nRerolling a norm could get worse (to fail)\nRerolling a crit could only get worse (to norm/fail)\nCritFishRelentless on the Shoot dropdowns rerolls non-crits the same way it does in a fight. The Fight calculator Notes say Balanced and Relentless will not reroll a normal success even if it would be wise to do so. See that note on the Fight calculator.",
+    "second": "Clarified fails-only applies to Balanced, Ceaseless, Relentless, and the combined rerolls: those only target fails, never norms or crits\nRationale: on a shot, rerolling fails can only improve; rerolling norms/crits can get worse\nCritFishRelentless: on the Shoot dropdowns it rerolls non-crits the same way it does in a fight\nFight: the Fight calculator Notes cover Balanced and Relentless (see the section above)\nApplied to: Balanced, Ceaseless, Relentless, CeaselessPlusBalanced, OnesPlusBalanced",
+    "headingCount": 2,
+    "hasCritFish": true,
+    "hasAbsolute": false,
+    "errorBanner": false
+  },
+  "pass": true
+}
