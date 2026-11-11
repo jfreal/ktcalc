@@ -1,0 +1,39 @@
+Verify: PASS
+
+Branch: cursor/weapon-balance-outlier-rules-d52a
+PR: https://github.com/jfreal/ktcalc/pull/98
+
+Unit tests
+  CI=true npx react-scripts test --watchAll=false --watch=false --testPathPattern WeaponBalance --verbose
+  Test Suites: 1 passed, 1 total
+  Tests: 1 skipped, 2 passed, 3 total
+  Failures: 0
+
+  CI=true npm run testq
+  Test Suites: 2 skipped, 38 passed, 38 of 40 total
+  Tests: 3 skipped, 609 passed, 612 total
+  Failures: 0
+
+UI (.cursor/skills/verify-ktcalc, port 4173)
+  .cursor/skills/verify-ktcalc/scripts/launch.sh
+  ready at http://127.0.0.1:4173/ (Compiled successfully)
+
+  .cursor/skills/verify-ktcalc/scripts/doctor.sh
+  instance is worth driving
+
+  .cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+  verify-ktcalc drive-shoot: PASS
+  Situation 1 Attacks 4 -> 5
+  Situation 1 Average Damage 3.29 -> 5.04
+  Situation 2 Average Damage stayed 3.29
+
+  Help -> Comparing weapons by power level -> /rules/weapon-balance
+  h1: Comparing Weapons by Power Level
+  Scything Talons is Ceaseless on 5 dice at 3+.
+  Flesh Mower is 5 dice hitting on 2+ with Brutal.
+  Back to How it works returned h1 How KT Calc works
+  verify-ktcalc drive-weapon-balance: PASS
+  Load error: no
+
+  .cursor/skills/verify-ktcalc/scripts/cleanup.sh
+  stopped dev server pid 2562

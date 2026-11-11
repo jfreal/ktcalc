@@ -1,0 +1,20 @@
+{
+  "feature": "weapon-balance",
+  "helpUrl": "http://127.0.0.1:4173/help",
+  "helpHeading": "How KT Calc works",
+  "page": {
+    "h1": "Comparing Weapons by Power Level",
+    "url": "/rules/weapon-balance",
+    "hasLoadError": false,
+    "scything": "Scything Talons is Ceaseless on 5 dice at 3+.",
+    "fleshMower": "Flesh Mower is 5 dice hitting on 2+ with Brutal."
+  },
+  "backHeading": "How KT Calc works",
+  "scythingOk": true,
+  "mowerOk": true,
+  "evidence": {
+    "help": "/agent/repos/ktcalc/verify-artifacts/help-before.png",
+    "bullet": "/agent/repos/ktcalc/verify-artifacts/weapon-balance-after.png",
+    "page": "/agent/repos/ktcalc/verify-artifacts/weapon-balance-page.png"
+  }
+}
