@@ -506,6 +506,212 @@ describe(Common.calcFinalDiceProb.name, () => {
   });
 });
 
+// Purity Seal discards one unmodified 1 and changes another into a normal success.
+// A 1 that was re-rolled does not count. Face 1 is a fail for every 2+ through 6+ stat.
+describe('Purity Seal unmodified 1s', () => {
+  function outcomeMass(model: Model): Map<string, number> {
+    const rows = Common.calcFinalDiceProbs(
+      model.toAttackerDieProbs(),
+      model.numDice,
+      model.reroll,
+      0, 0, 0, 0,
+      model.abilities,
+      model.normDmg,
+      model.critDmg,
+    );
+    const mass = new Map<string, number>();
+    let total = 0;
+    for (const row of rows) {
+      const key = `${row.crits},${row.norms}`;
+      mass.set(key, (mass.get(key) ?? 0) + row.prob);
+      total += row.prob;
+    }
+    expect(total).toBeCloseTo(1, 9);
+    return mass;
+  }
+
+  function expectMass(model: Model, key: string, prob: number): void {
+    expect(outcomeMass(model).get(key) ?? 0).toBeCloseTo(prob, requiredPrecision);
+  }
+
+  it('two dice at 4+ convert only the (1,1) pair', () => {
+    // crit 1/6, norm 2/6, fail 3/6. Both fails that are not both 1s stay failures: 8/36.
+    const model = new Model(2, 4, 3, 4).setAbility(Ability.PuritySeal);
+    expectMass(model, '0,0', 8 / 36);
+    expectMass(model, '0,1', 13 / 36); // 12/36 natural one-norm plus the converted (1,1)
+    expectMass(model, '0,2', 4 / 36);
+    expectMass(model, '1,0', 6 / 36);
+    expectMass(model, '1,1', 4 / 36);
+    expectMass(model, '2,0', 1 / 36);
+  });
+
+  it('a 2+ profile converts every pair of fails, matching the old any-fail result', () => {
+    // The only fail face is 1, so two fails are two unmodified 1s.
+    const model = new Model(2, 2, 3, 4).setAbility(Ability.PuritySeal);
+    expectMass(model, '0,0', 0);
+    expectMass(model, '0,1', 9 / 36); // 8/36 one-norm plus the converted (1,1)
+    expectMass(model, '0,2', 16 / 36);
+    expectMass(model, '1,0', 2 / 36);
+    expectMass(model, '1,1', 8 / 36);
+    expectMass(model, '2,0', 1 / 36);
+  });
+
+  it('Balanced does not treat a rerolled 1 as an unmodified 1', () => {
+    // 2 dice and Balanced always rerolls one fail, so two un-rerolled 1s are impossible.
+    // The seal must match Balanced with the seal off, including the (1,1) reroll that
+    // lands on 1 again.
+    const off = outcomeMass(new Model(2, 4, 3, 4).setProp('reroll', Ability.Balanced));
+    const on = outcomeMass(new Model(2, 4, 3, 4).setProp('reroll', Ability.Balanced).setAbility(Ability.PuritySeal));
+    expect(on.size).toBe(off.size);
+    for (const [key, prob] of off) {
+      expect(on.get(key) ?? 0).toBeCloseTo(prob, requiredPrecision);
+    }
+  });
+
+  it('rerolling 1s does not leave an unmodified 1', () => {
+    // Every 1 is replaced, including a reroll that lands on 1, so the seal never fires.
+    const off = outcomeMass(new Model(3, 4, 3, 4).setProp('reroll', Ability.RerollOnes));
+    const on = outcomeMass(new Model(3, 4, 3, 4).setProp('reroll', Ability.RerollOnes).setAbility(Ability.PuritySeal));
+    for (const [key, prob] of off) {
+      expect(on.get(key) ?? 0).toBeCloseTo(prob, requiredPrecision);
+    }
+  });
+
+  it('Ceaseless does not treat a rerolled 1 as an unmodified 1', () => {
+    // 2 dice: two 1s are the whole fail pile, so Ceaseless rerolls both of them.
+    const off = outcomeMass(new Model(2, 4, 3, 4).setProp('reroll', Ability.RerollMostCommonFail));
+    const on = outcomeMass(new Model(2, 4, 3, 4).setProp('reroll', Ability.RerollMostCommonFail).setAbility(Ability.PuritySeal));
+    for (const [key, prob] of off) {
+      expect(on.get(key) ?? 0).toBeCloseTo(prob, requiredPrecision);
+    }
+  });
+
+  it('matches a face-by-face roll for Balanced, Ceaseless, and Ceaseless plus Balanced', () => {
+    // Independent of the engine: roll every face, reroll the way the weapon rule does, and
+    // count 1s that were not rerolled. 4 dice at 4+ is enough for Ceaseless to keep two 1s
+    // and for the following Balanced reroll to spend one of them.
+    const stat = 4;
+    const numDice = 4;
+    const isFail = (face: number) => face < stat;
+    const profiles: [string, Ability][] = [
+      ['balanced', Ability.Balanced],
+      ['ceaseless', Ability.RerollMostCommonFail],
+      ['ceaselessBalanced', Ability.RerollMostCommonFailPlusBalanced],
+    ];
+
+    function oracle(kind: string): Map<string, number> {
+      const mass = new Map<string, number>();
+      const add = (crits: number, norms: number, prob: number) => {
+        const key = `${crits},${norms}`;
+        mass.set(key, (mass.get(key) ?? 0) + prob);
+      };
+      const dice = new Array<number>(numDice);
+      const consider = (faces: number[], keptOnes: number, prob: number) => {
+        let crits = 0;
+        let norms = 0;
+        let fails = 0;
+        for (const face of faces) {
+          if (face >= 6) crits++;
+          else if (face >= stat) norms++;
+          else fails++;
+        }
+        if (keptOnes >= 2 && fails >= 2) norms++;
+        add(crits, norms, prob);
+      };
+      const rerollIndexes = (
+        faces: number[],
+        indexes: number[],
+        keptOnes: number,
+        prob: number,
+        after: (next: number[], ones: number, p: number) => void,
+      ) => {
+        const next = faces.slice();
+        const step = (n: number) => {
+          if (n === indexes.length) {
+            after(next, keptOnes, prob);
+            return;
+          }
+          for (let face = 1; face <= 6; face++) {
+            next[indexes[n]] = face;
+            step(n + 1);
+          }
+        };
+        step(0);
+      };
+      const balancedAfter = (faces: number[], already: Set<number>, keptOnes: number, prob: number) => {
+        let target = -1;
+        for (let i = 0; i < faces.length; i++) {
+          if (!already.has(i) && isFail(faces[i])) {
+            target = i;
+            break;
+          }
+        }
+        if (target < 0) {
+          consider(faces, keptOnes, prob);
+          return;
+        }
+        const spent = faces[target] === 1 ? 1 : 0;
+        rerollIndexes(faces, [target], keptOnes - spent, prob / 6, consider);
+      };
+      const visit = (i: number) => {
+        if (i === numDice) {
+          const base = Math.pow(1 / 6, numDice);
+          if (kind === 'balanced') {
+            const targets: number[] = [];
+            for (let d = 0; d < numDice && targets.length < 1; d++) {
+              if (isFail(dice[d])) targets.push(d);
+            }
+            const spent = targets.reduce((sum, idx) => sum + (dice[idx] === 1 ? 1 : 0), 0);
+            const ones = dice.filter(face => face === 1).length - spent;
+            if (targets.length === 0) consider(dice, ones, base);
+            else rerollIndexes(dice, targets, ones, base / 6, consider);
+            return;
+          }
+          const counts = [0, 0, 0, 0, 0, 0, 0];
+          for (const face of dice) if (isFail(face)) counts[face]++;
+          let mode = 0;
+          for (let face = 1; face <= 6; face++) if (counts[face] > mode) mode = counts[face];
+          const modes: number[] = [];
+          for (let face = 1; face <= 6; face++) if (mode > 0 && counts[face] === mode) modes.push(face);
+          if (modes.length === 0) {
+            if (kind === 'ceaselessBalanced') balancedAfter(dice.slice(), new Set(), 0, base);
+            else consider(dice, 0, base);
+            return;
+          }
+          for (const chosen of modes) {
+            const indexes: number[] = [];
+            for (let d = 0; d < numDice; d++) if (dice[d] === chosen) indexes.push(d);
+            const keptOnes = chosen === 1 ? 0 : counts[1];
+            const share = base / modes.length;
+            const afterCeaseless = kind === 'ceaselessBalanced'
+              ? (next: number[], ones: number, p: number) => balancedAfter(next, new Set(indexes), ones, p)
+              : consider;
+            rerollIndexes(dice, indexes, keptOnes, share / Math.pow(6, indexes.length), afterCeaseless);
+          }
+        }
+        else {
+          for (let face = 1; face <= 6; face++) {
+            dice[i] = face;
+            visit(i + 1);
+          }
+        }
+      };
+      visit(0);
+      return mass;
+    }
+
+    for (const [kind, reroll] of profiles) {
+      const model = new Model(numDice, stat, 3, 4).setProp('reroll', reroll).setAbility(Ability.PuritySeal);
+      const actual = outcomeMass(model);
+      const expected = oracle(kind);
+      const keys = new Set<string>([...actual.keys(), ...expected.keys()]);
+      for (const key of keys) {
+        expect(actual.get(key) ?? 0).toBeCloseTo(expected.get(key) ?? 0, 8);
+      }
+    }
+  });
+});
+
 /*
 describe('q', () => {
   it('x', () => {

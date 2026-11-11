@@ -103,7 +103,7 @@ function buildFinalDiceProbs(
       for (let norms = 0; norms <= freeDice - crits; norms++) {
         const fails = freeDice - crits - norms;
 
-        const finalDiceProb = calcFinalDiceProb(
+        const rows = calcFinalDiceProbRows(
           dieProbs,
           crits,
           norms,
@@ -120,10 +120,12 @@ function buildFinalDiceProbs(
           cursed,
         );
 
-        if (finalDiceProb.prob > 0) {
-          finalDiceProb.prob *= cursedProb;
-          finalDiceProb.cursed = cursed;
-          finalDiceProbs.push(finalDiceProb);
+        for (const row of rows) {
+          if (row.prob > 0) {
+            row.prob *= cursedProb;
+            row.cursed = cursed;
+            finalDiceProbs.push(row);
+          }
         }
       }
     }
@@ -228,24 +230,332 @@ export function chooseAutoNorms(
     failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, undefined, cursedDieProbs).used;
 }
 
-export function calcFinalDiceProb(
+// Purity Seal / Indomitus fire only for two unmodified 1s. Face 1 is a fail on every
+// 2+ through 6+ stat, so each un-rerolled fail is a 1 with probability 1/failFaces.
+function unmodifiedOneSplit(
+  countableFails: number,
+  failFaces: number,
+): { ones: number; prob: number }[] {
+  if (countableFails <= 0) {
+    return [{ ones: 0, prob: 1 }];
+  }
+  if (failFaces <= 1) {
+    // One fail face means that face is 1, so every kept fail is an unmodified 1.
+    // Zero fail faces means a 1 is not a fail.
+    return [{ ones: failFaces === 1 ? countableFails : 0, prob: 1 }];
+  }
+  const pOne = 1 / failFaces;
+  const branches: { ones: number; prob: number }[] = [];
+  for (let ones = 0; ones <= countableFails; ones++) {
+    branches.push({ ones, prob: binomialPmf(countableFails, ones, pOne) });
+  }
+  return branches;
+}
+
+function addMass(into: Map<number, number>, ones: number, prob: number): void {
+  if (!(prob > 0)) {
+    return;
+  }
+  into.set(ones, (into.get(ones) ?? 0) + prob);
+}
+
+function tracksUnmodifiedOnes(abilities: Set<Ability>): boolean {
+  return abilities.has(Ability.PuritySeal) || abilities.has(Ability.Indomitus);
+}
+
+// Kept fails are still uniform across fail faces: Balanced picks fails without looking at the face.
+function balancedOneBranches(
+  dieProbs: DieProbs,
+  finalCrits: number,
+  finalNorms: number,
+  finalFails: number,
+  balancedCount: number,
+): Map<number, number> {
+  const byOnes = new Map<number, number>();
+  const minRerolls = Math.min(finalFails, balancedCount);
+  const maxRerolls = balancedCount;
+
+  for (const rerolls of upTo(minRerolls, maxRerolls)) {
+    for (const rerolledCrits of upTo(Math.min(finalCrits, rerolls))) {
+      const minRerolledNorms = Math.max(0, rerolls - rerolledCrits - finalFails);
+      const maxRerolledNorms = Math.min(
+        finalNorms,
+        rerolls - rerolledCrits - (rerolls < balancedCount ? finalFails : 0));
+      for (const rerolledNorms of upTo(minRerolledNorms, maxRerolledNorms)) {
+        const rerolledFails = rerolls - rerolledCrits - rerolledNorms;
+        const origCrits = finalCrits - rerolledCrits;
+        const origNorms = finalNorms - rerolledNorms;
+        const origFails = finalFails + rerolledNorms + rerolledCrits;
+        const keptFails = origFails - rerolls;
+        if (keptFails < 0) {
+          continue;
+        }
+
+        const pathProb = calcMultiRollProb(dieProbs, origCrits, origNorms, origFails)
+          * calcMultiRollProb(dieProbs.rerollProbs, rerolledCrits, rerolledNorms, rerolledFails);
+        for (const branch of unmodifiedOneSplit(keptFails, dieProbs.failFaces)) {
+          addMass(byOnes, branch.ones, pathProb * branch.prob);
+        }
+      }
+    }
+  }
+  return byOnes;
+}
+
+// Ceaseless joint P(rerollCount, unmodifiedOnes). Face index 0 is the real face 1.
+// The most common fail face is rerolled (ties split evenly), so a rerolled 1 is not unmodified.
+const ceaselessJointCache = new Map<string, Map<number, Map<number, number>>>();
+
+function ceaselessJoint(numFailFaces: number, numOrigFails: number): Map<number, Map<number, number>> {
+  const key = `${numFailFaces}|${numOrigFails}`;
+  const cached = ceaselessJointCache.get(key);
+  if (cached) {
+    return cached;
+  }
+
+  const joint = new Map<number, Map<number, number>>();
+  const add = (rerolls: number, ones: number, prob: number) => {
+    if (!(prob > 0)) {
+      return;
+    }
+    let byOnes = joint.get(rerolls);
+    if (!byOnes) {
+      byOnes = new Map();
+      joint.set(rerolls, byOnes);
+    }
+    byOnes.set(ones, (byOnes.get(ones) ?? 0) + prob);
+  };
+
+  if (numOrigFails <= 0 || numFailFaces <= 0) {
+    add(0, 0, 1);
+    ceaselessJointCache.set(key, joint);
+    return joint;
+  }
+
+  const counts = new Array<number>(numFailFaces).fill(0);
+  const faceProb = Math.pow(numFailFaces, -numOrigFails);
+  const visit = () => {
+    let ways = factorial(numOrigFails) as number;
+    let maxCount = 0;
+    let numTied = 0;
+    for (let face = 0; face < numFailFaces; face++) {
+      ways /= factorial(counts[face]) as number;
+      if (counts[face] > maxCount) {
+        maxCount = counts[face];
+        numTied = 1;
+      }
+      else if (counts[face] === maxCount) {
+        numTied++;
+      }
+    }
+    const prob = ways * faceProb;
+    for (let face = 0; face < numFailFaces; face++) {
+      if (counts[face] !== maxCount) {
+        continue;
+      }
+      // Rerolling face 1 discards those 1s. Any other face leaves the 1s unmodified.
+      const ones = face === 0 ? 0 : counts[0];
+      add(maxCount, ones, prob / numTied);
+    }
+  };
+  const rec = (face: number, remaining: number) => {
+    if (face === numFailFaces - 1) {
+      counts[face] = remaining;
+      visit();
+      return;
+    }
+    for (let c = 0; c <= remaining; c++) {
+      counts[face] = c;
+      rec(face + 1, remaining - c);
+    }
+  };
+  rec(0, numOrigFails);
+  ceaselessJointCache.set(key, joint);
+  return joint;
+}
+
+function ceaselessOneBranches(
+  dieProbs: DieProbs,
+  finalCrits: number,
+  finalNorms: number,
+  finalFails: number,
+): Map<number, number> {
+  const byOnes = new Map<number, number>();
+  const numFailFaces = dieProbs.failFaces;
+  const numDice = finalCrits + finalNorms + finalFails;
+  if (numFailFaces < 1) {
+    addMass(byOnes, 0, calcFinalDiceProbRerollMostCommonFail(dieProbs, finalCrits, finalNorms, finalFails));
+    return byOnes;
+  }
+
+  const minRerolls = Math.ceil(finalFails / numFailFaces);
+  const maxRerolls = numDice;
+  for (const rerolls of upTo(minRerolls, maxRerolls)) {
+    for (const rerolledCrits of upTo(Math.min(finalCrits, rerolls))) {
+      const minRerolledNorms = Math.max(0, rerolls - rerolledCrits - finalFails);
+      const maxRerolledNorms = Math.min(finalNorms, rerolls - rerolledCrits);
+      for (const rerolledNorms of upTo(minRerolledNorms, maxRerolledNorms)) {
+        const rerolledFails = rerolls - rerolledCrits - rerolledNorms;
+        const origCrits = finalCrits - rerolledCrits;
+        const origNorms = finalNorms - rerolledNorms;
+        const origFails = finalFails + rerolledNorms + rerolledCrits;
+        const base = calcMultiRollProb(dieProbs, origCrits, origNorms, origFails)
+          * calcMultiRollProb(dieProbs.rerollProbs, rerolledCrits, rerolledNorms, rerolledFails);
+        const byOnesForRerolls = ceaselessJoint(numFailFaces, origFails).get(rerolls);
+        if (!byOnesForRerolls || !(base > 0)) {
+          continue;
+        }
+        for (const [ones, pJoint] of byOnesForRerolls) {
+          addMass(byOnes, ones, pJoint * base);
+        }
+      }
+    }
+  }
+  return byOnes;
+}
+
+// Balanced, after Ceaseless, rerolls one kept fail. Hitting a 1 spends that unmodified 1.
+function splitBalancedTarget(
+  into: Map<number, number>,
+  prob: number,
+  onesKept: number,
+  availFails: number,
+): void {
+  if (!(prob > 0)) {
+    return;
+  }
+  if (availFails <= 0 || onesKept <= 0) {
+    addMass(into, Math.max(0, onesKept), prob);
+    return;
+  }
+  const hitOne = Math.min(onesKept, availFails) / availFails;
+  addMass(into, onesKept - 1, prob * hitOne);
+  addMass(into, onesKept, prob * (1 - hitOne));
+}
+
+function ceaselessPlusBalancedOneBranches(
+  dieProbs: DieProbs,
+  finalCrits: number,
+  finalNorms: number,
+  finalFails: number,
+): Map<number, number> {
+  const byOnes = new Map<number, number>();
+  const numFailFaces = dieProbs.failFaces;
+  const numDice = finalCrits + finalNorms + finalFails;
+  if (numFailFaces < 1) {
+    addMass(byOnes, 0, calcFinalDiceProbRerollMostCommonFailPlusBalanced(
+      dieProbs, finalCrits, finalNorms, finalFails));
+    return byOnes;
+  }
+
+  for (let bCrits = Math.max(0, finalCrits - 1); bCrits <= Math.min(numDice, finalCrits + 1); bCrits++) {
+    for (let bNorms = Math.max(0, finalNorms - 1); bNorms <= Math.min(numDice - bCrits, finalNorms + 1); bNorms++) {
+      const bFails = numDice - bCrits - bNorms;
+      if (bFails < 0) {
+        continue;
+      }
+
+      const critDiff = finalCrits - bCrits;
+      const normDiff = finalNorms - bNorms;
+      const failDiff = finalFails - bFails;
+      if (Math.abs(critDiff) + Math.abs(normDiff) + Math.abs(failDiff) > 2) {
+        continue;
+      }
+
+      let targetType: 'fail' | 'none';
+      let balancedOutcomeProb: number;
+      if (critDiff === 0 && normDiff === 0 && failDiff === 0) {
+        targetType = 'none';
+        balancedOutcomeProb = 1;
+      }
+      else if (critDiff === 1 && normDiff === 0 && failDiff === -1) {
+        targetType = 'fail';
+        balancedOutcomeProb = dieProbs.rerollProbs.crit;
+      }
+      else if (critDiff === 0 && normDiff === 1 && failDiff === -1) {
+        targetType = 'fail';
+        balancedOutcomeProb = dieProbs.rerollProbs.norm;
+      }
+      else {
+        continue;
+      }
+
+      const minRerolls = Math.ceil(bFails / Math.max(1, numFailFaces));
+      const maxRerolls = numDice;
+      for (const rerolls of upTo(minRerolls, maxRerolls)) {
+        for (const rerolledCrits of upTo(Math.min(bCrits, rerolls))) {
+          const minRerolledNorms = Math.max(0, rerolls - rerolledCrits - bFails);
+          const maxRerolledNorms = Math.min(bNorms, rerolls - rerolledCrits);
+          for (const rerolledNorms of upTo(minRerolledNorms, maxRerolledNorms)) {
+            const rerolledFails = rerolls - rerolledCrits - rerolledNorms;
+            const origCrits = bCrits - rerolledCrits;
+            const origNorms = bNorms - rerolledNorms;
+            const origFails = bFails + rerolledCrits + rerolledNorms;
+            const availFails = origFails - rerolls;
+            if (availFails < 0) {
+              continue;
+            }
+
+            const base = calcMultiRollProb(dieProbs, origCrits, origNorms, origFails)
+              * calcMultiRollProb(dieProbs.rerollProbs, rerolledCrits, rerolledNorms, rerolledFails);
+            const byOnesForRerolls = ceaselessJoint(numFailFaces, origFails).get(rerolls);
+            if (!byOnesForRerolls || !(base > 0)) {
+              continue;
+            }
+
+            for (const [onesKept, pJoint] of byOnesForRerolls) {
+              const ceaselessProb = pJoint * base;
+              if (targetType === 'none') {
+                if (availFails > 0) {
+                  splitBalancedTarget(byOnes, ceaselessProb * dieProbs.rerollProbs.fail, onesKept, availFails);
+                }
+                else {
+                  addMass(byOnes, onesKept, ceaselessProb);
+                }
+              }
+              else if (availFails > 0) {
+                splitBalancedTarget(byOnes, ceaselessProb * balancedOutcomeProb, onesKept, availFails);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return byOnes;
+}
+
+function plainOneBranches(
   dieProbs: DieProbs,
   crits: number,
   norms: number,
   fails: number,
-  reroll: Ability = Ability.None, // really just care if Balanced or RerollOnesPlusBalanced
-  additionalCrits: number = 0,
-  additionalNorms: number = 0,
-  failsToNorms: number = 0,
-  normsToCrits: number = 0,
-  abilities: Set<Ability> = new Set<Ability>(),
-  normDmg: number = 0,
-  critDmgPlusMwx: number = 0,
-  scoreHits?: (crits: number, norms: number) => number,
-  cursedFails: number = 0, // Curse of Rot 3s: not part of the roll odds above, but still fails afterwards
-): FinalDiceProb
-{
-  let prob = 0
+): Map<number, number> {
+  const byOnes = new Map<number, number>();
+  const prob = calcMultiRollProb(dieProbs, crits, norms, fails);
+  for (const branch of unmodifiedOneSplit(fails, dieProbs.failFaces)) {
+    addMass(byOnes, branch.ones, prob * branch.prob);
+  }
+  return byOnes;
+}
+
+// These rerolls replace every 1 (or every fail / non-crit, which includes every 1).
+// A 1 showing after the reroll is not an unmodified 1.
+function rerollErasesUnmodifiedOnes(reroll: Ability): boolean {
+  return reroll === Ability.RerollOnes
+    || reroll === Ability.Relentless
+    || reroll === Ability.CritFishRelentless
+    || reroll === Ability.RerollOnesPlusBalanced;
+}
+
+function rollProbability(
+  dieProbs: DieProbs,
+  crits: number,
+  norms: number,
+  fails: number,
+  reroll: Ability,
+): number {
+  let prob = 0;
 
   if (reroll === Ability.Balanced) {
     prob = calcFinalDiceProbBalanced(dieProbs, crits, norms, fails, 1);
@@ -306,17 +616,115 @@ export function calcFinalDiceProb(
     }
   }
 
-  const modified = applyPostRollModifications(
-    crits, norms, fails + cursedFails,
-    additionalCrits, additionalNorms,
-    failsToNorms, normsToCrits,
-    abilities,
-    normDmg,
-    critDmgPlusMwx,
-    scoreHits,
-  );
+  return prob;
+}
 
-  return new FinalDiceProb(prob, modified.crits, modified.norms);
+function unmodifiedOnesByCount(
+  dieProbs: DieProbs,
+  crits: number,
+  norms: number,
+  fails: number,
+  reroll: Ability,
+): Map<number, number> {
+  if (reroll === Ability.Balanced) {
+    return balancedOneBranches(dieProbs, crits, norms, fails, 1);
+  }
+  if (reroll === Ability.DoubleBalanced) {
+    return balancedOneBranches(dieProbs, crits, norms, fails, 2);
+  }
+  if (reroll === Ability.RerollMostCommonFail) {
+    return ceaselessOneBranches(dieProbs, crits, norms, fails);
+  }
+  if (reroll === Ability.RerollMostCommonFailPlusBalanced) {
+    return ceaselessPlusBalancedOneBranches(dieProbs, crits, norms, fails);
+  }
+  if (rerollErasesUnmodifiedOnes(reroll)) {
+    const byOnes = new Map<number, number>();
+    addMass(byOnes, 0, rollProbability(dieProbs, crits, norms, fails, reroll));
+    return byOnes;
+  }
+  return plainOneBranches(dieProbs, crits, norms, fails);
+}
+
+export function calcFinalDiceProb(
+  dieProbs: DieProbs,
+  crits: number,
+  norms: number,
+  fails: number,
+  reroll: Ability = Ability.None, // really just care if Balanced or RerollOnesPlusBalanced
+  additionalCrits: number = 0,
+  additionalNorms: number = 0,
+  failsToNorms: number = 0,
+  normsToCrits: number = 0,
+  abilities: Set<Ability> = new Set<Ability>(),
+  normDmg: number = 0,
+  critDmgPlusMwx: number = 0,
+  scoreHits?: (crits: number, norms: number) => number,
+  cursedFails: number = 0, // Curse of Rot 3s: not part of the roll odds above, but still fails afterwards
+): FinalDiceProb
+{
+  const rows = calcFinalDiceProbRows(
+    dieProbs, crits, norms, fails, reroll,
+    additionalCrits, additionalNorms, failsToNorms, normsToCrits,
+    abilities, normDmg, critDmgPlusMwx, scoreHits, cursedFails,
+  );
+  if (rows.length !== 1) {
+    throw new Error(
+      `calcFinalDiceProb produced ${rows.length} outcomes; Purity Seal and Indomitus split a fail count by unmodified 1s`,
+    );
+  }
+  return rows[0];
+}
+
+function calcFinalDiceProbRows(
+  dieProbs: DieProbs,
+  crits: number,
+  norms: number,
+  fails: number,
+  reroll: Ability,
+  additionalCrits: number,
+  additionalNorms: number,
+  failsToNorms: number,
+  normsToCrits: number,
+  abilities: Set<Ability>,
+  normDmg: number,
+  critDmgPlusMwx: number,
+  scoreHits: ((crits: number, norms: number) => number) | undefined,
+  cursedFails: number,
+): FinalDiceProb[] {
+  const totalFails = fails + cursedFails;
+  const rows: FinalDiceProb[] = [];
+  const emit = (prob: number, ones: number) => {
+    const modified = applyPostRollModifications(
+      crits, norms, totalFails,
+      additionalCrits, additionalNorms,
+      failsToNorms, normsToCrits,
+      abilities,
+      normDmg,
+      critDmgPlusMwx,
+      scoreHits,
+      ones,
+    );
+    const existing = rows.find(row => row.crits === modified.crits && row.norms === modified.norms);
+    if (existing) {
+      existing.prob += prob;
+    }
+    else {
+      rows.push(new FinalDiceProb(prob, modified.crits, modified.norms));
+    }
+  };
+
+  if (!tracksUnmodifiedOnes(abilities)) {
+    emit(rollProbability(dieProbs, crits, norms, fails, reroll), 0);
+    return rows;
+  }
+
+  for (const [ones, prob] of unmodifiedOnesByCount(dieProbs, crits, norms, fails, reroll)) {
+    if (prob > 0) {
+      emit(prob, ones);
+    }
+  }
+  return rows;
 }
 
 export function calcMultiRollProb(
@@ -734,6 +1142,7 @@ export function applyPostRollModifications(
   normDmg: number = 0,
   critDmgPlusMwx: number = 0,
   scoreHits?: (crits: number, norms: number) => number,
+  unmodifiedOnes: number = 0,
 ): { crits: number; norms: number } {
   crits += additionalCrits;
   // A dice can only be *retained* once. Dice retained without rolling (cover saves on defence,
@@ -756,7 +1165,8 @@ export function applyPostRollModifications(
     && fails > 0;
 
   const resolve = (c: number, n: number, f: number, retained: number) => resolveAfterPunishing(
-    c, n, f, retained, failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, scoreHits);
+    c, n, f, retained, failsToNorms, normsToCrits, abilities, normDmg, critDmgPlusMwx, scoreHits,
+    unmodifiedOnes);
 
   if (!punishingAvailable) {
     return resolve(crits, norms, fails, retainedNorms);
@@ -809,13 +1219,16 @@ function resolveAfterPunishing(
   abilities: Set<Ability>,
   normDmg: number,
   critDmgPlusMwx: number,
-  scoreHits?: (crits: number, norms: number) => number,
+  scoreHits: ((crits: number, norms: number) => number) | undefined,
+  unmodifiedOnes: number,
 ): { crits: number; norms: number } {
-  if (abilities.has(Ability.PuritySeal) || abilities.has(Ability.Indomitus)) {
-    if (fails >= 2) {
-      norms++;
-      fails -= 2;
-    }
+  // Discard one unmodified 1 and change another into a normal success. A rerolled 1
+  // is not unmodified, so the caller counts 1s from faces that were not rerolled.
+  if ((abilities.has(Ability.PuritySeal) || abilities.has(Ability.Indomitus))
+    && unmodifiedOnes >= 2
+    && fails >= 2) {
+    norms++;
+    fails -= 2;
   }
 
   if (abilities.has(Ability.FailToNormIfAtLeastTwoSuccesses)) {

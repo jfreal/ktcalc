@@ -94,8 +94,13 @@ export function simulateFighterDice(
     dice = uncursed;
   }
 
-  // Apply rerolls
-  applyRerolls(dice, model.reroll, critThreshold, normThreshold, rng);
+  // Purity Seal / Indomitus count unmodified 1s: the faces before any reroll. A 1 that
+  // is rerolled is replaced, so it does not count, and neither does a 1 the reroll lands on.
+  let unmodifiedOnes = 0;
+  for (let i = 0; i < dice.length; i++) {
+    if (dice[i] === 1) unmodifiedOnes++;
+  }
+  unmodifiedOnes -= applyRerolls(dice, model.reroll, critThreshold, normThreshold, rng);
 
   // Classify final dice (inlined to avoid function call overhead)
   let crits = 0;
@@ -118,6 +123,8 @@ export function simulateFighterDice(
     abilities,
     model.normDmg,
     model.critDmg + model.mwx,
+    undefined,
+    unmodifiedOnes,
   );
   return { crits: modified.crits, norms: modified.norms, cursed };
 }
@@ -128,23 +135,30 @@ function applyRerolls(
   critThreshold: number,
   normThreshold: number,
   rng: RngFunction,
-): void {
-  if (reroll === Ability.None) return;
+): number {
+  if (reroll === Ability.None) return 0;
+
+  // How many original 1s this reroll replaced. The caller counted those 1s first.
+  let rerolledOnes = 0;
+  const replace = (i: number) => {
+    if (dice[i] === 1) rerolledOnes++;
+    dice[i] = (rng() * 6 | 0) + 1;
+  };
 
   // Inline comparisons instead of closure allocations
   if (reroll === Ability.RerollOnes) {
     for (let i = 0; i < dice.length; i++) {
-      if (dice[i] === 1) dice[i] = (rng() * 6 | 0) + 1;
+      if (dice[i] === 1) replace(i);
     }
   }
   else if (reroll === Ability.Relentless) {
     for (let i = 0; i < dice.length; i++) {
-      if (dice[i] < normThreshold) dice[i] = (rng() * 6 | 0) + 1;
+      if (dice[i] < normThreshold) replace(i);
     }
   }
   else if (reroll === Ability.CritFishRelentless) {
     for (let i = 0; i < dice.length; i++) {
-      if (dice[i] < critThreshold) dice[i] = (rng() * 6 | 0) + 1;
+      if (dice[i] < critThreshold) replace(i);
     }
   }
   else if (reroll === Ability.Balanced || reroll === Ability.DoubleBalanced) {
@@ -152,42 +166,44 @@ function applyRerolls(
     let rerolled = 0;
     for (let i = 0; i < dice.length && rerolled < maxRerolls; i++) {
       if (dice[i] < normThreshold) {
-        dice[i] = (rng() * 6 | 0) + 1;
+        replace(i);
         rerolled++;
       }
     }
   }
   else if (reroll === Ability.RerollMostCommonFail) {
-    rerollMostCommonFail(dice, critThreshold, normThreshold, rng);
+    rerolledOnes += rerollMostCommonFail(dice, critThreshold, normThreshold, rng).rerolledOnes;
   }
   else if (reroll === Ability.RerollOnesPlusBalanced) {
     // Step 1: Reroll all 1s, tracking which dice were rerolled via bitmask
     let rerolledMask = 0;
     for (let i = 0; i < dice.length; i++) {
       if (dice[i] === 1) {
-        dice[i] = (rng() * 6 | 0) + 1;
+        replace(i);
         rerolledMask |= (1 << i);
       }
     }
     // Step 2: Balanced rerolls one fail that was NOT already rerolled by RerollOnes
     for (let i = 0; i < dice.length; i++) {
       if (!(rerolledMask & (1 << i)) && dice[i] < normThreshold) {
-        dice[i] = (rng() * 6 | 0) + 1;
+        replace(i);
         break;
       }
     }
   }
   else if (reroll === Ability.RerollMostCommonFailPlusBalanced) {
     // Step 1: RerollMostCommonFail, tracking which dice were rerolled
-    const rerolledMask = rerollMostCommonFail(dice, critThreshold, normThreshold, rng);
+    const ceaseless = rerollMostCommonFail(dice, critThreshold, normThreshold, rng);
+    rerolledOnes += ceaseless.rerolledOnes;
     // Step 2: Balanced rerolls one fail that was NOT already rerolled
     for (let i = 0; i < dice.length; i++) {
-      if (!(rerolledMask & (1 << i)) && dice[i] < normThreshold) {
-        dice[i] = (rng() * 6 | 0) + 1;
+      if (!(ceaseless.mask & (1 << i)) && dice[i] < normThreshold) {
+        replace(i);
         break;
       }
     }
   }
+  return rerolledOnes;
 }
 
 function rerollMostCommonFail(
@@ -195,7 +211,7 @@ function rerollMostCommonFail(
   critThreshold: number,
   normThreshold: number,
   rng: RngFunction,
-): number {
+): { mask: number; rerolledOnes: number } {
   // Group fail dice by face value using fixed arrays (faces 1-5 max)
   // counts[face] = count, masks[face] = bitmask of indices
   const counts = [0, 0, 0, 0, 0, 0, 0]; // index by face value 0-6
@@ -211,7 +227,7 @@ function rerollMostCommonFail(
     }
   }
 
-  if (!hasAnyFail) return 0;
+  if (!hasAnyFail) return { mask: 0, rerolledOnes: 0 };
 
   // Find the most common fail face (break ties randomly)
   let maxCount = 0;
@@ -234,15 +250,17 @@ function rerollMostCommonFail(
     ? candidates[0]
     : candidates[Math.floor(rng() * numCandidates)];
 
-  // Reroll all dice showing the chosen face
+  // Reroll all dice showing the chosen face. A 1 replaced here is no longer unmodified.
   let rerolledMask = masks[chosenFace];
+  let rerolledOnes = 0;
   let remaining = rerolledMask;
   while (remaining) {
     const bit = remaining & (-remaining); // lowest set bit
     const idx = 31 - Math.clz32(bit);
+    if (dice[idx] === 1) rerolledOnes++;
     dice[idx] = (rng() * 6 | 0) + 1;
     remaining ^= bit;
   }
 
-  return rerolledMask;
+  return { mask: rerolledMask, rerolledOnes };
 }

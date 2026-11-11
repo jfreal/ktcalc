@@ -2,6 +2,9 @@ import Model from 'src/Model';
 import Ability from 'src/Ability';
 import { calcFinalDiceProbs } from 'src/CalcEngineCommon';
 import { simulateFighterDice, mulberry32 } from 'src/MonteCarloFightDice';
+import { calcRemainingWounds } from 'src/CalcEngineFight';
+import FightStrategy from 'src/FightStrategy';
+import { weightedAverage } from 'src/Util';
 
 const numTrials = 100_000;
 const tolerance = 0.02; // within 2% of expected
@@ -297,5 +300,109 @@ describe('simulateFighterDice determinism with seeded PRNG', () => {
       }
     }
     expect(anyDifferent).toBe(true);
+  });
+});
+
+// Faces are consumed as d6 results. `{ raw }` is an unscaled rng draw (Ceaseless tie-break).
+function scriptedRng(draws: Array<number | { raw: number }>) {
+  let i = 0;
+  return () => {
+    const draw = draws[i++];
+    if (draw === undefined) {
+      throw new Error(`scripted rng exhausted at draw ${i}`);
+    }
+    return typeof draw === 'number' ? (draw - 0.5) / 6 : draw.raw;
+  };
+}
+
+describe('Purity Seal counts unmodified 1s', () => {
+  const seal = () => new Model(2, 4, 3, 4).setAbility(Ability.PuritySeal);
+
+  it('two natural 1s on a 4+ weapon become one normal', () => {
+    const result = simulateFighterDice(seal(), undefined, scriptedRng([1, 1]));
+    expect(result).toStrictEqual({ crits: 0, norms: 1, cursed: 0 });
+  });
+
+  it('a 1 and a 2 do not convert', () => {
+    const result = simulateFighterDice(seal(), undefined, scriptedRng([1, 2]));
+    expect(result).toStrictEqual({ crits: 0, norms: 0, cursed: 0 });
+  });
+
+  it('a 2+ weapon converts the only fail pair, same as any two fails', () => {
+    const model = new Model(2, 2, 3, 4).setAbility(Ability.PuritySeal);
+    const result = simulateFighterDice(model, undefined, scriptedRng([1, 1]));
+    expect(result).toStrictEqual({ crits: 0, norms: 1, cursed: 0 });
+  });
+
+  it('Balanced does not treat a rerolled 1 as an unmodified 1', () => {
+    // Two 1s. Balanced rerolls the first and it stays a 1, so the dice still show (1,1).
+    // Only the kept 1 is unmodified, and the seal does not fire.
+    const model = new Model(2, 4, 3, 4).setProp('reroll', Ability.Balanced).setAbility(Ability.PuritySeal);
+    const result = simulateFighterDice(model, undefined, scriptedRng([1, 1, 1]));
+    expect(result).toStrictEqual({ crits: 0, norms: 0, cursed: 0 });
+  });
+
+  it('Balanced still converts two 1s it did not reroll', () => {
+    // (2,1,1). Balanced rerolls the leading 2 and leaves both 1s unmodified.
+    const model = new Model(3, 4, 3, 4).setProp('reroll', Ability.Balanced).setAbility(Ability.PuritySeal);
+    const result = simulateFighterDice(model, undefined, scriptedRng([2, 1, 1, 3]));
+    expect(result).toStrictEqual({ crits: 0, norms: 1, cursed: 0 });
+  });
+
+  it('rerolling 1s does not treat the new 1 as unmodified', () => {
+    const model = new Model(2, 4, 3, 4).setProp('reroll', Ability.RerollOnes).setAbility(Ability.PuritySeal);
+    const result = simulateFighterDice(model, undefined, scriptedRng([1, 1, 1, 1]));
+    expect(result).toStrictEqual({ crits: 0, norms: 0, cursed: 0 });
+  });
+
+  it('Ceaseless does not treat a rerolled 1 as an unmodified 1', () => {
+    // (1,1,2): face 1 is the unique mode, so both 1s are re-rolled into other fails.
+    const model = new Model(3, 4, 3, 4)
+      .setProp('reroll', Ability.RerollMostCommonFail)
+      .setAbility(Ability.PuritySeal);
+    const result = simulateFighterDice(model, undefined, scriptedRng([1, 1, 2, 3, 3]));
+    expect(result).toStrictEqual({ crits: 0, norms: 0, cursed: 0 });
+  });
+
+  it('Ceaseless converts 1s it left in place', () => {
+    // (1,1,2,2) ties. The tie-break picks face 2, so the two 1s stay and convert.
+    const model = new Model(4, 4, 3, 4)
+      .setProp('reroll', Ability.RerollMostCommonFail)
+      .setAbility(Ability.PuritySeal);
+    const result = simulateFighterDice(model, undefined, scriptedRng([1, 1, 2, 2, { raw: 0.75 }, 3, 3]));
+    expect(result).toStrictEqual({ crits: 0, norms: 1, cursed: 0 });
+  });
+
+  it('matches the exact engine on a 4+ weapon', () => {
+    const model = new Model(2, 4, 3, 4).setAbility(Ability.PuritySeal);
+    const rows = calcFinalDiceProbs(
+      model.toAttackerDieProbs(), model.numDice, model.reroll,
+      0, 0, 0, 0, model.abilities, model.normDmg, model.critDmg,
+    );
+    let expNorms = 0;
+    let expCrits = 0;
+    for (const row of rows) {
+      expNorms += row.prob * row.norms;
+      expCrits += row.prob * row.crits;
+    }
+    // (1,1) is the only converted pair: expected norms are 4/6 + 1/36 = 25/36, not the any-fail 33/36.
+    expect(expNorms).toBeCloseTo(25 / 36, 12);
+    expect(expCrits).toBeCloseTo(12 / 36, 12);
+
+    const { avgCrits, avgNorms } = averageDiceResults(model, 100_000, 7);
+    expect(avgCrits).toBeCloseTo(expCrits, 2);
+    expect(avgNorms).toBeCloseTo(expNorms, 2);
+  });
+
+  it('fight simulation with Purity Seal on a 4+ weapon', () => {
+    // Strike-only, defender has no dice, so each extra normal is 3 damage and nothing else moves.
+    // Only (1,1) converts: 3/36 extra damage. Any-fail would convert all 9 both-fail pairs (27/36).
+    const sealed = new Model(2, 4, 3, 4).setProp('wounds', 12).setAbility(Ability.PuritySeal);
+    const plain = new Model(2, 4, 3, 4).setProp('wounds', 12);
+    const defender = new Model(0, 4, 3, 4).setProp('wounds', 12);
+    const [, defSealed] = calcRemainingWounds(sealed, defender, FightStrategy.Strike, FightStrategy.Strike);
+    const [, defPlain] = calcRemainingWounds(plain, defender, FightStrategy.Strike, FightStrategy.Strike);
+    const extraDamage = weightedAverage(defPlain) - weightedAverage(defSealed);
+    expect(extraDamage).toBeCloseTo(3 / 36, 2);
   });
 });
