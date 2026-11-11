@@ -1,0 +1,27 @@
+{
+  "feature": "accurate-profile",
+  "url": "http://127.0.0.1:4173/",
+  "before": {
+    "attacks": "1",
+    "bs": "4+",
+    "crit": "5",
+    "px": "2",
+    "cover": "1",
+    "accurate": "X",
+    "dmg": "0.83",
+    "situation2": "3.29"
+  },
+  "after": {
+    "accurate": "1",
+    "dmg": "0.83",
+    "situation2": "3.29"
+  },
+  "hoverMentionsSavesCoverPiercing": true,
+  "situation2Unchanged": true,
+  "rules": {
+    "heading": "Retained vs Modified Dice",
+    "hasAbout": true,
+    "hasSaves": true,
+    "droppedPreSaveShortcut": true
+  }
+}

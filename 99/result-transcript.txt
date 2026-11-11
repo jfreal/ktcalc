@@ -1,0 +1,36 @@
+PR #99
+Branch: cursor/accurate-score-saves-a7fa
+
+Unit tests:
+CI=true npm run testq
+Test Suites: 3 skipped, 37 passed, 37 of 40 total
+Tests: 3 skipped, 608 passed, 611 total
+Failed: 0
+Exit code: 0
+
+Lint (changed files):
+npx eslint src/CalcEngineCommon.ts src/Notes.ts src/CalcEngineShoot.test.ts
+Exit code: 0, no findings
+
+UI (skill):
+.cursor/skills/verify-ktcalc/scripts/launch.sh
+.cursor/skills/verify-ktcalc/scripts/doctor.sh
+.cursor/skills/verify-ktcalc/scripts/drive-shoot.mjs
+.cursor/skills/verify-ktcalc/scripts/cleanup.sh
+
+doctor: instance is worth driving
+drive-shoot: PASS
+Situation 1 Attacks 4 -> 5, Average Damage 3.29 -> 5.04
+Situation 2 Average Damage stayed 3.29
+
+Accurate profile (same dev server, real selects):
+Situation 1 set to Attacks 1, BS 4+, Normal Dmg 3, Crit Dmg 5, Piercing Crits 2, Cover Saves 1, Accurate off.
+Average Damage 0.83. Situation 2 stayed 3.29.
+Then Accurate + to 1. Average Damage stayed 0.83 (the old ranking reported 0.00). Situation 2 stayed 3.29.
+Accurate hover title includes saves, cover, and Piercing Crits, and says Feel No Pain and Saintly Relics are not in the score.
+
+Rules page /rules/retained-vs-modified:
+Heading "Retained vs Modified Dice" visible. Not "Could not load this document".
+Body includes the new Accurate paragraph (about 0.83, saves, cover, and Piercing) and no longer says Accurate is ranked on pre-save damage.
+
+verify-ktcalc accurate-profile: PASS
