@@ -81,9 +81,9 @@ target is reduced to 0 wounds.
 
 Three things fall out of this table:
 
-- **Scything Talons and Flesh Mower have no bad matchup.** Ceaseless on 5 dice, and hitting on 2+,
-  put them above everything else against hordes *and* against Marines. Nothing in the list can be
-  balanced against them.
+- **Scything Talons and Flesh Mower have no bad matchup.** Scything Talons is Ceaseless on 5 dice
+  at 3+. Flesh Mower is 5 dice hitting on 2+ with Brutal. Those profiles put them above everything
+  else against hordes *and* against Marines. Nothing in the list can be balanced against them.
 - **Close Combat Weapon is the baseline, not a peer.** At 24% it is less than half of the next
   weapon up. It is what a weapon looks like with no rules attached.
 - **+1 Atk is a flat buff.** Every real weapon gains 7 to 13 points. That is what makes a
