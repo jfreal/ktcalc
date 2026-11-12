@@ -189,7 +189,13 @@ through the Rending interaction.
 **Accurate.** The rule is "retain **up to** x dice", so retaining fewer is legal. A retained dice is
 locked, while rolling it can produce a critical success or a promotable norm. With one die at 2+ and
 a spare norm→crit promotion, rolling is worth 3.33 damage against a retained norm's 3.00 — so the
-calculator rolls. It keeps the maximum whenever that is at least as good, which is the usual case.
+calculator rolls. On a shoot that comparison is expected damage after the defender's saves, cover,
+and Piercing Crits. One die at BS 4+, Accurate 1, damage 3/5, and Piercing Crits 2, into three dice
+at 3+ with one cover save, deals 0 if the normal is retained (the cover cancels it, and Piercing
+stays off) and about 0.83 if it is rolled (a 6 is a crit for 5, and the one defence die Piercing
+leaves is a normal save that cannot cancel it). The calculator rolls. It keeps the maximum whenever
+that is at least as good, which is the usual case. With no defender, and in a fight, it falls back
+to pre-save damage. The shoot score does not include Feel No Pain or Saintly Relics.
 
 ---
 
@@ -202,14 +208,13 @@ normal attacker, cover wins at every save value and every promotion count, and d
 ahead once you hold norm→crit save promotions *and* most of the incoming hits are critical.
 [When Not to Take Cover Saves](/rules/cover-saves) has the numbers and the workaround.
 
-**Accurate is ranked on pre-save damage.** How many Accurate dice to retain is decided before the
-roll, from the damage those dice would deal, without the defender's saves or Piercing. **Punishing,
-Mystic Scry, Severe, and Rending are decided per roll.** On a shoot, each candidate is scored by
-its expected damage against that defender's saves, cover, and Piercing, and Devastating is part of
-the crit's value; with no defender, and in a fight, they fall back to pre-save damage. For save
-dice, where there is no damage to score, the fallback counts a critical save as two normal saves.
-The shoot score includes saves, cover, and Piercing, and does not include Feel No Pain or Saintly
-Relics.
+**Accurate, Punishing, Mystic Scry, Severe, and Rending.** Accurate is decided before the roll (how
+many dice to retain). Punishing, Mystic Scry, Severe, and Rending are decided per roll. On a shoot,
+each candidate is scored by its expected damage against that defender's saves, cover, and Piercing,
+and Devastating is part of the crit's value; with no defender, and in a fight, they fall back to
+pre-save damage. For save dice, where there is no damage to score, the fallback counts a critical
+save as two normal saves. The shoot score includes saves, cover, and Piercing, and does not include
+Feel No Pain or Saintly Relics.
 
 **FailsToNorms is treated as a change, not a retention.** The generic input is worded as a
 modification, so the norms it produces stay promotable. If your rule is worded "retain one of your

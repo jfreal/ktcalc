@@ -1,5 +1,10 @@
 # Changelog
 
+## November 2026 - Accurate weighs saves and Piercing on a shoot
+
+- **Accurate no longer keeps a normal a save will wipe.** How many Accurate dice to retain is still decided before the roll. On a shoot that choice is now expected damage after the defender's saves, cover, and Piercing Crits, the same score Punishing, Severe, Rending, and Mystic Scry already use. One die at BS 4+, Accurate 1, damage 3/5, and Piercing Crits 2, into three dice at 3+ with one cover save, used to report 0: the retained normal does not turn Piercing on, and the cover cancels it. Rolling is a crit on a 6 (damage 5, about 0.83), and the one defence die Piercing leaves cannot cancel that crit.
+- Fights, and shots with no defender to score, still rank by pre-save damage. Feel No Pain and Saintly Relics stay out of the score.
+
 ## November 2026 - Clearer result names
 
 - **Kill Chance is now Operative Incapacitated.** On phones it shows as `Op Incap`.
