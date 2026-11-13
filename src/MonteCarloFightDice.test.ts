@@ -1,6 +1,6 @@
 import Model from 'src/Model';
 import Ability from 'src/Ability';
-import { calcFinalDiceProbs } from 'src/CalcEngineCommon';
+import { calcFinalDiceProbs, calcFinalDiceProbsForAttacker } from 'src/CalcEngineCommon';
 import { simulateFighterDice, mulberry32 } from 'src/MonteCarloFightDice';
 import { calcRemainingWounds } from 'src/CalcEngineFight';
 import FightStrategy from 'src/FightStrategy';
@@ -404,6 +404,27 @@ describe('Purity Seal counts unmodified 1s', () => {
     const { avgCrits, avgNorms } = averageDiceResults(model, 100_000, 7);
     expect(avgCrits).toBeCloseTo(expCrits, 2);
     expect(avgNorms).toBeCloseTo(expNorms, 2);
+  });
+
+  it('on a 1+ stat a 1 is a success, so cursed 3s never convert (matches the exact engine)', () => {
+    // withAlwaysNorm against Curse of Rot: (1,1,3,3) is two normal 1s plus two cursed fails.
+    // The 1s are not fails, so there are no unmodified-1 fails and the seal does not fire.
+    const model = new Model(4, 4, 3, 4).withAlwaysNorm().setAbility(Ability.PuritySeal);
+    const cursing = new Model(0, 4, 3, 4).setAbility(Ability.CurseOfRot);
+    const result = simulateFighterDice(model, cursing, scriptedRng([1, 1, 3, 3]));
+    expect(result).toStrictEqual({ crits: 0, norms: 2, cursed: 2 });
+
+    // Exact engine: every uncursed die is a normal, so expected norms are 4 * 5/6 with or without
+    // the seal. The simulation must agree.
+    const rows = calcFinalDiceProbsForAttacker(model, cursing);
+    let expNorms = 0;
+    for (const row of rows) expNorms += row.prob * row.norms;
+    expect(expNorms).toBeCloseTo(4 * 5 / 6, 12);
+
+    const rng = mulberry32(11);
+    let totalNorms = 0;
+    for (let i = 0; i < numTrials; i++) totalNorms += simulateFighterDice(model, cursing, rng).norms;
+    expect(totalNorms / numTrials).toBeCloseTo(expNorms, 2);
   });
 
   it('fight simulation with Purity Seal on a 4+ weapon', () => {

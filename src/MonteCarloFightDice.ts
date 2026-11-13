@@ -96,11 +96,16 @@ export function simulateFighterDice(
 
   // Purity Seal / Indomitus count unmodified 1s: the faces before any reroll. A 1 that
   // is rerolled is replaced, so it does not count, and neither does a 1 the reroll lands on.
+  // On a 1+ stat a 1 is a success, not a fail, so no 1 counts (the exact engine's failFaces is 0).
+  const oneIsFail = normThreshold > 1;
   let unmodifiedOnes = 0;
-  for (let i = 0; i < dice.length; i++) {
-    if (dice[i] === 1) unmodifiedOnes++;
+  if (oneIsFail) {
+    for (let i = 0; i < dice.length; i++) {
+      if (dice[i] === 1) unmodifiedOnes++;
+    }
   }
-  unmodifiedOnes -= applyRerolls(dice, model.reroll, critThreshold, normThreshold, rng);
+  const rerolledOnes = applyRerolls(dice, model.reroll, critThreshold, normThreshold, rng);
+  if (oneIsFail) unmodifiedOnes -= rerolledOnes;
 
   // Classify final dice (inlined to avoid function call overhead)
   let crits = 0;
