@@ -162,7 +162,7 @@ const LethalRelentlessNote: React.FC = () => (
     <h2 className="h3">Indomitus amplifies the inversion (in this setup)</h2>
 
     <p>
-      Indomitus adds one defender norm save when the defender rolls two unmodified 1s. A norm save can:
+      Indomitus adds one defender norm save when the defender rolls two fails. A norm save can:
     </p>
 
     <ul>

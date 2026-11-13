@@ -1042,16 +1042,16 @@ describe(calcDmgProbs.name + ', multiple rounds', () => {
   });
 });
 
-// Indomitus (defender): two or more unmodified 1s discard one and turn the other
-// into a normal save. One application, including the Piercing Crits path.
+// Indomitus (defender): two or more failed saves discard one fail and turn another
+// into a normal save. One application, on any fail faces, including the Piercing Crits path.
 describe(calcDmgProbs.name + ', defender Indomitus', () => {
-  it('only two unmodified 1s become one normal save', () => {
+  it('two fails become one normal save', () => {
     // 2 always-normal hits vs 2 dice, save 4+ (crit 1/6, norm 2/6, fail 3/6).
     // A normal or critical save cancels one of those hits. 36 equally likely face-pairs.
-    // Both fail is 9/36, but only (1,1) is two unmodified 1s. The other eight both-fail
-    // pairs still deal 2*normDmg.
+    // Both fail is (3/6)*(3/6) = 9/36. Off, that deals 2*normDmg. On, those two fails
+    // become one normal save, so one hit remains (normDmg) and 2*normDmg is impossible.
     //   Off: P(0)=9/36, P(normDmg)=18/36, P(2*normDmg)=9/36
-    //   On:  P(0)=9/36, P(normDmg)=19/36, P(2*normDmg)=8/36
+    //   On:  P(0)=9/36, P(normDmg)=27/36, P(2*normDmg)=0
     const atk = newTestAttacker(2).withAlwaysNorm();
     const defOff = new Model(2, 4);
     const defOn = new Model(2, 4).setAbility(Ability.Indomitus);
@@ -1065,29 +1065,7 @@ describe(calcDmgProbs.name + ', defender Indomitus', () => {
     expect(off.get(2 * dn)).toBeCloseTo(9 / 36, requiredPrecision);
 
     expect(on.get(0)).toBeCloseTo(9 / 36, requiredPrecision);
-    expect(on.get(dn)).toBeCloseTo(19 / 36, requiredPrecision);
-    expect(on.get(2 * dn)).toBeCloseTo(8 / 36, requiredPrecision);
-    expect(on.size).toBe(3);
-  });
-
-  it('a 2+ save stays identical to converting every pair of fails', () => {
-    // Save 2+: the only fail face is 1, so the only both-fail pair is (1,1).
-    // Off: P(0)=25/36, P(normDmg)=10/36, P(2*normDmg)=1/36
-    // On:  that one pair becomes one normal save.
-    const atk = newTestAttacker(2).withAlwaysNorm();
-    const defOff = new Model(2, 2);
-    const defOn = new Model(2, 2).setAbility(Ability.Indomitus);
-    const dn = atk.normDmg;
-
-    const off = calcDmgProbs(atk, defOff);
-    const on = calcDmgProbs(atk, defOn);
-
-    expect(off.get(0)).toBeCloseTo(25 / 36, requiredPrecision);
-    expect(off.get(dn)).toBeCloseTo(10 / 36, requiredPrecision);
-    expect(off.get(2 * dn)).toBeCloseTo(1 / 36, requiredPrecision);
-
-    expect(on.get(0)).toBeCloseTo(25 / 36, requiredPrecision);
-    expect(on.get(dn)).toBeCloseTo(11 / 36, requiredPrecision);
+    expect(on.get(dn)).toBeCloseTo(27 / 36, requiredPrecision);
     expect(on.get(2 * dn)).toBeUndefined();
     expect(on.size).toBe(2);
   });
@@ -1110,13 +1088,14 @@ describe(calcDmgProbs.name + ', defender Indomitus', () => {
     expect(on).toStrictEqual(off);
   });
 
-  it('still converts two unmodified 1s on the Piercing Crits save path', () => {
+  it('still converts two fails on the Piercing Crits save path', () => {
     // Always-crit with Px 1 against 4 dice, save 4+. The crit takes the Px branch, which
     // rolls 3 dice (not 4). One crit save or two normal saves cancel the hit.
-    // Of the 54 (0 crit, 1 norm, 2 fail) rolls, only the 6 where both fails are 1s gain
-    // the extra normal save. Triple fail becomes one normal and still lets the crit through.
-    //   Off: P(critDmg)=81/216. On: P(critDmg)=75/216.
-    // The non-Px branch (all 4 dice, Indomitus on) would be 3^4/1296 = 1/16, not 75/216.
+    // Indomitus adds one normal when a roll has two or more fails, so the only roll it
+    // newly saves is (0 crit, 1 norm, 2 fail): 3*(2/6)*(3/6)^2 = 54/216.
+    // Triple fail becomes one normal and still lets the crit through: 3^3/216 = 27/216.
+    //   Off: P(critDmg)=81/216. On: P(critDmg)=27/216.
+    // The non-Px branch (all 4 dice, Indomitus on) would be 3^4/1296 = 1/16, not 1/8.
     const atk = newTestAttacker(1).withAlwaysCrit().setProp('px', 1);
     const defOff = new Model(4, 4);
     const defOn = new Model(4, 4).setAbility(Ability.Indomitus);
@@ -1127,8 +1106,8 @@ describe(calcDmgProbs.name + ', defender Indomitus', () => {
 
     expect(off.get(dc)).toBeCloseTo(81 / 216, requiredPrecision);
     expect(off.get(0)).toBeCloseTo(1 - 81 / 216, requiredPrecision);
-    expect(on.get(dc)).toBeCloseTo(75 / 216, requiredPrecision);
-    expect(on.get(0)).toBeCloseTo(1 - 75 / 216, requiredPrecision);
+    expect(on.get(dc)).toBeCloseTo(27 / 216, requiredPrecision);
+    expect(on.get(0)).toBeCloseTo(1 - 27 / 216, requiredPrecision);
     expect(on.size).toBe(2);
   });
 });

@@ -99,8 +99,7 @@ export const JustAScratchNorms = new Note(
 );
 export const PuritySeal = new Note(
   `PuritySeal`,
-  `If the roll contains at least two unmodified 1s, discard one and change the other to a normal success. ` +
-  `A re-rolled 1 does not count. Attack only.`,
+  `If you roll two or more fails, discard one of them to retain another as a normal success. Attack only.`,
 );
 export const MysticScryBuff = new Note(
   `Mystic Scry Buff`,
@@ -112,8 +111,8 @@ export const MysticScryBuff = new Note(
 );
 export const Indomitus = new Note(
   `Indomitus`,
-  `If the roll contains at least two unmodified 1s, discard one and change the other to a normal success. ` +
-  `A re-rolled 1 does not count. Defense only. Angels of Death Firefight ploy.`,
+  `If you roll two or more fails, discard one of them to retain another as a normal success. Defense only. ` +
+  `Angels of Death Firefight ploy.`,
 );
 export const CurseOfRot = new Note(
   `Curse of Rot`,

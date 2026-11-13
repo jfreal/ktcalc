@@ -22,10 +22,10 @@ export enum Ability {
     JustAScratchNorms = "JustAScratchNorms", // cancel one normal hit just before damage
     HalfDamageFirstStrike = "HalfDamageFirstStrike", // first strike damage is halved and rounded up, never below 2 and never above the strike; a 0 or 1 is unchanged
     ObscuredTarget = "ObscuredTarget", // all crits become norms; can't do crit-triggered abilities; discard a success at the end
-    PuritySeal = "PuritySeal", // 2024; attack only. Two or more unmodified 1s: discard one and change the other to a normal success. A rerolled 1 does not count.
+    PuritySeal = "PuritySeal", // 2024; if you roll two or more fails, discard one of them to retain another as a normal success; attack only.
     MysticScryBuff = "MysticScryBuff", // attack only; retain one fail as a norm OR one norm as a crit, attacker's choice (best per damage). In-game: the "Mystic Scry" ability.
     CurseOfRot = "CurseOfRot", // Plague Marines firefight ploy; set on the PLAGUE MARINE (Shoot attacker or Fight fighter, never a Shoot defender): each 3 the ENEMY rolls on its attack or defence dice is a fail it can't re-roll, and inflicts 1 damage on that enemy
-    Indomitus = "Indomitus", // 2024; defense only (Angels of Death). Two or more unmodified 1s: discard one and change the other to a normal success. A rerolled 1 does not count.
+    Indomitus = "Indomitus", // 2024; if you roll two or more fails, discard one of them to retain another as a normal success; defense only (Angels of Death).
 
     // fight stuff relevant to 2024
     Brutal = "Brutal", // opponent can only parry with crit
