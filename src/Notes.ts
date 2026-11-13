@@ -112,7 +112,7 @@ export const MysticScryBuff = new Note(
 export const Indomitus = new Note(
   `Indomitus`,
   `If you roll two or more fails, discard one of them to retain another as a normal success. Defense only. ` +
-  `Angels of Death Firefight ploy.`,
+  `Angels of Death Strategy ploy.`,
 );
 export const CurseOfRot = new Note(
   `Curse of Rot`,

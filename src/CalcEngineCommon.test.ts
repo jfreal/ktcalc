@@ -368,6 +368,13 @@ describe(Common.calcFinalDiceProb.name, () => {
     const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, justPunishing, 3, 4);
     expectClose(actual, pc * pf * 2, 1, 1);
   });
+  it('purity seal retains its normal, so Rending cannot promote it {1c,0n,2f} => {1c,1n}', () => {
+    // Discard one fail and retain the other as a normal. That normal is already retained,
+    // so Rending has nothing it may promote. Treating it as a rolled normal would yield {2c,0n}.
+    const purityAndRending = new Set<Ability>([Ability.PuritySeal, Ability.Rending]);
+    const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 2, Ability.None, 0, 0, 0, 0, purityAndRending, 3, 4);
+    expectClose(actual, pc * pf * pf * 3, 1, 1);
+  });
   it('punishing is still taken on the defence path, where there is no damage to rank by', () => {
     // saves carry no damage numbers, so the fallback ranking (crit save = 2 norm saves) applies
     const actual = Common.calcFinalDiceProb(dieProbs, 1, 0, 1, Ability.None, 0, 0, 0, 0, justPunishing);

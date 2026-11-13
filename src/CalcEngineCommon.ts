@@ -831,11 +831,15 @@ function resolveAfterPunishing(
   critDmgPlusMwx: number,
   scoreHits?: (crits: number, norms: number) => number,
 ): { crits: number; norms: number } {
-  // Published Angels of Death wording: "if you roll two or more fails" (January 2026
-  // PDF pp. 6–7; same in April 2025). Any fail faces count, including after rerolls.
+  // Published Angels of Death wording: "if you roll two or more fails, you can discard one
+  // of them to retain another as a normal success instead" (January 2026 PDF pp. 6–7;
+  // same in April 2025). Any fail faces count, including after rerolls. The retained
+  // normal is locked, the same way Punishing's retained normal is, so Rending cannot
+  // promote it.
   if (abilities.has(Ability.PuritySeal) || abilities.has(Ability.Indomitus)) {
     if (fails >= 2) {
       norms++;
+      retainedNorms++;
       fails -= 2;
     }
   }
