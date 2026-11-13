@@ -364,6 +364,18 @@ describe('Purity Seal counts unmodified 1s', () => {
     expect(result).toStrictEqual({ crits: 0, norms: 0, cursed: 0 });
   });
 
+  it('Ceaseless plus Balanced converts two 1s when Balanced spends a different fail', () => {
+    // (3,1,1,2,2) at 4+. Faces 1 and 2 tie. The tie-break picks face 2, so both 1s stay.
+    // Balanced then rerolls the leading 3, the first kept fail, and the two 1s convert.
+    const model = new Model(5, 4, 3, 4)
+      .setProp('reroll', Ability.RerollMostCommonFailPlusBalanced)
+      .setAbility(Ability.PuritySeal);
+    const result = simulateFighterDice(
+      model, undefined, scriptedRng([3, 1, 1, 2, 2, { raw: 0.75 }, 3, 3, 2]),
+    );
+    expect(result).toStrictEqual({ crits: 0, norms: 1, cursed: 0 });
+  });
+
   it('Ceaseless converts 1s it left in place', () => {
     // (1,1,2,2) ties. The tie-break picks face 2, so the two 1s stay and convert.
     const model = new Model(4, 4, 3, 4)

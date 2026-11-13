@@ -710,6 +710,24 @@ describe('Purity Seal unmodified 1s', () => {
       }
     }
   });
+
+  it('Ceaseless plus Balanced converts when two 1s survive both rerolls', () => {
+    // Four dice cannot: keeping two 1s means Ceaseless left that pair, and Balanced
+    // then spends one of them. Five dice can keep two 1s and a different fail, as in
+    // (3,1,1,2,2) when Ceaseless rerolls the 2s and Balanced rerolls the 3.
+    const plain = new Model(5, 4, 3, 4).setProp('reroll', Ability.RerollMostCommonFailPlusBalanced);
+    const sealed = new Model(5, 4, 3, 4)
+      .setProp('reroll', Ability.RerollMostCommonFailPlusBalanced)
+      .setAbility(Ability.PuritySeal);
+    const expectedNorms = (model: Model) => {
+      let total = 0;
+      for (const [key, prob] of outcomeMass(model)) {
+        total += prob * Number(key.split(',')[1]);
+      }
+      return total;
+    };
+    expect(expectedNorms(sealed)).toBeGreaterThan(expectedNorms(plain));
+  });
 });
 
 /*
