@@ -32,7 +32,9 @@ export const AutoNorms = new Note(
     + `A dice can only be retained once, so these are not promotable by NormsToCrits or Rending ("retain a normal success `
     + `as a critical success instead"); Severe, which changes a success, can still take one. The rule is "retain UP TO x", `
     + `so the calculator retains fewer when rolling those dice is worth more (a high crit chance, or a spare promotion that `
-    + `a locked norm would waste), decided before the roll as at the table.`,
+    + `a locked norm would waste), decided before the roll as at the table. On a shoot that comparison is expected damage `
+    + `after the defender's saves, cover, and Piercing Crits, not the raw dice total. The shoot score includes saves, `
+    + `cover, and Piercing, and does not include Feel No Pain or Saintly Relics.`,
 );
 export const AutoCrits = new Note(
   `AutoCrits`,

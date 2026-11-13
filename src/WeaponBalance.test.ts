@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import Model from 'src/Model';
 import Ability from 'src/Ability';
 import FightStrategy from 'src/FightStrategy';
@@ -184,6 +185,38 @@ function scoreShoot(w: ShootWep) {
     targets,
   };
 }
+
+// The /rules/weapon-balance page explains why these two sit above the set. That sentence has to
+// name each weapon's own rule (the profiles above), or a reader cannot reproduce the gap.
+describe('WEAPON_BALANCE outlier melee wording', () => {
+  const doc = fs.readFileSync(path.join(process.cwd(), 'rules/WEAPON_BALANCE.md'), 'utf8').replace(/\r\n/g, '\n');
+
+  function sentence(startsWith: string): string {
+    const match = doc.match(new RegExp(startsWith + '[^.]*\\.'));
+    return match ? match[0] : '';
+  }
+
+  it('names Ceaseless and 3+ for Scything Talons', () => {
+    const scything = meleeWeapons.find((w) => w.name === 'Scything Talons');
+    expect(scything).toMatchObject({ atk: 5, hit: 3, reroll: Ability.RerollMostCommonFail });
+    const line = sentence('Scything Talons is');
+    expect(line).toMatch(/Ceaseless/);
+    expect(line).toMatch(/3\+/);
+    expect(line).not.toMatch(/2\+/);
+    expect(line).not.toMatch(/Brutal/);
+  });
+
+  it('names 2+ and Brutal for Flesh Mower', () => {
+    const mower = meleeWeapons.find((w) => w.name === 'Flesh Mower');
+    expect(mower).toMatchObject({ atk: 5, hit: 2, abilities: [Ability.Brutal] });
+    expect(mower?.reroll).toBeUndefined();
+    const line = sentence('Flesh Mower is');
+    expect(line).toMatch(/2\+/);
+    expect(line).toMatch(/Brutal/);
+    expect(line).not.toMatch(/Ceaseless/);
+    expect(line).not.toMatch(/3\+/);
+  });
+});
 
 maybeDescribe('weapon balance', () => {
   it('scores the melee and shooting profiles, plain and buffed', () => {

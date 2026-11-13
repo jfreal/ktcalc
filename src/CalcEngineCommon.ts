@@ -25,14 +25,16 @@ export function calcFinalDiceProbsForAttacker(
   }
 
   // Mystic Scry, Punishing, Severe, and Rending choose after the attack roll, before
-  // defence dice are rolled. On a shoot the caller passes a scorer (hitScorerForDefender)
-  // so each candidate is ranked by the damage it deals against that defender's saves,
-  // cover, and Piercing — not by raw hit damage. Defence dice and callers with no scorer
-  // keep the raw fallback. Accurate's pre-roll choice is separate and still ranks pre-save damage.
+  // defence dice are rolled. Accurate chooses how many dice to retain before the roll.
+  // On a shoot the caller passes a scorer (hitScorerForDefender) so each candidate is
+  // ranked by the damage it deals against that defender's saves, cover, and Piercing —
+  // not by raw hit damage. Defence dice and callers with no scorer keep the raw fallback.
+  const ranksWithDefender = abilities.has(Ability.MysticScryBuff) || abilities.has(Ability.Punishing)
+    || abilities.has(Ability.Severe) || abilities.has(Ability.Rending)
+    || attacker.autoNorms > 0;
   const scoreHits = defenderScorer !== undefined
     && canRankByDamage(attacker.normDmg, attacker.critDmg + attacker.mwx)
-    && (abilities.has(Ability.MysticScryBuff) || abilities.has(Ability.Punishing)
-      || abilities.has(Ability.Severe) || abilities.has(Ability.Rending))
+    && ranksWithDefender
     ? defenderScorer
     : undefined;
 
@@ -139,7 +141,9 @@ function buildFinalDiceProbs(
 // can't be promoted by Rending/NormsToCrits), and rolling that dice instead could produce a critical
 // success or a promotable norm. With a high crit chance or a spare promotion, rolling wins.
 // Evaluate every legal count and keep the best; ties keep the maximum, which is both the historical
-// behavior and the intuitive one.
+// behavior and the intuitive one. On a shoot, scoreHits is expected damage after that defender's
+// saves, cover, and Piercing, so a retained norm a save will wipe can lose to a roll that crits.
+// With no scorer (a fight, or defence dice) the ranking stays pre-save damage.
 //
 // Ranking needs damage numbers, so this only applies where they are known — attack dice. Defence
 // dice pass none, so cover saves are still always taken; ranking those properly needs the incoming
@@ -177,8 +181,13 @@ function bestAutoNormPlan(
   let bestValue = -Infinity;
   for (let used = maxAutoNorms; used >= 0; used--) {
     const probs = build(used);
-    const value = expectedDiceValue(probs, normDmg, critDmgPlusMwx);
-    if (value > bestValue) {
+    const value = scoreHits
+      ? expectedScoredDamage(probs, scoreHits)
+      : expectedDiceValue(probs, normDmg, critDmgPlusMwx);
+    // Defender-scored damage is a float sum. A gap inside the tie band keeps the higher retain
+    // count, matching the strict-greater rule the other optional retains use.
+    const better = scoreHits ? value > bestValue + scoreTieEpsilon : value > bestValue;
+    if (better) {
       bestValue = value;
       best = { used, probs };
     }
@@ -192,10 +201,8 @@ export function canRankByDamage(normDmg: number, critDmgPlusMwx: number): boolea
   return normDmg > 0 || critDmgPlusMwx > 0;
 }
 
-// Expected pre-save damage of a final-dice distribution. Accurate decides how many dice to
-// retain before the roll, so this comparison does not weigh saves or Piercing. Mystic Scry,
-// Punishing, Severe, and Rending are ranked per roll instead, and on a shoot they use the
-// defender scorer.
+// Expected pre-save damage of a final-dice distribution. Fight chooseAutoNorms and defence
+// (which has no damage) rank Accurate with this. A shoot passes scoreHits instead.
 function expectedDiceValue(
   finalDiceProbs: FinalDiceProb[],
   normDmg: number,
@@ -204,6 +211,19 @@ function expectedDiceValue(
   let total = 0;
   for (const fdp of finalDiceProbs) {
     total += fdp.prob * (fdp.crits * critDmgPlusMwx + fdp.norms * normDmg);
+  }
+  return total;
+}
+
+// Expected damage of a retain plan once each hit profile has been scored against the defender.
+// scoreHits already folds in saves, cover, and Piercing Crits for that (crits, norms) pair.
+function expectedScoredDamage(
+  finalDiceProbs: FinalDiceProb[],
+  scoreHits: (crits: number, norms: number) => number,
+): number {
+  let total = 0;
+  for (const fdp of finalDiceProbs) {
+    total += fdp.prob * scoreHits(fdp.crits, fdp.norms);
   }
   return total;
 }

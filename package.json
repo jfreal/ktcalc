@@ -23,7 +23,7 @@
     "start": "react-scripts start",
     "prebuild": "npm run copy-rules",
     "build": "react-scripts build",
-    "postbuild": "react-snap",
+    "postbuild": "node scripts/react-snap-ipv4.js",
     "build:react": "npm run build",
     "build:cloudflare": "npm run copy-rules && react-scripts build && node scripts/prerender.js && node scripts/strip-netlify-redirects.js",
     "test": "react-scripts test",
