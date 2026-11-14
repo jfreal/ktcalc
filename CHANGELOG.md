@@ -1,5 +1,9 @@
 # Changelog
 
+## November 2026 - Purity Seal and Indomitus match the published two-fail trigger
+
+- The January 2026 Angels of Death PDF (same wording in April 2025) says both **Purity Seals** and **Indomitus** fire "if you roll two or more fails". The calculator already did that. The hovers no longer claim the official rule is two unmodified 1s, or that the benefit is slightly overstated.
+
 ## November 2026 - Accurate weighs saves and Piercing on a shoot
 
 - **Accurate no longer keeps a normal a save will wipe.** How many Accurate dice to retain is still decided before the roll. On a shoot that choice is now expected damage after the defender's saves, cover, and Piercing Crits, the same score Punishing, Severe, Rending, and Mystic Scry already use. One die at BS 4+, Accurate 1, damage 3/5, and Piercing Crits 2, into three dice at 3+ with one cover save, used to report 0: the retained normal does not turn Piercing on, and the cover cancels it. Rolling is a crit on a 6 (damage 5, about 0.83), and the one defence die Piercing leaves cannot cancel that crit.

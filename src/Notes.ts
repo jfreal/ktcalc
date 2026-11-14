@@ -99,9 +99,7 @@ export const JustAScratchNorms = new Note(
 );
 export const PuritySeal = new Note(
   `PuritySeal`,
-  `If at least 2 dice fail, discard one fail and change another fail to a normal success; attack only. ` +
-  `Note: KT2024 rule strictly requires two unmodified 1s; this calculator triggers on any 2 failed dice, ` +
-  `so the benefit is slightly overstated on rolls where fails include non-1 values (e.g. 2s on a 3+ stat).`,
+  `If you roll two or more fails, discard one of them to retain another as a normal success. Attack only.`,
 );
 export const MysticScryBuff = new Note(
   `Mystic Scry Buff`,
@@ -113,10 +111,8 @@ export const MysticScryBuff = new Note(
 );
 export const Indomitus = new Note(
   `Indomitus`,
-  `If at least 2 dice fail, discard one fail and change another fail to a normal success; defense only. ` +
-  `Angels of Death Firefight ploy. ` +
-  `Note: KT2024 rule strictly requires two unmodified 1s; this calculator triggers on any 2 failed dice, ` +
-  `so the benefit is slightly overstated on rolls where fails include non-1 values (e.g. 2s on a 3+ save).`,
+  `If you roll two or more fails, discard one of them to retain another as a normal success. Defense only. ` +
+  `Angels of Death Strategy ploy.`,
 );
 export const CurseOfRot = new Note(
   `Curse of Rot`,
