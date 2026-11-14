@@ -107,8 +107,14 @@ Dmg), defaulting to crit-first on a tie.
 On each turn, `calcDieChoice` decides in this order. The first rule that applies wins:
 
 1. **Enemy has no successes** → **strike** (a parry would cancel nothing).
-2. **Lethal strike estimate** → resolve the next strike on copies of both fighters, including
+2. **Lethal strike estimate** → resolve a strike on copies of both fighters, including
    Just a Scratch and other damage prevention, and **strike** if the target reaches zero wounds.
+   The crit-first strike is tried first, so a crit that incapacitates (including a Murderous
+   Entrance follow-up on that action) is the die that is struck. When both dice types are in
+   hand, a normal strike is estimated too, and it is chosen only when the crit strike leaves
+   the enemy up and the normal incapacitates. Hammerhand's +1 is part of that normal, so a
+   normal-plus-Hammerhand kill is not skipped. A bigger normal that does not kill stays on
+   the strategy path. This check is before Shock, so a kill outranks the discard.
    Random prevention (FNP / Saintly Relics) uses expected values, so this remains a heuristic,
    not a guarantee of a kill. The estimate changes neither the live fighters nor their RNG streams.
    Also forced to strike if the enemy weapon is **Brutal** and you have no crits (your
@@ -136,7 +142,8 @@ strategies, or under **Parry** once the enemy has no successes left, the actual 
 `preferredStrikeChoice` (crit-first by default,
 norm-first to deny a normal parry or to feed an enemy's first-strike negation — see
 [Strike order](#strike-order-crit-first-except-to-deny-a-normal-parry)). The one exception is the
-**lethal-strike** rule (#2), which strikes crit-first when that strike is estimated to kill.
+**lethal-strike** rule (#2), which strikes the crit when that strike is estimated to kill,
+and strikes the normal when only the normal incapacitates.
 
 ---
 

@@ -534,6 +534,68 @@ describe(calcDieChoice.name + ', lethal strike respects damage prevention', () =
     expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormParry);
   });
 
+  it('Parry strikes a killing normal instead of crit-parrying and dying', () => {
+    // 4 wounds, crit 2 + normal 5, vs a 5-wound striker with two crits at 4.
+    // Crit-parry cancels one crit; the other crit then incapacitates us and the enemy
+    // stays at 5. The normal strike ends the fight before they act.
+    const chooser = newFighterState(1, 1, 4, FightStrategy.Parry);
+    chooser.profile.critDmg = 2;
+    chooser.profile.normDmg = 5;
+    const enemy = newFighterState(2, 0, 5, FightStrategy.Strike);
+    enemy.profile.critDmg = 4;
+
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+    resolveFight(chooser, enemy);
+    expect(chooser.currentWounds).toBe(4);
+    expect(enemy.currentWounds).toBe(0);
+  });
+
+  it('Parry strikes a Hammerhand normal that kills when the crit does not', () => {
+    // crit 2 + Hammerhand is 3, short of 4. normal 3 + Hammerhand is 4.
+    // Crit-parry leaves the enemy at 4 and their remaining crit incapacitates us.
+    const chooser = newFighterState(
+      1, 1, 3, FightStrategy.Parry, new Set<Ability>([Ability.Hammerhand2021]));
+    chooser.profile.critDmg = 2;
+    chooser.profile.normDmg = 3;
+    const enemy = newFighterState(2, 0, 4, FightStrategy.Strike);
+    enemy.profile.critDmg = 4;
+
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+    resolveFight(chooser, enemy);
+    expect(chooser.currentWounds).toBe(3);
+    expect(enemy.currentWounds).toBe(0);
+  });
+
+  it('Parry strikes a killing normal before Shock discards', () => {
+    // Shock would strike the crit for 2, discard one of two normals at 4, and die to
+    // the other (enemy left at 3). The normal strike of 5 incapacitates first.
+    const chooser = newFighterState(
+      1, 1, 4, FightStrategy.Parry, new Set<Ability>([Ability.Shock]));
+    chooser.profile.critDmg = 2;
+    chooser.profile.normDmg = 5;
+    const enemy = newFighterState(0, 2, 5, FightStrategy.Strike);
+    enemy.profile.normDmg = 4;
+
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.NormStrike);
+    resolveFight(chooser, enemy);
+    expect(chooser.currentWounds).toBe(4);
+    expect(enemy.currentWounds).toBe(0);
+  });
+
+  it('Parry still crit-parries when the bigger normal does not reach', () => {
+    // normal 3 into 5 wounds is not a kill, so the bigger normal stays on the Parry path.
+    const chooser = newFighterState(1, 1, 4, FightStrategy.Parry);
+    chooser.profile.critDmg = 2;
+    chooser.profile.normDmg = 3;
+    const enemy = newFighterState(2, 0, 5, FightStrategy.Strike);
+    enemy.profile.critDmg = 4;
+
+    expect(calcDieChoice(chooser, enemy)).toBe(FightChoice.CritParry);
+    resolveFight(chooser, enemy);
+    expect(chooser.currentWounds).toBe(0);
+    expect(enemy.currentWounds).toBe(5);
+  });
+
   it('estimates a potentially lethal strike without consuming rng or changing live state', () => {
     const chooser = newFighterState(1, 0, 10, FightStrategy.Parry);
     const enemy = newFighterState(2, 0, 2);

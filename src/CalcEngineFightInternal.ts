@@ -312,16 +312,34 @@ export function calcDieChoice(chooser: FighterState, enemy: FighterState): Fight
     return chooser.nextStrike();
   }
 
-  // Check the next strike through the real damage-resolution path: raw damage can
+  // Check strikes through the real damage-resolution path: raw damage can
   // look lethal even when Just a Scratch cancels it or first-strike effects reduce it.
   // As with the other lookaheads, clones keep live state/rng untouched and estimate
   // random prevention by its expectation (this is not a guaranteed-kill test).
-  // nextDmg() is the raw upper bound, so skip the clones when even that can't kill.
-  if(chooser.nextDmg() >= enemy.currentWounds) {
-    const struckEnemy = enemy.asEstimate();
-    resolveDieChoice(chooser.nextStrike(), chooser.asEstimate(), struckEnemy);
-    if(struckEnemy.currentWounds <= 0) {
-      return chooser.nextStrike();
+  // nextDmg() prices a crit (plus a Murderous Entrance follow-up) whenever one is
+  // held, so it bounds only the crit-first strike. A normal can still be the killing
+  // blow — Hammerhand's +1 lands on that normal too — so when both dice are in hand
+  // that strike widens the skip and is estimated as well. The crit strike wins when
+  // it incapacitates, which keeps Murderous Entrance on that action. A bigger normal
+  // that does not kill stays on the strategy path (Parry keeps parrying). This runs
+  // before the Shock shortcut so a kill outranks the discard.
+  const holdsBothDice = chooser.crits > 0 && chooser.norms > 0;
+  const normalStrikeBound = holdsBothDice
+    ? chooser.profile.normDmg + chooser.hammerhandDmg()
+    : 0;
+  if(chooser.nextDmg() >= enemy.currentWounds || normalStrikeBound >= enemy.currentWounds) {
+    const strikeIncapacitates = (choice: FightChoice): boolean => {
+      const struckEnemy = enemy.asEstimate();
+      resolveDieChoice(choice, chooser.asEstimate(), struckEnemy);
+      return struckEnemy.currentWounds <= 0;
+    };
+
+    const critFirst = chooser.nextStrike();
+    if(strikeIncapacitates(critFirst)) {
+      return critFirst;
+    }
+    if(holdsBothDice && strikeIncapacitates(FightChoice.NormStrike)) {
+      return FightChoice.NormStrike;
     }
   }
 
